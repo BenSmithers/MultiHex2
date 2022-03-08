@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 15.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="400px" height="400px" viewBox="0 0 400 400" enable-background="new 0 0 400 400" xml:space="preserve">
+<polyline fill="none" stroke="#000000" stroke-width="3" stroke-linecap="round" stroke-miterlimit="10" points="97.972,105.01 
+	158.765,81.445 228.962,81.445 289.754,105.01 "/>
+<polyline fill="none" stroke="#000000" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" points="
+	97.972,164.902 32.243,148.746 32.243,121.057 32.243,121.164 97.972,105.01 "/>
+<polyline fill="none" stroke="#000000" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" points="
+	289.754,164.902 355.482,148.746 355.482,121.057 355.482,121.164 289.754,105.01 "/>
+<polyline fill="none" stroke="#000000" stroke-width="7" stroke-linecap="round" stroke-miterlimit="10" points="97.972,164.902 
+	158.765,200 228.962,200 289.754,164.902 "/>
+<g>
+	<linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="123.6953" y1="50.9546" x2="275.1959" y2="109.9548">
+		<stop  offset="0" style="stop-color:#FBB03B"/>
+		<stop  offset="1" style="stop-color:#D48517"/>
+	</linearGradient>
+	<path fill="url(#SVGID_1_)" d="M100.867,140.683c5.211,7.25,17.368,9.5,25.308,11.25c8.685,2,17.618,3.25,26.302,4.5
+		c22.829,3.25,45.657,6.25,68.733,5c14.392-1,27.792-5,41.438-8.75c6.947-2,13.896-4.25,20.348-7.5c6.203-3,11.121-5.25,17.621-11.5
+		c-3.75-8.5-4-20-5-29c-1-7.75-1.5-15.25-2-23c-1.25-22-2.75-44.25,0.25-66.25c-6.84,10-20,18.75-23.016,31.167
+		c-7.188-8-12.164-18-18.523-27c-4.424,10.333-10.781,24.667-18.523,32.333c-14.375-5-26.54-13.666-36.216-27.333
+		c-3.594,8.333-13.332,20-19.69,25c-6.759-2.667-13.211-5-19.664-9.333c-5.53-4-11.06-9.668-16.897-13.334
+		c-5.531,7-17.513,18.667-25.808,20.667l-0.615-0.333c-11.675-6.334-18.435-17.334-28.88-24.334l-0.667,0.75
+		c12,19.5,12.75,44.25,14.5,66.25C101.367,106.933,99.867,123.933,100.867,140.683z"/>
+</g>
+<polygon fill="#CC2B37" points="255.328,69.433 275.578,95.683 263.078,131.183 244.078,100.183 "/>
+<polygon fill="#009245" points="198.919,69.433 183.696,103.665 203.674,137.993 217.787,101.032 "/>
+<polygon fill="#0071BC" points="137.963,67.183 120.242,94.058 131.571,127.683 149.366,97.365 "/>
+<polygon fill="#B22934" points="263.078,131.183 264.578,99.745 244.078,100.183 "/>
+<polygon fill="#C1272D" points="244.078,100.183 264.578,99.745 255.328,69.433 "/>
+<polygon fill="#CC2B37" points="255.328,69.433 264.578,99.745 275.578,95.683 "/>
+<polygon fill="#A32635" points="275.578,95.683 264.578,99.745 263.078,131.183 "/>
+<polygon fill="#067ABA" points="137.963,67.183 130.867,97.433 149.366,97.365 "/>
+<polygon fill="#00669E" points="131.571,127.683 130.867,97.433 149.366,97.365 "/>
+<polygon fill="#0A6D99" points="120.242,94.058 130.867,97.433 131.571,127.683 "/>
+<polygon fill="#0071BC" points="130.867,97.433 137.963,67.183 120.242,94.058 "/>
+<polygon fill="#009245" points="198.919,69.433 201.533,103.713 217.787,101.032 "/>
+<polygon fill="#098C44" points="201.533,103.713 183.696,103.665 198.919,69.433 "/>
+<polygon fill="#087F3B" points="201.533,103.713 203.674,137.993 217.787,101.032 "/>
+<polygon fill="#0B843C" points="201.533,103.713 183.696,103.665 203.674,137.993 "/>
+<g id="layer3" inkscape:label="cursor" sodipodi:insensitive="true" inkscape:groupmode="layer">
+	
+		<path id="path841" inkscape:connector-curvature="0" sodipodi:nodetypes="cccccccc" fill="#FFFFFF" stroke="#000000" stroke-width="10" stroke-linejoin="round" d="
+		M359.514,240.715l-74.352,21.016l25.75,36.992l-23.518,15.914l-24.768-37.656l-47.15,61.211l-48.836-227.321L359.514,240.715z"/>
+</g>
+</svg>

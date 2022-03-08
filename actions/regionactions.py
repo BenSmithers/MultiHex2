@@ -1,0 +1,125 @@
+from .baseactions import MapAction, MetaAction
+from MultiHex2.core import Region
+
+from PyQt5.QtWidgets import QGraphicsScene
+
+from copy import copy
+
+class New_Region_Action(MapAction):
+    """
+    This action registers a region in the Hexmap
+    Requires knowledge of next available rid! 
+    """
+    def __init__(self, **kwargs):
+        MapAction.__init__(self, recurring=None, **kwargs)
+        self.needed=["region", "rid"]
+        self.verify(kwargs)
+        #self.rlayer=kwargs["rlayer"]
+        self.region=kwargs["region"]
+        self.rID=kwargs["rid"]
+
+
+    def __call__(self, map:QGraphicsScene):
+        this_rid = map.addRegion( self.region )
+        assert(this_rid == self.rID)
+        return Delete_Region_Action(rID=self.rID, region=self.region)
+
+class Delete_Region_Action(MapAction):
+    """
+    This action deletes a region from a Hexmap
+    """
+    def __init__(self, **kwargs):
+        MapAction.__init__(self, recurring=None, **kwargs)
+        self.needed=["rID"]
+        self.verify(kwargs)
+        #self.rlayer=kwargs["rlayer"]
+        self.rID=kwargs["rID"]
+
+    def __call__(self, map:QGraphicsScene):
+        old_region = map.accessRegion(self.rID)
+        map.deleteRegion(self.rID)
+
+        return New_Region_Action(region=old_region, rid=self.rID)
+
+
+class Region_Add_Remove(MapAction):
+    """
+        This action is to add and remove hexes from regions on the map. 
+    """
+    def __init__(self, **kwargs):
+        MapAction.__init__(self, recurring=None, **kwargs)
+        self.needed = ["rID", 'hexID']
+        self.verify(kwargs)
+        self.rID = kwargs["rID"]
+        self.hexID = kwargs["hexID"]
+        #self.rlayer = kwargs["rlayer"]
+        
+        self.old_rid = None
+
+
+    def __call__(self, map:QGraphicsScene):
+        if self.rID is None: # removing this hex from a region
+
+            self.old_rid = map.accessHexRegion(self.hexID)
+            old_region = copy(map.accessRegion(self.rID))
+
+            map.regionRemoveHex( self.hexID )
+
+            # this might have deleted the region, check if its still part of the catalog
+            if map.accessRegion(self.old_rid) is None:
+                # if it did, the inverse is to make a new region with the old rid
+                return New_Region_Action(rID=self.old_rid, region=old_region)
+            else:
+                # if it didn't delete the region, then we just add the hex back in
+                return Region_Add_Remove(rID=self.old_rid, hexID=self.hexID)
+        else:
+            # there's a chance this action is the inverse of one that deleted the region we're adding back to
+
+            if map.accessRegion(self.rID) is None:
+                raise ValueError("Cannot add to region {}, which doesn't exist".format(self.rID))
+            else:
+                map.regionAddHex(self.rID , self.hexID ) 
+            
+            return Region_Add_Remove(rID=None, hexID=self.hexID)
+
+class Merge_Regions_Action(MapAction):
+    def __init__(self, **kwargs):
+        MapAction.__init__(self, recurring=None, **kwargs)
+        self.needed=["rID2","rID2"]
+        self.verify(kwargs)
+        self.rid1 = kwargs["rID1"]
+        self.rid2 = kwargs["rID2"]
+       # self.rlayer = kwargs["rlayer"]
+
+        self._drawtype=True
+    
+    def __call__(self, map:QGraphicsScene):
+        """
+        Merging these is easy, the inverse is a little hard. 
+
+        We have to delete the combined region (Region 1), then create the sub-regions (1 and 2)
+        We need to also be sure to make the sub-regions in order of increasing region number 
+        """
+        map.mergeRegions(self.rid1, self.rid2)
+
+        region1 = map.accessRegion(self.rid1)
+        region2 = map.accessRegion(self.rid2)
+
+        inverse = MetaAction(Delete_Region_Action(rID=self.rid1))
+        add1 = New_Region_Action(rID=self.rid1, region=region1)
+        add2 = New_Region_Action(rID=self.rid2, region=region2)
+        """
+         the order matters! 
+         if these are in the wrong order we may go 
+                    do      undo         redo
+         rid1+rid2 --> rid1 --> rid2+rid1 --> rid2 
+        """
+        if self.rid1>self.rid2:
+            inverse.add_to(add2)
+            inverse.add_to(add1)
+        else:
+            inverse.add_to(add1)
+            inverse.add_to(add2)
+        return(inverse)
+
+
