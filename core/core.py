@@ -1,5 +1,3 @@
-from textwrap import indent
-from turtle import hideturtle
 from PyQt5.QtCore import QPointF
 from PyQt5.QtGui import QPolygonF, QColor
 from math import sqrt,sin,cos
@@ -16,19 +14,14 @@ def save(clicker, filename:str):
     """
     Saves the clicker state to a file 
     """
-    out_dict = {"hexes":{}}
+    out_dict = {
+        "hexes":{},
+        "drawsize":DRAWSIZE
+        }
     hexes = clicker._hexCatalog
     for hID in hexes._hidcatalog:
         hex=hexes._hidcatalog[hID]
-        hex_dict = {
-            "red":hex.fill.red(),
-            "green":hex.fill.green(),
-            "blue":hex.fill.blue(),
-            "params":hex.params
-        }
-
-
-        out_dict["hexes"]["{}-{}".format(hID.xid, hID.yid)]=hex_dict
+        out_dict["hexes"]["{}-{}".format(hID.xid, hID.yid)]=hex.pack()
     
 def load(clicker, filename:str):
     pass
@@ -52,6 +45,8 @@ class Hex(QPolygonF):
         # used to store any special parameters 
         self._params = {}
         self._fill = QColor(255,255,255)
+        self.x = center.x()
+        self.y = center.y()
 
     @property
     def params(self):
@@ -64,7 +59,29 @@ class Hex(QPolygonF):
         self._fill = fill
     def set_params(self, params:dict):
         self._params = params
-
+    
+    def pack(self)->dict:
+        """
+        Takes the hex object and save the essentials such that this can be reconstructed later. 
+        """
+        vals = {
+            "red":self.fill.red(),
+            "green":self.fill.green(),
+            "blue":self.fill.blue(),
+            "params":self.params,
+            "x":self.x,
+            "Y":self.y
+        }
+        return vals
+    @classmethod
+    def unpack(cls, obj:dict)->'Hex':
+        """
+        Alternate of `pack` function. 
+        """
+        new_hx = Hex(QPointF(obj["x"], obj["y"]))
+        new_hx._fill = QColor(obj["red"], obj["green"], obj["blue"])
+        new_hx._params = obj["params"]
+        return new_hx
 
 class Region(QPolygonF):
     """
@@ -103,7 +120,11 @@ class Region(QPolygonF):
     def subtract(self, other:'Region')->'Region':
         combined = self.subtracted(other)
         new = Region(combined,*self._hexIDs)
-        new._hexIDs += other.hexIDs
+        #new._hexIDs += other.hexIDs
+        for id in other.hexIDs:
+            if id in self._hexIDs:
+                new._hexIDs.remove(id)
+
         new._name = self._name
         new._fill = self._fill
         return new
@@ -209,7 +230,7 @@ class RegionCatalog:
         del self._hidcatalog[hID]
 
         region = self._ridcatalog[rid]
-        region.subtract(Region(Hex(hex_to_screen(hID)), hID))
+        region = region.subtract(Region(Hex(hex_to_screen(hID)), hID))
         self._ridcatalog[rid] = region
 
         if (region.hexIDs)==0:
