@@ -39,7 +39,7 @@ class HexBrushWidget(ToolWidget):
         self.ui.rightbutton.clicked.connect(self.increase_size)
 
         self._data = {}
-        self._apply_tileset("/home/ben/software/MultiHex2/resources/main.json")
+        self._apply_tileset(os.path.join(os.path.dirname(__file__),"..", "resources/main.json"))
         self.ui.hex_sub_list.clicked[QtCore.QModelIndex].connect( self.hex_subtype_clicked )
         self.ui.combobox.currentIndexChanged.connect(self.hex_supertype_clicked)
 
