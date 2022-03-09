@@ -9,58 +9,13 @@ from MultiHex2.tools import Clicker
 from MultiHex2.tools.hextools import HexBrush,HexSelect
 from MultiHex2.tools.regiontools import RegionAdd
 from MultiHex2.tools import Basic_Tool
-from MultiHex2.core.core import DRAWSIZE, Catalog, RegionCatalog, Hex, Region
 
 import os
 import sys
-import json
-
-from core.coordinates import HexID
 
 SAVEDIR = os.path.join(os.environ["HOME"], ".local", "MultiHex")
 if not os.path.exists(SAVEDIR):
     os.mkdir(SAVEDIR)
-
-def save(clicker, filename:str):
-    """
-    Saves the clicker state to a file 
-    """
-    out_dict = {
-        "hexes":{},
-        "regions":{},
-        "drawsize":DRAWSIZE
-        }
-    hexes = clicker._hexCatalog
-    for hID in hexes._hidcatalog:
-        hex=hexes._hidcatalog[hID]
-        out_dict["hexes"]["{}.{}".format(hID.xid, hID.yid)]=hex.pack()
-    for rID in clicker._biomeCatalog:
-        region=clicker._biomeCatalog[rID]
-        out_dict["regions"]["{}".format(rID)]=region.pack()
-
-    f = open(filename, 'wt')
-    json.dump(out_dict, f, indent=4)
-    f.close()
-    
-def load(clicker:QGraphicsScene, filename:str):
-    """
-    clears out the catalogs in the clicker and replaces them with our own 
-    """
-    clicker.clear()
-    clicker._hexCatalog = Catalog(dtype=Hex)
-    clicker._biomeCatalog = RegionCatalog()
-    f = open(filename,'rt')
-    in_dict = json.load(f)
-    f.close()
-
-    for str_hid in in_dict["hexes"].keys():
-        split = str_hid.split(".")
-        hid = HexID(int(split[0]), int(split[1]))
-        hexobj = Hex.unpack(in_dict["hexes"][str_hid])
-        clicker.addHex(hexobj, hid)
-    for str_rid in in_dict["regions"].keys():
-        reg = Region.unpack(in_dict["regions"][str_rid])
-        clicker.addRegion(reg)
 
 class main_window(QMainWindow):
     def __init__(self,parent=None):
@@ -93,7 +48,7 @@ class main_window(QMainWindow):
         pathto = QFileDialog.getSaveFileName(None, 'Save As',SAVEDIR, 'Json (*.json)')[0]
         if pathto is not None:
             if pathto!="":
-                save(self.scene, pathto)
+                self.scene.save(pathto)
                 self.scene.reset_save()
 
     def quit(self):
@@ -106,7 +61,7 @@ class main_window(QMainWindow):
         pathto = QFileDialog.getOpenFileName(None, 'Save As',SAVEDIR, 'Json (*.json)')[0]
         if pathto is not None:
             if pathto!="":
-                load(self.scene, pathto)
+                self.scene.load( pathto)
                 self.scene.reset_save()
 
     def keyPressEvent(self, a0: QtGui.QKeyEvent) -> None:

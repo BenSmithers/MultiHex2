@@ -4,6 +4,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent, QMainWindow, QApplication
 from PyQt5.QtWidgets import QGraphicsItem
 
+from MultiHex2.core.core import DRAWSIZE
 from MultiHex2.core import Catalog, RegionCatalog
 from MultiHex2.core import Hex, HexID, Region
 from MultiHex2.core import screen_to_hex
@@ -13,6 +14,7 @@ from MultiHex2.tools.regiontools import RegionAdd
 from actions.baseactions import NullAction
 from core.coordinates import hex_to_screen
 
+import json
 
 class Clicker(QGraphicsScene, ActionManager):
     """
@@ -46,7 +48,48 @@ class Clicker(QGraphicsScene, ActionManager):
         self._pen.setStyle(Qt.PenStyle.SolidLine )
         self._pen.setWidth(5)
         self._brush = QtGui.QBrush() #FILL EFFECTS
+            
         
+    def save(self, filename:str):
+        """
+        Saves the clicker state to a file 
+        """
+        out_dict = {
+            "hexes":{},
+            "regions":{},
+            "drawsize":DRAWSIZE
+            }
+        hexes = self._hexCatalog
+        for hID in hexes._hidcatalog:
+            hex=hexes._hidcatalog[hID]
+            out_dict["hexes"]["{}.{}".format(hID.xid, hID.yid)]=hex.pack()
+        for rID in self._biomeCatalog:
+            region=self._biomeCatalog[rID]
+            out_dict["regions"]["{}".format(rID)]=region.pack()
+
+        f = open(filename, 'wt')
+        json.dump(out_dict, f, indent=4)
+        f.close()
+        
+    def load(self, filename:str):
+        """
+        clears out the catalogs in the clicker and replaces them with our own 
+        """
+        self.clear()
+        self._hexCatalog = Catalog(dtype=Hex)
+        self._biomeCatalog = RegionCatalog()
+        f = open(filename,'rt')
+        in_dict = json.load(f)
+        f.close()
+
+        for str_hid in in_dict["hexes"].keys():
+            split = str_hid.split(".")
+            hid = HexID(int(split[0]), int(split[1]))
+            hexobj = Hex.unpack(in_dict["hexes"][str_hid])
+            self.addHex(hexobj, hid)
+        for str_rid in in_dict["regions"].keys():
+            reg = Region.unpack(in_dict["regions"][str_rid])
+            self.addRegion(reg)
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
         self._parent_window.keyPressEvent(event)
@@ -142,6 +185,14 @@ class Clicker(QGraphicsScene, ActionManager):
                 if not isinstance(action, NullAction):
                     self.do_now(action)
 
+    def accessHex(self, coords:HexID):
+        """
+        returns the hex at the specified hex coordinates, else returns None 
+        """
+        if coords in self._hexCatalog:
+            return self._hexCatalog[coords]
+        else:
+            return
 
     def addHex(self, hexobj:Hex, coords:HexID):
         """
