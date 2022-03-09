@@ -24,6 +24,10 @@ class RegionAdd(Basic_Tool):
         self.highlight = True
         self._selected_rid = -1
 
+    def deselect(self):
+        self._selected_rid = -1
+        return super().deselect()
+
     def select(self, rid:int):
         """
         Select a region
@@ -38,7 +42,6 @@ class RegionAdd(Basic_Tool):
     
 
     def primary_mouse_released(self, event: QtWidgets.QGraphicsSceneMouseEvent):
-        print("selected {}".format(self._selected_rid))
         loc =  screen_to_hex( event.scenePos() )
         this_rid = self.parent.accessHexRegion(loc) # region under hex, none if no region
         if self._selected_rid == -1:

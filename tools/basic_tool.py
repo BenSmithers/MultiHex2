@@ -27,6 +27,9 @@ class Basic_Tool:
         self._state = 0
         self.highlight = False # highlight space under the cursor 
 
+    def deselect(self):
+        self._state = 0
+
     @classmethod
     def layer(cls):
         return ToolLayer.terrain

@@ -1,18 +1,15 @@
 
-from multiprocessing.sharedctypes import Value
 from PyQt5 import QtGui, QtCore
-from PyQt5.QtWidgets import QGraphicsPolygonItem
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent, QMainWindow, QApplication
-
-import typing
-import os 
+from PyQt5.QtWidgets import QGraphicsItem
 
 from MultiHex2.core import Catalog, RegionCatalog
 from MultiHex2.core import Hex, HexID, Region
 from MultiHex2.core import screen_to_hex
 from MultiHex2.actions import ActionManager
 from MultiHex2.tools.basic_tool import Basic_Tool
+from MultiHex2.tools.regiontools import RegionAdd
 from actions.baseactions import NullAction
 from core.coordinates import hex_to_screen
 
@@ -50,6 +47,7 @@ class Clicker(QGraphicsScene, ActionManager):
         self._pen.setWidth(5)
         self._brush = QtGui.QBrush() #FILL EFFECTS
         
+
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
         self._parent_window.keyPressEvent(event)
 
@@ -76,7 +74,7 @@ class Clicker(QGraphicsScene, ActionManager):
     def tool(self):
         return self._tool
     def select_tool(self, tool_name:str):
-        print("selecting tool name {}".format(tool_name))
+        self._tool.deselect()
         tool = self._alltools[tool_name]
         self._highlighting_cursor = tool.highlight
         self._tool = tool
@@ -146,12 +144,32 @@ class Clicker(QGraphicsScene, ActionManager):
 
 
     def addHex(self, hexobj:Hex, coords:HexID):
+        """
+        Draws a hex here and registers it 
+        """
+        
+        self._hexCatalog.register(hexobj, coords)
+        sid = self.drawHex(coords)
+        self._hexCatalog.updateSID(coords, sid)
+
+    def eraseHex(self, coords:HexID)->None:
+        sid = self._hexCatalog.getSID(coords)
+        if sid is not None:
+            self.removeItem(sid)
+            self._hexCatalog.updateSID(coords, None)
+
+    def drawHex(self, coords)->QGraphicsItem:
+        self.eraseHex(coords)
+        hexobj = self._hexCatalog[coords]
+
         self._brush.setStyle(Qt.BrushStyle.SolidPattern)
         self._brush.setColor(hexobj.fill)
         self._pen.setWidth(1)
         self._pen.setColor(QtGui.QColor(240,240,240))
-        screenid = self.addPolygon(hexobj, self._pen, self._brush)
-        self._hexCatalog.register(hexobj, screenid, coords)
+        sid = self.addPolygon(hexobj, self._pen, self._brush)
+        sid.setZValue(0)
+        return sid
+
 
     def removeHex(self, coords:HexID):
         # remove drawing
@@ -201,6 +219,8 @@ class Clicker(QGraphicsScene, ActionManager):
         """
         Just straight up delete the region
         """
+        if isinstance(self.tool, RegionAdd):
+            self.tool.select(-1)
         sid = self._biomeCatalog.getSID(rid) 
         self.removeItem(sid) # undraw
         self._biomeCatalog.delete_region(rid)  # clear it from the catalog 
@@ -250,9 +270,10 @@ class Clicker(QGraphicsScene, ActionManager):
         self._brush.setStyle(6)
         self._brush.setColor(region.fill)
         self._pen.setColor(region.fill)
+        self._pen.setStyle(0)
 
         new_sid = self.addPolygon(region,pen=self._pen, brush=self._brush)
-        
+        new_sid.setZValue(100)
         self._biomeCatalog.updateSID(rid, new_sid)
         self.update()
         return new_sid

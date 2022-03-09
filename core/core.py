@@ -103,6 +103,33 @@ class Region(QPolygonF):
     def fill(self)->QColor:
         return self._fill
 
+    def pack(self)->dict:
+        """
+            Converts the Region into a dictionary that can later be unpacked with the 'unpack' function 
+        """
+        hids = {
+            "xids":[hid.xid() for hid in self._hexIDs],
+            "yids":[hid.yid() for hid in self._hexIDs]
+        }
+        points = []
+        for pt in self:
+            points.append([pt.x(), pt.y()])
+        return {
+            "vertices":points,
+            "hIDs":hids,
+            "name":self._name,
+            "red":self.fill.red(),
+            "green":self.fill.green(),
+            "blue":self.fill.blue()
+        }
+    def unpack(self, packed:dict)->'Region':
+        verts = [QPointF(item[0], item[1]) for item in packed["vertices"]]
+        hIDs = [HexID(packed["hIDs"]["xids"][i], packed["hIDs"]["yids"][i]) for i in range(len(packed["hIDs"]["yids"]))]
+        new_reg = Region(QPolygonF(verts), hIDs)
+        new_reg._name = packed["name"]
+        new_reg._fill=QColor(packed["red"], packed["green"], packed["blue"])
+        return new_reg
+
     def set_name(self, name:str):
         self._name = name
 
@@ -201,7 +228,6 @@ class RegionCatalog:
         Takes a region and the hexes that start as part of it, register them in the dictionaries 
         """
         rid = self.get_next_rid()
-        print("registering {}".format(rid))
 
         self._ridcatalog[rid] = region
 
@@ -242,11 +268,19 @@ class Catalog:
     def __init__(self, dtype:type):
         Catalog._dtype = dtype
         self._hidcatalog = {} # hex id -> obj
-        self._sidcatalog = {} # screen id -> obj
         self._interface = {} # hexid to screen id
 
-    def getSID(self,hID:HexID):
-        return self._interface[hID]
+    def updateSID(self, hID:HexID, sid=None):
+        if sid is None:
+            del self._interface[hID]     
+        else:
+            self._interface[hID] = sid
+
+    def getSID(self,hID:HexID)->QGraphicsItem:
+        if hID in self._interface:
+            return self._interface[hID]
+        else:
+            return
 
     def remove(self, hid:HexID):
         """
@@ -260,19 +294,17 @@ class Catalog:
 
         if hid in self._interface:
             sid = self._interface[hid]
-            self._sidcatalog[sid] = None
             self._interface[hid] = None
         else:
             raise ValueError("Tried removing hexID {} from catalog, but no entry found in interface".format(hid))
     
 
-    def register(self, item:_dtype, screenid:QGraphicsItem, hid:HexID):
+    def register(self, item:_dtype, hid:HexID):
         """
         Called when we're registering 
         """
         self._hidcatalog[hid] = item
-        self._sidcatalog[screenid] = item
-        self._interface[hid] = screenid
+        self._interface[hid] = None
             
 
     def __getitem__(self, key)->_dtype:
