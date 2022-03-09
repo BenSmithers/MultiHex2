@@ -128,6 +128,8 @@ class ActionManager:
         #self.database_dir = get_base_dir()
         self.database_filename = "event_database.csv"
 
+        self._unsaved = False
+
         # we keep a list of Actions' inverses we've done, so we can always go back through
         self.n_history_max = 50 
         self.redo_history = deque()
@@ -137,6 +139,13 @@ class ActionManager:
         self._meta_inverses = []
 
         self._meta_event_holder = None
+
+    @property
+    def unsaved(self):
+        return self._unsaved
+
+    def reset_save(self):
+        self._unsaved=False
 
     def add_to_meta(self, action:MapAction):
         """
@@ -184,6 +193,7 @@ class ActionManager:
         if self._making_meta:
             self.finish_meta()
 
+        self._unsaved=True
 
         inverse = event(self)
         if not ignore_history:
@@ -207,6 +217,8 @@ class ActionManager:
         if len(list1)==0:
             return []
         
+        self._unsaved=True
+
         #does the action, stores inverse 
         inverse = list1[0](self)
         
@@ -266,6 +278,7 @@ class ActionManager:
 
         # If this is an action, do it. Otherwise it's an event, nothing is done. 
         if isinstance(data[1], MapAction):
+            self._unsaved=True
             data[1].do()
             if data[1].recurring is not None:
                 self.add_event(data[1], data[0]+data[1].recurring)

@@ -27,10 +27,28 @@ class main_window(QMainWindow):
         # Allow the graphics view to follow the mouse when it isn't being clicked, and associate the clicker control with the ui 
         self.ui.graphicsView.setMouseTracking(True)
         self.ui.graphicsView.setScene( self.scene )
+        self.ui.actionSave.triggered.connect(self.save)
+        self.ui.actionQuit.triggered.connect(self.quit)
+
 
         self.add_tool("hex_brush", HexBrush)
         self.add_tool("hex_select", HexSelect)
         self.add_tool("region_add", RegionAdd)
+
+    def save(self):
+        self.scene.reset_save()
+
+    def saveAs(self):
+        self.scene.reset_save()
+
+    def quit(self):
+        if self.scene.unsaved:
+            print("WARN")
+
+        sys.exit()
+
+    def load(self)->str:
+        return ""
 
     def keyPressEvent(self, a0: QtGui.QKeyEvent) -> None:
         if a0.key()==Qt.Key_Escape:
