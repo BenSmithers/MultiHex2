@@ -10,22 +10,6 @@ from numpy.random import randint
 RTHREE = sqrt(3)
 DRAWSIZE = 30.
 
-def save(clicker, filename:str):
-    """
-    Saves the clicker state to a file 
-    """
-    out_dict = {
-        "hexes":{},
-        "drawsize":DRAWSIZE
-        }
-    hexes = clicker._hexCatalog
-    for hID in hexes._hidcatalog:
-        hex=hexes._hidcatalog[hID]
-        out_dict["hexes"]["{}-{}".format(hID.xid, hID.yid)]=hex.pack()
-    
-def load(clicker, filename:str):
-    pass
-
 class Hex(QPolygonF):
     def __init__(self, center:QPointF):
         """
@@ -78,7 +62,7 @@ class Hex(QPolygonF):
         """
         Alternate of `pack` function. 
         """
-        new_hx = Hex(QPointF(obj["x"], obj["y"]))
+        new_hx = Hex(QPointF(obj["x"], obj["Y"]))
         new_hx._fill = QColor(obj["red"], obj["green"], obj["blue"])
         new_hx._params = obj["params"]
         return new_hx
@@ -108,12 +92,12 @@ class Region(QPolygonF):
             Converts the Region into a dictionary that can later be unpacked with the 'unpack' function 
         """
         hids = {
-            "xids":[hid.xid() for hid in self._hexIDs],
-            "yids":[hid.yid() for hid in self._hexIDs]
+            "xids":[hid.xid for hid in self._hexIDs],
+            "yids":[hid.yid for hid in self._hexIDs]
         }
         points = []
-        for pt in self:
-            points.append([pt.x(), pt.y()])
+        for pt in range(len(self)):
+            points.append([ self[pt].x(), self[pt].y()])
         return {
             "vertices":points,
             "hIDs":hids,
@@ -122,10 +106,11 @@ class Region(QPolygonF):
             "green":self.fill.green(),
             "blue":self.fill.blue()
         }
-    def unpack(self, packed:dict)->'Region':
+    @classmethod
+    def unpack(cls, packed:dict)->'Region':
         verts = [QPointF(item[0], item[1]) for item in packed["vertices"]]
         hIDs = [HexID(packed["hIDs"]["xids"][i], packed["hIDs"]["yids"][i]) for i in range(len(packed["hIDs"]["yids"]))]
-        new_reg = Region(QPolygonF(verts), hIDs)
+        new_reg = Region(QPolygonF(verts), *hIDs)
         new_reg._name = packed["name"]
         new_reg._fill=QColor(packed["red"], packed["green"], packed["blue"])
         return new_reg
@@ -262,6 +247,12 @@ class RegionCatalog:
         if (region.hexIDs)==0:
             self.delete_region(rid)
 
+    def __iter__(self):
+        return self._ridcatalog.__iter__()
+
+    def __getitem__(self, key)->Region:
+        return self._ridcatalog[key]
+
 
 class Catalog:
     _dtype = Hex
@@ -312,3 +303,6 @@ class Catalog:
 
     def __contains__(self, key)->bool:
         return key in self._hidcatalog
+
+    def __iter__(self):
+        return self._hidcatalog.__iter__()
