@@ -49,6 +49,8 @@ class HexID:
             HexID(self.xid+1,self.yid), HexID(self.xid+1, self.yid-1), HexID(self.xid, self.yid+1),
             HexID(self.xid-1, self.yid),HexID(self.xid-1, self.yid+1), HexID(self.xid, self.yid+1)
         ]
+        return nb
+        # -30 degrees, increment by 60 with each
 
 M = (3.0 / 2.0, 0.0, RTHREE/2.0, RTHREE, # F0-F3
                2.0 / 3.0, 0.0, -1.0 / 3.0, RTHREE / 3.0) #b0-b3

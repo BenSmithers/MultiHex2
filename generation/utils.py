@@ -4,18 +4,17 @@ Define some utilities used by the generators
  - perlin noise generator
 """
 from math import exp
+from PyQt5.QtCore import QPointF
 
-def point_is_in(point, dimensions):
+def point_is_in(point:QPointF, dimensions):
     """
     Returns whether or not a Point is within the bounds of a map of given dimensions.
 
     @param Point    - a Point object
     @param dimensions - list-like 
     """
-    if not isinstance(point, Point):
-        raise TypeError("Expected type {}, got {}".format(Point, type(point)))
 
-    return( point.x < dimensions[0] and point.x > 0 and point.y < dimensions[1] and point.y>0)
+    return( point.x() < dimensions[0] and point.x() > 0 and point.y() < dimensions[1] and point.y()>0)
 
 
 
@@ -38,7 +37,7 @@ def angle_difference( theta_1, theta_2 ):
     
     return(min([(360.) - abs(theta_1-theta_2), abs(theta_1-theta_2)]) )
 
-def get_distribution( direction, variance=20. )->function:
+def get_distribution( direction, variance=20. ):
     """
     Creates a normalized, discrete, gaussian distribution centered at a given angle and with a given variance. Distribution applies to the six angles correlated with the directions to a Hexes' neighbors' centers. 
 

@@ -9,6 +9,7 @@ from MultiHex2.tools import Clicker
 from MultiHex2.tools.hextools import HexBrush,HexSelect
 from MultiHex2.tools.regiontools import RegionAdd
 from MultiHex2.tools import Basic_Tool
+from MultiHex2.generation.overland import fullsim
 
 import os
 import sys
@@ -35,11 +36,15 @@ class main_window(QMainWindow):
         self.ui.actionSave_As.triggered.connect(self.saveAs)
         self.ui.actionSave.triggered.connect(self.save)
         self.ui.actionQuit.triggered.connect(self.quit)
+        self.ui.actionNew.triggered.connect(self.new)
 
 
         self.add_tool("hex_brush", HexBrush)
         self.add_tool("hex_select", HexSelect)
         self.add_tool("region_add", RegionAdd)
+
+    def new(self):
+        fullsim(self.scene)
 
     def save(self):
         self.scene.reset_save()
