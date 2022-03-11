@@ -5,6 +5,10 @@ Define some utilities used by the generators
 """
 from math import exp
 from PyQt5.QtCore import QPointF
+import numpy.random as rnd
+
+def gauss(mean, dev):
+    return (rnd.randn()*dev + mean)
 
 def point_is_in(point:QPointF, dimensions):
     """

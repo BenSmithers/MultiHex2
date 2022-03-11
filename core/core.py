@@ -3,12 +3,11 @@ from PyQt5.QtGui import QPolygonF, QColor
 from math import sqrt,sin,cos
 from PyQt5.QtWidgets import QGraphicsItem
 
-from core.coordinates import HexID, hex_to_screen, screen_to_hex
+from core.coordinates import HexID, hex_to_screen, DRAWSIZE
 
 from numpy.random import randint
 
 RTHREE = sqrt(3)
-DRAWSIZE = 30.
 
 class Hex(QPolygonF):
     def __init__(self, center:QPointF):
@@ -31,6 +30,9 @@ class Hex(QPolygonF):
         self._fill = QColor(255,255,255)
         self.x = center.x()
         self.y = center.y()
+        self.genkey = '0000'
+        self.geography = ""
+        self.is_land = False
 
     @property
     def params(self):
@@ -43,6 +45,8 @@ class Hex(QPolygonF):
         self._fill = fill
     def set_params(self, params:dict):
         self._params = params
+    def set_param(self, param:str, value:float):
+        self._params[param] = value
     
     def pack(self)->dict:
         """
@@ -54,7 +58,8 @@ class Hex(QPolygonF):
             "blue":self.fill.blue(),
             "params":self.params,
             "x":self.x,
-            "Y":self.y
+            "Y":self.y,
+            "geo":self.geography
         }
         return vals
     @classmethod
@@ -65,6 +70,7 @@ class Hex(QPolygonF):
         new_hx = Hex(QPointF(obj["x"], obj["Y"]))
         new_hx._fill = QColor(obj["red"], obj["green"], obj["blue"])
         new_hx._params = obj["params"]
+        new_hx.geography=obj["geo"]
         return new_hx
 
 class Region(QPolygonF):
@@ -260,6 +266,9 @@ class Catalog:
         Catalog._dtype = dtype
         self._hidcatalog = {} # hex id -> obj
         self._interface = {} # hexid to screen id
+
+    def get_all_hids(self):
+        return self._hidcatalog.keys()
 
     def updateSID(self, hID:HexID, sid=None):
         if sid is None:

@@ -2,7 +2,7 @@ from PyQt5.QtCore import QPointF
 from math import sqrt
 
 RTHREE = sqrt(3)
-DRAWSIZE = 30.
+DRAWSIZE = 20.
 
 class Primitive:
     """

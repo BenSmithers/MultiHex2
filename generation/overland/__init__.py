@@ -1,4 +1,5 @@
 from .ridges import generate_ridges
+from .fill_land import generate_land
 from MultiHex2.tools import Clicker
 
 import json
@@ -13,3 +14,4 @@ def fullsim(map:Clicker, preset="continental"):
     config = _config[preset]
 
     generate_ridges(map, **config["mountains"]["values"])
+    generate_land(map, **config["land"]["values"])

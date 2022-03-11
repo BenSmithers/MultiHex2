@@ -48,6 +48,8 @@ class Clicker(QGraphicsScene, ActionManager):
         self._pen.setStyle(Qt.PenStyle.SolidLine )
         self._pen.setWidth(5)
         self._brush = QtGui.QBrush() #FILL EFFECTS
+
+        self.dimensions = (4000,3000)
             
         
     def save(self, filename:str):
@@ -97,10 +99,10 @@ class Clicker(QGraphicsScene, ActionManager):
     def keyReleaseEvent(self, event: QtGui.QKeyEvent) -> None:
         event.accept()
         if event.key() == QtCore.Qt.Key_Plus or event.key()==QtCore.Qt.Key_PageUp or event.key()==QtCore.Qt.Key_BracketRight:
-            self.parent.scale( 1.05, 1.05 )
+            self._parent_window.scale( 1.05, 1.05 )
 
         if event.key() == QtCore.Qt.Key_Minus or event.key()==QtCore.Qt.Key_PageDown or event.key()==QtCore.Qt.Key_BracketLeft:
-            self.parent.scale( 0.95, 0.95 )
+            self._parent_window.scale( 0.95, 0.95 )
 
         # check if the user did Ctrl+Z for undo or Ctrl+R for redo
         if QApplication.keyboardModifiers() == QtCore.Qt.ControlModifier:

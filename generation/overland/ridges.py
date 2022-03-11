@@ -6,16 +6,13 @@ from argparse import ArgumentError
 from MultiHex2.tools import Clicker
 from MultiHex2.core import hex_to_screen, screen_to_hex, Hex
 from MultiHex2.core import DRAWSIZE
-from ..utils import point_is_in, get_distribution
+from ..utils import point_is_in, get_distribution, gauss
 
 from PyQt5.QtCore import QPointF
 from PyQt5.QtGui import QColor
 
 import numpy.random as rnd
 from math import pi, acos
-
-def gauss(mean, dev):
-    return (rnd.randn()*dev + mean)
 
 def generate_ridges(map:Clicker, seed=None, **kwargs)->Clicker:
     """
@@ -37,7 +34,7 @@ def generate_ridges(map:Clicker, seed=None, **kwargs)->Clicker:
 
     angles = [330., 30., 90., 150., 210., 270.]
     
-    
+    map.dimensions=tuple(dimensions)
 
     def make_continent():
         print("making continent")
@@ -58,6 +55,9 @@ def generate_ridges(map:Clicker, seed=None, **kwargs)->Clicker:
                 new_hex = Hex(new_hex_center)
                 new_hex.genkey = '11000000'
                 new_hex._fill = QColor(99,88,60)
+                new_hex.set_param("altitude_base",1.0)
+                new_hex.geography="peak"
+                new_hex.is_land = True
                 if map.accessHex(loc_id) is None:
                     map.addHex( new_hex, loc_id )
                     ids_to_propagate.append( loc_id )
@@ -103,6 +103,9 @@ def generate_ridges(map:Clicker, seed=None, **kwargs)->Clicker:
                 new_hex = Hex( place )
                 new_hex.genkey = '11000000'
                 new_hex._fill = QColor(99,88,60)
+                new_hex.is_land=True
+                new_hex.set_param("altitude_base",0.98)
+                new_hex.geography="ridgeline"
             
 
                 if map.accessHex(target_id) is None:
