@@ -14,7 +14,7 @@ from PyQt5.QtGui import QColor
 import numpy.random as rnd
 from math import pi, acos
 
-def generate_ridges(map:Clicker, seed=None, **kwargs)->Clicker:
+def generate_ridges(map:Clicker, seed=None, **kwargs):
     """
     Generates the ridgelines, can provide an optional seed
     """

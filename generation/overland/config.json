@@ -57,8 +57,8 @@
     "mountains": {
       "values": {
         "avg_range": 10.0,
-        "dimx": 8000,
-        "dimy": 6000,
+        "dimx": 4000,
+        "dimy": 3000,
         "n_peaks": 7,
         "sigma": 35,
         "zones": 3

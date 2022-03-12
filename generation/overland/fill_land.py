@@ -1,13 +1,15 @@
 from numpy import random as rnd
 from math import floor
+import numpy as np
 
 from ..utils import point_is_in, gauss
+from ..utils import perlin, bilinear_interp, get_loc
 from MultiHex2.tools import Clicker
 from MultiHex2.core import hex_to_screen, Hex
 
 from PyQt5.QtGui import QColor
 
-def generate_land(map:Clicker, seed=None, **kwargs)->Clicker:
+def generate_land(map:Clicker, seed=None, **kwargs):
     if seed is not None:
         rnd.seed(seed)
 
@@ -144,3 +146,57 @@ def generate_land(map:Clicker, seed=None, **kwargs)->Clicker:
                     map.addHex( new_hex, neighbor )
                     ids_to_propagate.append( neighbor )
                 ids_to_propagate.pop(0)
+
+    def smooth():
+        for hid in map.hexCatalog.get_all_hids():
+            hex = map.hexCatalog[hid]
+            if hex.geography=="ridge" or hex.geography=="peak" or hex.geography=="mountain":
+                continue
+            cu = hex.params["altitude_base"]
+            total = 1
+            for neigh in hid.neighbors:
+                if neigh in map.hexCatalog:
+                    total+=1
+                    cu += map.hexCatalog[neigh].params["altitude_base"]
+            
+
+            hex.set_param("altitude_base", cu/total)
+
+    smooth()
+    smooth()
+
+    noise = perlin(1000,seed)
+    
+    max_dim = max(map.dimensions)
+    noise_coords = np.linspace(0,max_dim, 1000)
+    print("perlin time")
+    total = len(map.hexCatalog.get_all_hids())
+    count = 0
+    for hid in map.hexCatalog.get_all_hids():
+        count +=1 
+        if count%1000==0:
+            print("{} of {} done".format(count, total))
+        hex = map.hexCatalog[hid]
+        if hex.geography=="ridge" or hex.geography=="peak" or hex.geography=="mountain":
+                continue
+        pos = hex_to_screen(hid)
+
+        x_noise = 1000*int(pos.x()/max_dim)
+        y_noise = 1000*int(pos.y()/max_dim)
+
+        value = noise[x_noise][y_noise]
+
+        new_alt = hex.params["altitude_base"]*(1+value)
+        new_alt = max(min(new_alt, 1), -10)
+        hex.set_param("altitude_base", hex.params["altitude_base"]*(1+value))
+        alt = hex.params["altitude_base"]
+        if (alt)>0:
+            hex.is_land=True
+            hex.geography="land"
+            hex.set_fill(get_color(new_alt))
+        else:
+            hex.is_land=False
+            hex.geography="ocean"
+            hex.set_fill(QColor(111, 134, 168))
+        map.drawHex(hid)
+

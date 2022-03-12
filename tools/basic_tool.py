@@ -52,9 +52,10 @@ class Basic_Tool:
 
     @property 
     def state(self)->int:
-        return 0
+        return self._state
 
     def set_state(self, state:int)->None:
+        print("Setting state {}".format(state))
         self._state = state
 
     def primary_mouse_depressed(self,event):
