@@ -15,6 +15,8 @@ from actions.baseactions import NullAction
 from core.coordinates import hex_to_screen
 
 import json
+from collections import deque
+from math import inf
 
 class Clicker(QGraphicsScene, ActionManager):
     """
@@ -73,6 +75,7 @@ class Clicker(QGraphicsScene, ActionManager):
         json.dump(out_dict, f, indent=4)
         f.close()
         
+        
     def load(self, filename:str):
         """
         clears out the catalogs in the clicker and replaces them with our own 
@@ -111,6 +114,97 @@ class Clicker(QGraphicsScene, ActionManager):
             if event.key()==QtCore.Qt.Key_R:
                 self.redo()
 
+    def _get_cost_between(self, start_id:HexID, end_id:HexID, ignore_water:bool):
+        """
+        Function for calculating the movement cost between neighboring hexes 
+        Used by the get_route_between_hexes functionm
+
+        -> does not account for locations on map. This is just a raw distance, not including getting closer to the final destination 
+        """
+        if start_id not in self.hexCatalog:
+            raise KeyError("start_id {} not in catalog!".format(start_id))
+        if end_id not in self.hexCatalog:
+            return(inf)
+
+        start_neighs = start_id.neighbors
+        if end_id not in start_neighs:
+            return(inf) #you can't teleport. This is an infiinite cost move...
+
+        # We need to be able to have type-specific cost implementations. The Hexmap does not know what kind of map it is
+        # So the Hexes themselves will be responsible for calculating the cost.
+        # Subtypes of Hexes will implement unique cost functions 
+
+        start_hex = self.hexCatalog[start_id]
+        return(start_hex.get_cost( self._hexCatalog[end_id], ignore_water))
+
+    def _get_heuristic(self, start:HexID, end:HexID)->float:
+        return self._hexCatalog[start].get_heuristic(self._hexCatalog[end])
+    
+    def get_route_a_star(self, start_id:HexID, end_id:HexID, ignore_water:bool):
+        """
+        Finds quickest route between two given HexIDs. Both IDs must be on the Hexmap.
+        Always steps closer to the target
+
+        Returns ordered list of HexIDs representing shortest found path between start and end (includes start and end)
+        """
+
+        openSet = deque([start_id])
+        cameFrom = {}
+
+        gScore = {}
+        gScore[start_id] = 0.
+
+        fScore = {}
+        fScore[start_id] = self._get_heuristic(start_id,end_id)
+
+        def reconstruct_path(cameFrom:HexID, current:HexID):
+            total_path = [current]
+            while current in cameFrom.keys():
+                current = cameFrom[current]
+                total_path.append(current)
+            
+            return(total_path[::-1])
+
+        while len(openSet)!=0:
+            # find minimum fScore thing in openSet
+            min_id = None
+            min_cost = None
+            current = openSet[0]
+
+            if current==end_id:
+                return reconstruct_path(cameFrom, current)
+
+            openSet.popleft()
+            for neighbor in current.neighbors:
+                try:
+                    tentative_gScore = gScore[current] + self._get_cost_between(current, neighbor, ignore_water)
+                except KeyError:
+                    tentative_gScore = inf
+
+                if neighbor in gScore:
+                    neigh = gScore[neighbor]
+                else:
+                    neigh = inf
+
+                if tentative_gScore < neigh:
+                    cameFrom[neighbor] = current
+                    gScore[neighbor] = tentative_gScore
+                    fScore[neighbor] = gScore[neighbor] + self._get_heuristic(neighbor,end_id)
+                    if neighbor not in openSet:
+
+                        if len(openSet)==0:
+                            openSet.appendleft(neighbor)
+                        else:
+                            iter = 0
+                            while fScore[neighbor]>fScore[openSet[iter]]:
+                                iter += 1
+                                if iter==len(openSet):
+                                    break
+
+                            openSet.insert(iter,neighbor)
+        return([])
+
+
     @property
     def hexCatalog(self):
         return self._hexCatalog
@@ -140,6 +234,9 @@ class Clicker(QGraphicsScene, ActionManager):
             self._secondary_held = True
 
     def mouseMoveEvent(self, event:QGraphicsSceneMouseEvent) -> None:
+        self._tool.mouse_moved(event)
+        event.accept()
+
         if self._primary_held:
             action = self._tool.primary_mouse_held(event)
         elif self._secondary_held:

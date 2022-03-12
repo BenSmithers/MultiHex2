@@ -27,12 +27,17 @@ class Hex(QPolygonF):
         # store relevant hex parameters. These will be set by the brushes, adjusters, generators, etc. 
         # used to store any special parameters 
         self._params = {}
+        self._center = center
         self._fill = QColor(255,255,255)
         self.x = center.x()
         self.y = center.y()
         self.genkey = '0000'
         self.geography = ""
         self.is_land = False
+
+    @property 
+    def center(self):
+        return self._center
 
     @property
     def params(self):
@@ -48,6 +53,42 @@ class Hex(QPolygonF):
     def set_param(self, param:str, value:float):
         self._params[param] = value
     
+    def get_cost(self, other:'Hex', ignore_water=False):
+        """
+        Gets the cost of movement between two hexes. Used for routing
+        """
+        # xor operator
+        # both should be land OR both should be water
+        if (self.is_land ^ other.is_land) and not ignore_water:
+            water_scale = 5.
+        else:
+            water_scale = 1.
+
+
+        # prefer flat ground!
+        lateral_dist=(self.center - other.center)
+        lateral_dist = lateral_dist.x()*lateral_dist.x() + lateral_dist.y()*lateral_dist.y()
+
+        mtn_scale =1.0
+        if other.geography=="peak" or other.geography=="ridge":
+            mtn_scale=100.0
+        elif other.geography=="mountain":
+            mtn_scale=50.0
+        
+
+        alt_dif = abs(10*(other.params["altitude_base"] - self.params["altitude_base"])) if self.is_land else 0.
+
+        return(mtn_scale*water_scale*(0.1*lateral_dist + DRAWSIZE*RTHREE*alt_dif))
+
+    def get_heuristic(self, other:'Hex'):
+        """
+        Estimates the total cost of going from this hex to the other one
+        """
+        lateral_dist = (self.center - other.center)
+        lateral_dist= lateral_dist.x()*lateral_dist.x() + lateral_dist.y()*lateral_dist.y()
+        alt_dif = abs(2*(other.params["altitude_base"] - self.params["altitude_base"]))
+        return(0.1*lateral_dist + DRAWSIZE*RTHREE*alt_dif)
+
     def pack(self)->dict:
         """
         Takes the hex object and save the essentials such that this can be reconstructed later. 

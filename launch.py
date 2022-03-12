@@ -8,6 +8,7 @@ from MultiHex2.guis.main_gui import main_gui
 from MultiHex2.tools import Clicker
 from MultiHex2.tools.hextools import HexBrush,HexSelect
 from MultiHex2.tools.regiontools import RegionAdd
+from MultiHex2.tools.route_test_tool import RouteTester
 from MultiHex2.tools import Basic_Tool
 from MultiHex2.generation.overland import fullsim
 
@@ -30,8 +31,9 @@ class main_window(QMainWindow):
 
         self.scene = Clicker( self.ui.graphicsView, self )
         # Allow the graphics view to follow the mouse when it isn't being clicked, and associate the clicker control with the ui 
-        self.ui.graphicsView.setMouseTracking(True)
         self.ui.graphicsView.setScene( self.scene )
+        self.ui.graphicsView.setMouseTracking(True)
+
         self.ui.actionOpen.triggered.connect(self.load)
         self.ui.actionSave_As.triggered.connect(self.saveAs)
         self.ui.actionSave.triggered.connect(self.save)
@@ -42,6 +44,7 @@ class main_window(QMainWindow):
         self.add_tool("hex_brush", HexBrush)
         self.add_tool("hex_select", HexSelect)
         self.add_tool("region_add", RegionAdd)
+        self.add_tool("route_tester", RouteTester)
 
     def new(self):
         fullsim(self.scene)
