@@ -43,6 +43,9 @@ class HexID:
             return False
         else:
             return (self.xid == other.xid) and (self.yid==other.yid)
+    def __add__(self, other:'HexID'):
+        return HexID(self.xid + other.xid, self.yid + other.yid)
+    
     @property
     def neighbors(self):
         nb = [
@@ -50,6 +53,12 @@ class HexID:
             HexID(self.xid-1, self.yid),HexID(self.xid-1, self.yid+1), HexID(self.xid, self.yid+1)
         ]
         return nb
+
+    def in_range(self, dist:int):
+        results = []
+        for i in range(-dist, dist+1):
+            for j in range(max(-dist, -i-dist+1), min(dist, -i+dist+1)):
+                results.append(self + HexID(i,j))
     def __repr__(self) -> str:
         return "{}_{}_{}".format(self._xid, self._yid, self._zid)
 

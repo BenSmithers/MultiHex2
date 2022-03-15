@@ -17,6 +17,9 @@ from core.coordinates import hex_to_screen
 import json
 from collections import deque
 from math import inf
+import numpy as np
+
+DEBUG = True
 
 class Clicker(QGraphicsScene, ActionManager):
     """
@@ -52,6 +55,8 @@ class Clicker(QGraphicsScene, ActionManager):
         self._brush = QtGui.QBrush() #FILL EFFECTS
 
         self.dimensions = (4000,3000)
+
+        self._debug_wind = {}
             
         
     def save(self, filename:str):
@@ -318,6 +323,17 @@ class Clicker(QGraphicsScene, ActionManager):
         self._pen.setColor(QtGui.QColor(240,240,240))
         sid = self.addPolygon(hexobj, self._pen, self._brush)
         sid.setZValue(0)
+
+        if DEBUG:
+            if coords in self._debug_wind:
+                self.removeItem(self._debug_wind[coords])
+                del self._debug_wind[coords]
+            
+            loc = hex_to_screen(coords)
+            self._pen.setStyle(1)
+            self._debug_wind[coords] = self.addLine(loc.x(), loc.y(), loc.x()+0.5*hexobj.wind[0], loc.y()+0.5*hexobj.wind[1], self._pen)
+            self._debug_wind[coords].setZValue(5)
+
         return sid
 
 

@@ -12,6 +12,10 @@ from MultiHex2.core import DRAWSIZE
 from PyQt5.QtGui import QColor
 from PyQt5.QtCore import QPointF
 
+from math import sqrt
+
+RTHREE = sqrt(3)
+
 def get_step(start:HexID, end:HexID)->np.ndarray:
     """
     Returns a numpy array representing the vector pointing from `start` hex to `end` hex 
@@ -19,7 +23,7 @@ def get_step(start:HexID, end:HexID)->np.ndarray:
     p1 = hex_to_screen(start)
     p2 = hex_to_screen(end)
     diff = p2-p1
-    return np.array(diff.x(), diff.y())
+    return np.array([diff.x(), diff.y()])
 
 def simulate_wind(map:Clicker, seed=None, **kwargs):
     """
@@ -30,11 +34,13 @@ def simulate_wind(map:Clicker, seed=None, **kwargs):
         rnd.seed(seed)
 
     dimx, dimy = map.dimensions
+    print("{} vs {}".format(dimx, dimy))
 
-    stepsize = sqrt(3)*DRAWSIZE
+    stepsize = RTHREE*DRAWSIZE
     corner = 0.5*stepsize
 
     horiz_points = np.arange(corner, dimy, stepsize)
+    print("Doing {} streamers".format(len(horiz_points)))
     for latitude in horiz_points:
         left = screen_to_hex(QPointF(DRAWSIZE, latitude))        
         right = screen_to_hex(QPointF(dimx, latitude-1))
@@ -44,7 +50,22 @@ def simulate_wind(map:Clicker, seed=None, **kwargs):
                 wind = get_step(route[i-1], route[i])
             else:
                 wind = get_step(route[i], route[i+1])
-            map.accessHex(route[i]).wind += wind
+            
+            hexobj = map.accessHex(route[i])
+            hexobj.wind = hexobj.wind + wind
+            map.addHex(hexobj, route[i])
+
+
+def simulate_clouds(map:Clicker, seed=None, **kwargs):
+    """
+
+        cloud_survival_len = 8 - number of hexes a cloud should be able to survive over land 
+        cloud_regen_rate = 1 - how quickly a cloud 
+    """
+    if seed is not None:
+        rnd.seed(seed)
+
+
 
 
 def erode_land(map:Clicker, seed=None, **kwargs):

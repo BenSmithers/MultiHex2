@@ -15,7 +15,15 @@ from MultiHex2.generation.overland import fullsim
 import os
 import sys
 
-SAVEDIR = os.path.join(os.environ["HOME"], ".local", "MultiHex")
+if sys.platform=="linux":
+    SAVEDIR = os.path.join(os.environ["HOME"], ".local", "MultiHex")
+elif sys.platform=="darwin":
+    raise NotImplementedError()
+elif sys.platform=="win32":
+    SAVEDIR = os.path.join(os.environ["AppData"], "MultiHex")
+else:
+    raise NotImplementedError("Unrecognized os {}".format(sys.platform))
+
 if not os.path.exists(SAVEDIR):
     os.mkdir(SAVEDIR)
 
