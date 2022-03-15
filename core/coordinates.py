@@ -50,6 +50,9 @@ class HexID:
             HexID(self.xid-1, self.yid),HexID(self.xid-1, self.yid+1), HexID(self.xid, self.yid+1)
         ]
         return nb
+    def __repr__(self) -> str:
+        return "{}_{}_{}".format(self._xid, self._yid, self._zid)
+
         # -30 degrees, increment by 60 with each
 
 M = (3.0 / 2.0, 0.0, RTHREE/2.0, RTHREE, # F0-F3

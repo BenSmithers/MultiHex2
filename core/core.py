@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QGraphicsItem
 
 from core.coordinates import HexID, hex_to_screen, DRAWSIZE
 
+import numpy as np
 from numpy.random import randint
 
 RTHREE = sqrt(3)
@@ -27,17 +28,17 @@ class Hex(QPolygonF):
         # store relevant hex parameters. These will be set by the brushes, adjusters, generators, etc. 
         # used to store any special parameters 
         self._params = {}
-        self._center = center
         self._fill = QColor(255,255,255)
         self.x = center.x()
         self.y = center.y()
         self.genkey = '0000'
         self.geography = ""
         self.is_land = False
+        self.wind = np.zeros(2)
 
     @property 
     def center(self):
-        return self._center
+        return QPointF(self.x, self.y)
 
     @property
     def params(self):
@@ -100,7 +101,8 @@ class Hex(QPolygonF):
             "params":self.params,
             "x":self.x,
             "Y":self.y,
-            "geo":self.geography
+            "geo":self.geography,
+            "wind":list(self.wind)
         }
         return vals
     @classmethod
@@ -112,6 +114,7 @@ class Hex(QPolygonF):
         new_hx._fill = QColor(obj["red"], obj["green"], obj["blue"])
         new_hx._params = obj["params"]
         new_hx.geography=obj["geo"]
+        new_hx.wind = np.array(obj["wind"])
         return new_hx
 
 class Region(QPolygonF):
