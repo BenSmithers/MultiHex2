@@ -1,6 +1,6 @@
 from .ridges import generate_ridges
 from .fill_land import generate_land
-from .sim_weather import simulate_wind
+from .sim_weather import simulate_wind,simulate_clouds
 from MultiHex2.tools import Clicker
 
 import json
@@ -17,3 +17,4 @@ def fullsim(map:Clicker, preset="continental"):
     generate_ridges(map, **config["mountains"]["values"])
     generate_land(map, **config["land"]["values"])
     simulate_wind(map, **config)
+    simulate_clouds(map, **config)
