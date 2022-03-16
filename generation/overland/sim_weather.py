@@ -1,18 +1,16 @@
 
 from numpy import random as rnd
-from math import sqrt
+from math import sqrt, cos, sin
 import numpy as np
 
-from ..utils import point_is_in, gauss
-from ..utils import perlin, bilinear_interp, get_loc
 from MultiHex2.tools import Clicker
-from MultiHex2.core import Hex, screen_to_hex, HexID, hex_to_screen
+from MultiHex2.core import screen_to_hex, HexID, hex_to_screen
 from MultiHex2.core import DRAWSIZE
 
 from PyQt5.QtGui import QColor
 from PyQt5.QtCore import QPointF
 
-from math import sqrt
+from math import sqrt, pi
 
 RTHREE = sqrt(3)
 
@@ -48,7 +46,11 @@ def simulate_wind(map:Clicker, seed=None, **kwargs):
         right = screen_to_hex(QPointF(dimx-DRAWSIZE, latitude))
         if not right in map.hexCatalog:
             raise KeyError("Something's wrong with the config, {} not in catalog".format(right))
-        route = map.get_route_a_star(left, right, True)
+
+        if latitude<0.5*dimy:
+            route = map.get_route_a_star(left, right, True)
+        else:
+            route = map.get_route_a_star(right, left, True)
         for i in range(len(route)):
             if i==len(route)-1:
                 wind = get_step(route[i-1], route[i])
@@ -64,6 +66,9 @@ def simulate_wind(map:Clicker, seed=None, **kwargs):
             hexobj = map.accessHex(route[i])
             hexobj.wind = hexobj.wind + wind
             map.addHex(hexobj, route[i])
+
+        horiz_points = np.arange(corner, dimy*0.5, stepsize)
+
 
 def get_color(rain):
     top = (50, 168, 82)
@@ -95,13 +100,17 @@ def simulate_clouds(map:Clicker, seed=None, **kwargs):
     horiz_points = np.arange(corner, dimy, stepsize)
     print("Doing {} streamers".format(len(horiz_points)))
     for latitude in horiz_points:
-        start = screen_to_hex(QPointF(DRAWSIZE, latitude))
-        reservoir = 16.0
+        if latitude<0.5*dimy:
+            start = screen_to_hex(QPointF(DRAWSIZE, latitude))
+        else:
+            start = screen_to_hex(QPointF(dimx - DRAWSIZE, latitude))
+        
+        reservoir = 20.0
         regen_rate = 1.0
 
         while True:
             # get shadow
-            if reservoir>8:
+            if reservoir>=8:
                 shadow = start.in_range(2)
             elif reservoir>3:
                 shadow = start.neighbors
@@ -118,15 +127,22 @@ def simulate_clouds(map:Clicker, seed=None, **kwargs):
             
             step = c2c*under.wind/(np.sqrt(np.sum(under.wind**2)))
             if np.isnan(step).any():
-                break
+                step = c2c*np.array([1,1])
+                rot_angle = rnd.rand()*2*pi
+                factor = 1.0
+            else:
+                # random rotation 0 +/- 15 degrees
+                rot_angle = rnd.randn()*45*pi/180
+            step[0] =  cos(rot_angle)*step[0]  + sin(rot_angle)*step[1]
+            step[1] =  -sin(rot_angle)*step[0] + cos(rot_angle)*step[1]
 
             step = QPointF(step[0], step[1])
             
-            nextone = screen_to_hex( hex_to_screen(start)+step)
+            nextone = screen_to_hex(hex_to_screen(start)+step)
 
 
             scale =1.0
-            if nextone is not None:
+            if map.accessHex(nextone) is not None:
                 if under.is_land:
                     adiff = map.accessHex(nextone).params["altitude_base"] - under.params["altitude_base"]
                     if adiff>0.5:
@@ -153,9 +169,9 @@ def simulate_clouds(map:Clicker, seed=None, **kwargs):
                 reservoir-=(1/factor)/scale
             
             if not under.is_land:
-                reservoir+=regen_rate/factor
-                if reservoir<16:
-                    reservoir+=regen_rate/factor
+                reservoir+=regen_rate/(factor)
+                if reservoir<20:
+                    reservoir+=regen_rate/(factor)
 
             
             start = nextone
