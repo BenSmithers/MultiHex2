@@ -42,8 +42,12 @@ def simulate_wind(map:Clicker, seed=None, **kwargs):
     horiz_points = np.arange(corner, dimy, stepsize)
     print("Doing {} streamers".format(len(horiz_points)))
     for latitude in horiz_points:
-        left = screen_to_hex(QPointF(DRAWSIZE, latitude))        
-        right = screen_to_hex(QPointF(dimx, latitude-1))
+        left = screen_to_hex(QPointF(DRAWSIZE, latitude))
+        if not left in map.hexCatalog:
+            raise KeyError("Something's wrong with the config, {} not in catalog".format(left))
+        right = screen_to_hex(QPointF(dimx-DRAWSIZE, latitude))
+        if not right in map.hexCatalog:
+            raise KeyError("Something's wrong with the config, {} not in catalog".format(right))
         route = map.get_route_a_star(left, right, True)
         for i in range(len(route)):
             if i==len(route)-1:
@@ -55,6 +59,15 @@ def simulate_wind(map:Clicker, seed=None, **kwargs):
             hexobj.wind = hexobj.wind + wind
             map.addHex(hexobj, route[i])
 
+def get_color(rain):
+    top = (50, 168, 82)
+    bot = (181, 196, 118)
+
+    return QColor(
+        max(bot[0] + (top[0]-bot[0])*rain, 1),
+        max(bot[1] + (top[1]-bot[1])*rain,1),
+        max(bot[2] + (top[2]-bot[2])*rain,1)
+    )
 
 def simulate_clouds(map:Clicker, seed=None, **kwargs):
     """
@@ -65,8 +78,63 @@ def simulate_clouds(map:Clicker, seed=None, **kwargs):
     if seed is not None:
         rnd.seed(seed)
 
+    dimx, dimy = map.dimensions
+    print("{} vs {}".format(dimx, dimy))
+
+    stepsize = RTHREE*DRAWSIZE
+    corner = 0.5*stepsize
+    
+    c2c = 1.7320*DRAWSIZE
+
+    horiz_points = np.arange(corner, dimy, stepsize)
+    print("Doing {} streamers".format(len(horiz_points)))
+    for latitude in horiz_points:
+        start = screen_to_hex(QPointF(DRAWSIZE, latitude))
+        reservoir = 16.0
+        regen_rate = 1.0
+
+        while True:
+            # get shadow
+            if reservoir>8:
+                shadow = start.in_range(2)
+            elif reservoir>3:
+                shadow = start.in_range(1)
+            elif reservoir>0:
+                shadow = [start]
+            
+            
+            under = map.accessHex(start)
+            if under is None:
+                break
+            mag = np.sqrt(np.sum(under.wind**2))
+
+            factor = mag/c2c
+
+            if reservoir>0:
+                for each in shadow:
+                    dishex = map.accessHex(each)
+                    if dishex is not None:
+                        dishex.set_param("rainfall_base",dishex.params["rainfall_base"]+0.05*factor)
+                        if dishex.is_land:
+                            if not (dishex.geography=="ridge" or dishex.geography=="peak" or dishex.geography=="mountain"):
+                                dishex.set_fill(get_color(dishex.params["rainfall_base"]))
+
+                reservoir-=(1/factor)
+            
+            if not under.is_land:
+                reservoir+=regen_rate/factor
+
+            step = c2c*under.wind/(np.sqrt(np.sum(under.wind**2)))
+            if np.isnan(step).any():
+                break
+
+            step = QPointF(step[0], step[1])
 
 
+            start = screen_to_hex( hex_to_screen(start)+step)
+    for id in map.hexCatalog.get_all_hids():
+        map.drawHex(id)
+            
 
 def erode_land(map:Clicker, seed=None, **kwargs):
     """

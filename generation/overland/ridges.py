@@ -39,7 +39,7 @@ def generate_ridges(map:Clicker, seed=None, **kwargs):
     def make_continent():
         print("making continent")
         ids_to_propagate = []
-        x_center = 0.80*rnd.random()*dimensions[0] + 0.10*dimensions[0]
+        x_center = 0.60*rnd.random()*dimensions[0] + 0.20*dimensions[0]
         y_cos  = 1.8*rnd.random() - 0.9
         y_center = acos( y_cos )*dimensions[1]/( pi )
         for j in range(n_peaks):
@@ -56,6 +56,7 @@ def generate_ridges(map:Clicker, seed=None, **kwargs):
                 new_hex.genkey = '11000000'
                 new_hex._fill = QColor(99,88,60)
                 new_hex.set_param("altitude_base",1.0)
+                new_hex.set_param("rainfall_base",0.0)
                 new_hex.geography="peak"
                 new_hex.is_land = True
                 if map.accessHex(loc_id) is None:
@@ -105,6 +106,7 @@ def generate_ridges(map:Clicker, seed=None, **kwargs):
                 new_hex._fill = QColor(99,88,60)
                 new_hex.is_land=True
                 new_hex.set_param("altitude_base",0.98)
+                new_hex.set_param("rainfall_base",0.0)
                 new_hex.geography="ridgeline"
             
 

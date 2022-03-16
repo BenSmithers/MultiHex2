@@ -75,6 +75,7 @@ def generate_land(map:Clicker, seed=None, **kwargs):
                 new_hex = Hex(center)
                 new_hex.genkey = '01000000'
                 new_hex.set_param("altitude_base", 1.0)
+                new_hex.set_param("rainfall_base",0.0)
                 new_hex.is_land=True
                 new_hex.geography="mountain"
                 new_hex.set_fill(QColor(97, 78, 46))
@@ -143,6 +144,7 @@ def generate_land(map:Clicker, seed=None, **kwargs):
                         new_hex.set_fill(QColor(111, 134, 168))
 
                     new_hex.set_param("altitude_base", new_alt)
+                    new_hex.set_param("rainfall_base",0.0)
                     map.addHex( new_hex, neighbor )
                     ids_to_propagate.append( neighbor )
                 ids_to_propagate.pop(0)
@@ -184,7 +186,7 @@ def generate_land(map:Clicker, seed=None, **kwargs):
         x_noise = 1000*int(pos.x()/max_dim)
         y_noise = 1000*int(pos.y()/max_dim)
 
-        value = noise[x_noise][y_noise]
+        value = noise[x_noise][y_noise]*0.1
 
         new_alt = hex.params["altitude_base"]*(1+value)
         new_alt = max(min(new_alt, 1), -10)
