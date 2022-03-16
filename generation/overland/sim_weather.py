@@ -54,6 +54,12 @@ def simulate_wind(map:Clicker, seed=None, **kwargs):
                 wind = get_step(route[i-1], route[i])
             else:
                 wind = get_step(route[i], route[i+1])
+           
+            if latitude > 0.5*dimx:
+                bump = 0.25*DRAWSIZE
+            else:
+                bump = -0.25*DRAWSIZE
+            wind[1]+=bump
             
             hexobj = map.accessHex(route[i])
             hexobj.wind = hexobj.wind + wind
@@ -98,7 +104,7 @@ def simulate_clouds(map:Clicker, seed=None, **kwargs):
             if reservoir>8:
                 shadow = start.in_range(2)
             elif reservoir>3:
-                shadow = start.in_range(1)
+                shadow = start.neighbors
             elif reservoir>0:
                 shadow = [start]
             
@@ -109,29 +115,50 @@ def simulate_clouds(map:Clicker, seed=None, **kwargs):
             mag = np.sqrt(np.sum(under.wind**2))
 
             factor = mag/c2c
-
-            if reservoir>0:
-                for each in shadow:
-                    dishex = map.accessHex(each)
-                    if dishex is not None:
-                        dishex.set_param("rainfall_base",dishex.params["rainfall_base"]+0.05*factor)
-                        if dishex.is_land:
-                            if not (dishex.geography=="ridge" or dishex.geography=="peak" or dishex.geography=="mountain"):
-                                dishex.set_fill(get_color(dishex.params["rainfall_base"]))
-
-                reservoir-=(1/factor)
             
-            if not under.is_land:
-                reservoir+=regen_rate/factor
-
             step = c2c*under.wind/(np.sqrt(np.sum(under.wind**2)))
             if np.isnan(step).any():
                 break
 
             step = QPointF(step[0], step[1])
+            
+            nextone = screen_to_hex( hex_to_screen(start)+step)
 
 
-            start = screen_to_hex( hex_to_screen(start)+step)
+            scale =1.0
+            if nextone is not None:
+                if under.is_land:
+                    adiff = map.accessHex(nextone).params["altitude_base"] - under.params["altitude_base"]
+                    if adiff>0.5:
+                        scale = 5.0
+                    elif adiff>0.1:
+                        scale = 2.0
+                    elif adiff>-0.05:
+                        scale = 1.0
+                    elif adiff >-0.2:
+                        scale=0.25
+                    else:
+                        scale=0.05
+
+            if reservoir>0:
+                for each in shadow:
+                    dishex = map.accessHex(each)
+
+                    if dishex is not None:
+                        dishex.set_param("rainfall_base",dishex.params["rainfall_base"]+0.05*factor*scale)
+                        if dishex.is_land:
+                            if not (dishex.geography=="ridge" or dishex.geography=="peak" or dishex.geography=="mountain"):
+                                dishex.set_fill(get_color(dishex.params["rainfall_base"]))
+
+                reservoir-=(1/factor)/scale
+            
+            if not under.is_land:
+                reservoir+=regen_rate/factor
+                if reservoir<16:
+                    reservoir+=regen_rate/factor
+
+            
+            start = nextone
     for id in map.hexCatalog.get_all_hids():
         map.drawHex(id)
             

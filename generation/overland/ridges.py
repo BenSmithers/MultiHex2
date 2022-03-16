@@ -39,12 +39,12 @@ def generate_ridges(map:Clicker, seed=None, **kwargs):
     def make_continent():
         print("making continent")
         ids_to_propagate = []
-        x_center = 0.60*rnd.random()*dimensions[0] + 0.20*dimensions[0]
-        y_cos  = 1.8*rnd.random() - 0.9
+        x_center = 0.80*rnd.random()*dimensions[0] + 0.10*dimensions[0]
+        y_cos  = 1.6*rnd.random() - 0.8
         y_center = acos( y_cos )*dimensions[1]/( pi )
         for j in range(n_peaks):
             while True:
-                place = QPointF( gauss( x_center, 300), gauss( y_center, 300) )
+                place = QPointF( gauss( x_center, 200), gauss( y_center, 200) )
                 if not point_is_in(place, dimensions):
                     print("Failed at {} {}".format(place.x(), place.y()))
                     continue 
