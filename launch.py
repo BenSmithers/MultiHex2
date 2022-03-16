@@ -82,7 +82,6 @@ class main_window(QMainWindow):
 
     def keyPressEvent(self, a0: QtGui.QKeyEvent) -> None:
         if a0.key()==Qt.Key_Escape:
-            print("escape?")
             self.select_tool("basic")
 
     def add_tool(self,tool_name:str, tool:Basic_Tool):
