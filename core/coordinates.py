@@ -57,8 +57,9 @@ class HexID:
     def in_range(self, dist:int):
         results = []
         for i in range(-dist, dist+1):
-            for j in range(max(-dist, -i-dist+1), min(dist, -i+dist+1)):
+            for j in range(max(-dist, -i-dist), min(dist, -i+dist)+1):
                 results.append(self + HexID(i,j))
+        return results
     def __repr__(self) -> str:
         return "{}_{}_{}".format(self._xid, self._yid, self._zid)
 
