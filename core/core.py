@@ -77,7 +77,9 @@ class Hex(QPolygonF):
             mtn_scale=50.0
         
 
-        alt_dif = abs(10*(other.params["altitude_base"] - self.params["altitude_base"])) if self.is_land else 0.
+        alt_dif = abs(10*(other.params["altitude_base"] - self.params["altitude_base"])) 
+        if (not self.is_land) or (not other.is_land):
+            alt_dif = 0.0
 
         return(mtn_scale*water_scale*(0.1*lateral_dist + DRAWSIZE*RTHREE*alt_dif))
 

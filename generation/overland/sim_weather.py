@@ -105,7 +105,7 @@ def simulate_clouds(map:Clicker, seed=None, **kwargs):
         else:
             start = screen_to_hex(QPointF(dimx - DRAWSIZE, latitude))
         
-        reservoir = 20.0
+        reservoir = 30.0
         regen_rate = 1.0
 
         while True:
@@ -146,9 +146,9 @@ def simulate_clouds(map:Clicker, seed=None, **kwargs):
                 if under.is_land:
                     adiff = map.accessHex(nextone).params["altitude_base"] - under.params["altitude_base"]
                     if adiff>0.5:
-                        scale = 5.0
-                    elif adiff>0.1:
                         scale = 2.0
+                    elif adiff>0.1:
+                        scale = 1.5
                     elif adiff>-0.05:
                         scale = 1.0
                     elif adiff >-0.2:
