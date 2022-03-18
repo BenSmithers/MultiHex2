@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QGraphicsItem
 
 from MultiHex2.core.core import DRAWSIZE
 from MultiHex2.core import Catalog, RegionCatalog
-from MultiHex2.core import Hex, HexID, Region
+from MultiHex2.core import Hex, HexID, Region, Entity
 from MultiHex2.core import screen_to_hex
 from MultiHex2.actions import ActionManager
 from MultiHex2.tools.basic_tool import Basic_Tool
@@ -209,6 +209,14 @@ class Clicker(QGraphicsScene, ActionManager):
                             openSet.insert(iter,neighbor)
         return([])
 
+    def accessEid(self,eID)->Entity:
+        return Entity()
+
+    def eIDs_at_hex(self, coords:HexID):
+        """
+        returns eIDs at this HexID
+        """
+        return [0,1,2]
 
     @property
     def hexCatalog(self):

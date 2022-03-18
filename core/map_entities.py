@@ -6,6 +6,8 @@ from math import sqrt
 
 from copy import deepcopy
 
+from actions.baseactions import NullAction
+
 ARTDIR = os.path.join( os.path.dirname(__file__),'..', 'assets')
 
 
@@ -41,13 +43,13 @@ class GenericTab(QtWidgets.QWidget):
         if not isinstance(config_entity, Entity):
             raise TypeError("Expected {}, got {}".format(Entity, type(config_entity)))
 
-    def set_configuration(self, entity:Entity)->Entity:
+    def get_apply_action(self, entity:Entity)->NullAction:
         """
-        Applies widget configuration to given entity
+        Gets the 
         """
         return(entity)
 
-    def get_configuration(self, entity:Entity):
+    def configure_with(self, entity:Entity):
         """
         Configures the widget according to the given Entity parameters
         """
@@ -129,20 +131,20 @@ class EntityWidget(GenericTab):
         self.icon_combo.currentIndexChanged.connect(self.combo_change)
 
         if config_entity is not None:
-            self.get_configuration(config_entity)
+            self.configure_with(config_entity)
 
         #self.left_pane.setWidget(line, QtWidgets.QFormLayout.LabelRole, self.speed_lbl) #FieldRole SpanningRole
 
     def combo_change(self):
         self.picture_box.setPixmap(QtGui.QPixmap(os.path.join(self.ARTDIR,self.pictures[self.icon_combo.currentIndex()])).scaledToWidth(400))
 
-    def set_configuration(self, entity):
+    def get_apply_action(self, entity):
         """
         Takes an entity and applies the GUIs current configuration to it
 
         returns the modified entity 
         """
-        GenericTab.set_configuration(self, entity)
+        GenericTab.get_apply_action(self, entity)
 
         entity.name = self.entity_name.text()
         entity.description = self.description_edit.toPlainText()
@@ -151,13 +153,13 @@ class EntityWidget(GenericTab):
 
 
 
-    def get_configuration(self, entity):
+    def configure_with(self, entity):
         """
         Gets the configuration of the entity provided, and uses that to configure the gui
 
         returns void
         """
-        GenericTab.get_configuration(self, entity)
+        GenericTab.configure_with(self, entity)
 
         self.entity_name.setText(entity.name)
         self.description_edit.setText(entity.description)
@@ -201,10 +203,10 @@ class GovernmentWidget(GenericTab):
         self.spiritbar.setObjectName("spiritbar")
         self.formlayout.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.spiritbar)
 
-        self.get_configuration(config_entity)
+        self.configure_with(config_entity)
 
-    def set_configuration(self, entity):
-        GenericTab.set_configuration(self, entity)
+    def get_apply_action(self, entity):
+        GenericTab.get_apply_action(self, entity)
         if not isinstance(entity, Government):
             raise TypeError("Expected {}, got {}".format(Government, type(entity)))
 
@@ -213,8 +215,8 @@ class GovernmentWidget(GenericTab):
         entity.set_order(self.orderbar.value()/100.)
         return(entity)
 
-    def get_configuration(self, entity):
-        GenericTab.get_configuration(self, entity)
+    def configure_with(self, entity):
+        GenericTab.configure_with(self, entity)
         if not isinstance(entity, Government):
             raise TypeError("Expected {}, got {}".format(Government, type(entity)))
 
@@ -326,7 +328,7 @@ class SettlementWidget(GenericTab):
         self._entity = None
         self._previous_index = -1
 
-        self.get_configuration(config_entity)
+        self.configure_with(config_entity)
 
     def new_ward(self):
         new_ward = Settlement("New Ward", is_ward=True)
@@ -345,7 +347,7 @@ class SettlementWidget(GenericTab):
 
         if self._previous_index!=-1:
             if self.ward_widget is not None:
-                self.ward_widget.set_configuration( self._entity.wards[self._previous_index])
+                self.ward_widget.get_apply_action( self._entity.wards[self._previous_index])
                 self.wardCombo.setItemText(self._previous_index, self.ward_widget.nameedit.text())
 
                 # update the population and wealth
@@ -363,8 +365,8 @@ class SettlementWidget(GenericTab):
         self.totalWealthlbl.setText("Total Wealth:    {}".format(self._entity.wealth))
         self.totalPoplbl.setText("Total Population    {}".format(self._entity.wealth))
 
-    def set_configuration(self, entity):
-        GenericTab.set_configuration(self, entity)
+    def get_apply_action(self, entity):
+        GenericTab.get_apply_action(self, entity)
         if not isinstance(entity, Settlement):
             raise TypeError("Expected {}, got {}".format(Settlement, type(entity)))
 
@@ -374,8 +376,8 @@ class SettlementWidget(GenericTab):
 
         return(entity)
 
-    def get_configuration(self, entity):
-        GenericTab.get_configuration(self, entity)
+    def configure_with(self, entity):
+        GenericTab.configure_with(self, entity)
         if not isinstance(entity, Settlement):
             raise TypeError("Expected {}, got {}".format(Settlement, type(entity)))
         self._entity = entity
@@ -731,4 +733,4 @@ class MobileWidget(EntityWidget):
     def __init__(self,parent=None, config_entity=None):
         EntityWidget.__init__(self,parent)
     
-        self.get_configuration(config_entity)
+        self.configure_with(config_entity)
