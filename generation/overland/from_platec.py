@@ -10,10 +10,13 @@ from PyQt5.QtGui import QColor
 
 import numpy.random as rnd
 import numpy as np
-from math import pi, acos
+from math import pi, acos, exp
 
 
 import platec
+
+def sigmoid(val):
+    return 1./(1+exp(-val))
 
 def get_color(alt):
         top = (138, 123, 63)
@@ -64,10 +67,8 @@ def gen_land(map:Clicker, seed=None, **kwargs):
                 new_hex = Hex(hex_to_screen(loc))
 
                 new_hex.is_land=heightmap[i][j]>sea_level  
-                if new_hex.is_land:
-                    new_hex.set_param("altitude_base", (heightmap[i][j] - sea_level)/(peak - sea_level) )
-                else:
-                    new_hex.set_param("altitude_base", -(sea_level - heightmap[i][j])/(sea_level - trough) )
+
+                new_hex.set_param("altitude_base", 2*sigmoid(heightmap[i][j] - sea_level))
                 new_hex.set_param("rainfall_base",0.0)
 
                 if heightmap[i][j]>16:
