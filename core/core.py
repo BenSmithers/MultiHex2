@@ -34,6 +34,8 @@ class Hex(QPolygonF):
         self.genkey = '0000'
         self.geography = ""
         self.is_land = False
+        self._flat = False
+        self._color_scale_param = "altitude_base"
         self.wind = np.zeros(2)
 
     @property 
@@ -45,7 +47,13 @@ class Hex(QPolygonF):
         return self._params
     @property
     def fill(self)->QColor:
-        return self._fill
+        if self._flat:
+            return self._fill
+        else:
+            return QColor(min( 255, max( 0, self._fill.red()*( 1.0 + 0.2*self.params[self._color_scale_param]-0.1))),
+                        min( 255, max( 0, self._fill.green()*( 1.0 + 0.2*self.params[self._color_scale_param]-0.1))),
+                        min( 255, max( 0, self._fill.blue()*( 1.0 + 0.2*self.params[self._color_scale_param]-0.1))))
+
 
     def set_fill(self, fill:QColor):
         self._fill = fill

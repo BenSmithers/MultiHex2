@@ -73,13 +73,13 @@ def gen_land(map:Clicker, seed=None, **kwargs):
                 if heightmap[i][j]>16:
                     new_hex.geography="ridge"
                     new_hex.set_fill(QColor(99,88,60))
-                elif heightmap[i][j]>8:
+                elif heightmap[i][j]>3.2:
                     new_hex.geography="mountain"
                     new_hex.set_fill(QColor(97, 78, 46))
                 else:
                     if new_hex.is_land:
-                        new_hex.set_fill(get_color(new_hex.params["altitude_base"]))
+                        new_hex.set_fill(QColor(153, 171, 104))
                     else:
-                        new_hex.set_fill(QColor(111, 134, 168))
+                        new_hex.set_fill(QColor(135, 208, 232))
 
                 map.addHex(new_hex, loc)

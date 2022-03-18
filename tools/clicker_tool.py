@@ -19,7 +19,7 @@ from collections import deque
 from math import inf
 import numpy as np
 
-DEBUG = True
+DEBUG = False
 
 class Clicker(QGraphicsScene, ActionManager):
     """
@@ -320,6 +320,7 @@ class Clicker(QGraphicsScene, ActionManager):
         self._brush.setStyle(Qt.BrushStyle.SolidPattern)
         self._brush.setColor(hexobj.fill)
         self._pen.setWidth(1)
+        self._pen.setStyle(0)
         self._pen.setColor(QtGui.QColor(240,240,240))
         sid = self.addPolygon(hexobj, self._pen, self._brush)
         sid.setZValue(0)

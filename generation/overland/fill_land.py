@@ -136,7 +136,7 @@ def generate_land(map:Clicker, seed=None, **kwargs):
                         new_hex = Hex( center )
                         new_hex.is_land = True
                         new_hex.geography="land"
-                        new_hex.set_fill(get_color(new_alt))
+                        new_hex.set_fill(QColor(200, 160, 130))
                     else:
                         new_hex = Hex( center )
                         new_hex.is_land = False
@@ -195,7 +195,7 @@ def generate_land(map:Clicker, seed=None, **kwargs):
         if (alt)>0:
             hex.is_land=True
             hex.geography="land"
-            hex.set_fill(get_color(new_alt))
+            hex.set_fill(QColor(200, 160, 130))
         else:
             hex.is_land=False
             hex.geography="ocean"
