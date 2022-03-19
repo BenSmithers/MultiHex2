@@ -39,7 +39,7 @@ class EntityDialogGUI(object):
         Dialog.setWindowTitle(_translate("Dialog", "Entity Editor"))
 
 class EntityDialog(QtWidgets.QDialog):
-    def __init__(self,parent, config_object:Entity):
+    def __init__(self,parent, config_object:Entity, new_mode:bool):
         super(EntityDialog, self).__init__(parent)
         self.ui = EntityDialogGUI()
         self.ui.setupUi(self)
@@ -58,6 +58,8 @@ class EntityDialog(QtWidgets.QDialog):
         self._configuring = config_object
         self._action = NullAction()
         self._tabs = []
+
+        self.new_mode = new_mode
 
         widget_list = config_object.widget(config_object)
         for entry in widget_list:
@@ -80,6 +82,8 @@ class EntityDialog(QtWidgets.QDialog):
         all_act = []
         for i_tab in range(len(self._tabs)):
             all_act.append( self._tabs[i_tab].get_apply_action(self._configuring) )
+            if self.new_mode:
+                self._tabs[i_tab].apply_to(self._configuring)
 
         self._action = MetaAction(*all_act)
 
@@ -97,16 +101,21 @@ class EntitySelector(Basic_Tool):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+    def primary_mouse_released(self, event:QGraphicsSceneEvent):
+        if self.state==1: # placing state
+            loc = event.scenePos()
+            coords = screen_to_hex(loc)
+
+            # use the dialog to make a new event! 
+
     def secondary_mouse_released(self, event:QGraphicsSceneEvent):
-        if self.state==1:
+        if self.state==0:
             loc = event.scenePos()
             coords = screen_to_hex(loc)
             eids_here = self.parent.eIDs_at_hex(coords)
 
-
-
     def double_click_event(self, event:QGraphicsSceneEvent):
-        if self.state==1:
+        if self.state==0:
             loc = event.scenePos()
             coords = screen_to_hex(loc)
 
