@@ -13,6 +13,16 @@ The QGraphicsScene stands as the map and clicker interface. It'll have an Action
     Tools make actions and send them to the action manager
     The ActionManager makes changes happen on the map 
 
+
+Ultimately, my plan is to set things up with **modules** loaded in from the main menu. Modules will provide...
+ - a set of tools
+ - a world generator (config widget, runny thing)
+ - a tileset 
+
+These will be centrally located, probably in a folder named `modules`. Not sure *exactly* how I'm going to implement the modules yet, but I'm hoping they can be little folders where we any new code is imported. A module will be selectable from a configuration menu off of the main menu. 
+
+There will be the "core" module for overland maps. I'm thinking there will be a Stars W/O Number module. 
+
 ## Tools
 
 Tools make package and return actions 
