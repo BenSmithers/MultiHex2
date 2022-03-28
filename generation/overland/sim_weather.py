@@ -101,29 +101,29 @@ def simulate_clouds(map:Clicker, seed=None, **kwargs):
     print("Doing {} streamers".format(len(horiz_points)))
     for latitude in horiz_points:
         if latitude<0.5*dimy:
-            start = screen_to_hex(QPointF(DRAWSIZE, latitude))
+            start = screen_to_hex(QPointF(0.1*DRAWSIZE, latitude))
         else:
-            start = screen_to_hex(QPointF(dimx - DRAWSIZE, latitude))
+            start = screen_to_hex(QPointF(dimx - 0.6*DRAWSIZE, latitude))
         
-        reservoir = 30.0
         regen_rate = 1.0
 
         while True:
             # get shadow
-            if reservoir>=8:
-                shadow = start.in_range(2)
-            elif reservoir>3:
-                shadow = start.neighbors
-            elif reservoir>0:
-                shadow = [start]
-            
-            
+
             under = map.accessHex(start)
             if under is None:
                 break
             mag = np.sqrt(np.sum(under.wind**2))
 
             factor = mag/c2c
+            reservoir = 9*factor
+
+            if reservoir>=7*factor:
+                shadow = start.in_range(2)
+            elif reservoir>4*factor:
+                shadow = start.neighbors
+            else:
+                shadow = [start]
             
             step = c2c*under.wind/(np.sqrt(np.sum(under.wind**2)))
             if np.isnan(step).any():
@@ -132,7 +132,7 @@ def simulate_clouds(map:Clicker, seed=None, **kwargs):
                 factor = 1.0
             else:
                 # random rotation 0 +/- 15 degrees
-                rot_angle = rnd.randn()*45*pi/180
+                rot_angle = rnd.randn()*60*pi/180
             step[0] =  cos(rot_angle)*step[0]  + sin(rot_angle)*step[1]
             step[1] =  -sin(rot_angle)*step[0] + cos(rot_angle)*step[1]
 
@@ -156,7 +156,7 @@ def simulate_clouds(map:Clicker, seed=None, **kwargs):
                     else:
                         scale=0.05
 
-            if reservoir>0:
+            if reservoir>=0:
                 for each in shadow:
                     dishex = map.accessHex(each)
 
@@ -166,12 +166,12 @@ def simulate_clouds(map:Clicker, seed=None, **kwargs):
                             if not (dishex.geography=="ridge" or dishex.geography=="peak" or dishex.geography=="mountain"):
                                 dishex.set_fill(get_color(dishex.params["rainfall_base"]))
 
-                reservoir-=(1/factor)/scale
+                reservoir-=(1*factor)/scale
             
             if not under.is_land:
-                reservoir+=regen_rate/(factor)
-                if reservoir<20:
-                    reservoir+=regen_rate/(factor)
+                reservoir+=regen_rate
+                if reservoir<20*factor:
+                    reservoir+=regen_rate
 
             
             start = nextone

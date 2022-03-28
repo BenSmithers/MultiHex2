@@ -3,7 +3,7 @@ from PyQt5.QtGui import QPolygonF, QColor
 from math import sqrt,sin,cos
 from PyQt5.QtWidgets import QGraphicsItem
 
-from core.coordinates import HexID, hex_to_screen, DRAWSIZE
+from .coordinates import HexID, hex_to_screen, DRAWSIZE
 
 import numpy as np
 from numpy.random import randint
@@ -80,9 +80,9 @@ class Hex(QPolygonF):
 
         mtn_scale =1.0
         if other.geography=="peak" or other.geography=="ridge":
-            mtn_scale=100.0
-        elif other.geography=="mountain":
             mtn_scale=50.0
+        elif other.geography=="mountain":
+            mtn_scale=25.0
         
 
         alt_dif = abs(10*(other.params["altitude_base"] - self.params["altitude_base"])) 
