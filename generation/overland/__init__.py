@@ -1,5 +1,3 @@
-from .ridges import generate_ridges
-from .fill_land import generate_land
 from .sim_weather import simulate_wind,simulate_clouds
 from MultiHex2.tools import Clicker
 from .from_platec import gen_land
@@ -22,3 +20,5 @@ def fullsim(map:Clicker, preset="continental"):
     gen_land(map,seed=seed, **config["mountains"]["values"])
     simulate_wind(map,seed=seed, **config)
     simulate_clouds(map,seed=seed, **config)
+    for id in map.hexCatalog.get_all_hids():
+        map.drawHex(id)

@@ -175,8 +175,7 @@ def simulate_clouds(map:Clicker, seed=None, **kwargs):
 
             
             start = nextone
-    for id in map.hexCatalog.get_all_hids():
-        map.drawHex(id)
+    
             
 
 def erode_land(map:Clicker, seed=None, **kwargs):
