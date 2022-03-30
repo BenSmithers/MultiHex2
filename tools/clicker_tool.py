@@ -2,10 +2,10 @@
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent, QMainWindow, QApplication
-from PyQt5.QtWidgets import QGraphicsItem
+from PyQt5.QtWidgets import QGraphicsItem, QGraphicsView
 
 from MultiHex2.core.core import DRAWSIZE
-from MultiHex2.core import Catalog, RegionCatalog
+from MultiHex2.core import Catalog, RegionCatalog, EntityCatalog
 from MultiHex2.core import Hex, HexID, Region, Entity
 from MultiHex2.core import screen_to_hex
 from MultiHex2.actions import ActionManager
@@ -19,16 +19,17 @@ from collections import deque
 from math import inf
 import numpy as np
 
-DEBUG = False
+DEBUG = True
 
 class Clicker(QGraphicsScene, ActionManager):
     """
         This takes the place of the whole map object. Keeps track of tools
     """
-    def __init__(self, parent, parent_window:QMainWindow):
+    def __init__(self, parent:QGraphicsView, parent_window:QMainWindow):
         QGraphicsScene.__init__(self, parent)
         ActionManager.__init__(self)
 
+        self.parent = parent
         self._parent_window = parent_window # used for passing keyboard events up to the gui manager
 
         self._highlighting_cursor = True
@@ -47,6 +48,7 @@ class Clicker(QGraphicsScene, ActionManager):
 
         self._hexCatalog = Catalog(dtype=Hex)
         self._biomeCatalog = RegionCatalog()
+        self._entityCatalog = EntityCatalog()
 
         self._pen = QtGui.QPen() # STROKE EFFECTS
         self._pen.setColor(QtGui.QColor(240,240,240))
@@ -61,7 +63,9 @@ class Clicker(QGraphicsScene, ActionManager):
         
     def save(self, filename:str):
         """
-        Saves the clicker state to a file 
+        Saves the clicker state to a json file.
+
+        TODO: look into using bzip2 to zip the json files. If it's fast enough, it might be worth doing!  
         """
         out_dict = {
             "hexes":{},
@@ -102,15 +106,21 @@ class Clicker(QGraphicsScene, ActionManager):
             self.addRegion(reg)
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
+        """
+        Called when a keyboard button is depressed
+        """
         self._parent_window.keyPressEvent(event)
 
     def keyReleaseEvent(self, event: QtGui.QKeyEvent) -> None:
+        """
+        Called when a keyboard button is released
+        """
         event.accept()
         if event.key() == QtCore.Qt.Key_Plus or event.key()==QtCore.Qt.Key_PageUp or event.key()==QtCore.Qt.Key_BracketRight:
-            self._parent_window.scale( 1.05, 1.05 )
+            self.parent.scale( 1.05, 1.05 )
 
         if event.key() == QtCore.Qt.Key_Minus or event.key()==QtCore.Qt.Key_PageDown or event.key()==QtCore.Qt.Key_BracketLeft:
-            self._parent_window.scale( 0.95, 0.95 )
+            self.parent.scale( 0.95, 0.95 )
 
         # check if the user did Ctrl+Z for undo or Ctrl+R for redo
         if QApplication.keyboardModifiers() == QtCore.Qt.ControlModifier:

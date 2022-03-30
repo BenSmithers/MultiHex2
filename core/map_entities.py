@@ -1,3 +1,11 @@
+"""
+Here, we define various map Entities and their associated Widgets 
+
+The basic principle is that we have multiple primitive properties defined in here, and map objects will inherit 
+from multiple to get whichever properties they need. 
+
+We also define the widgets used to configure those primitive properties in here
+"""
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from glob import glob
@@ -6,16 +14,13 @@ from math import sqrt
 
 from copy import deepcopy
 
-from actions.baseactions import NullAction
-
 ARTDIR = os.path.join( os.path.dirname(__file__),'..', 'assets')
-
 
 class Entity:
     """
     Defines static entity that can be placed on a Hex
     """
-    def __init__(self, name, location = None ):
+    def __init__(self, name:str, location = None ):
         """
         @param name     - String. name of this entity
         @param location - HexID. Where this entity is placed. (optional. Entites can be off the map)
@@ -43,7 +48,7 @@ class GenericTab(QtWidgets.QWidget):
         if not isinstance(config_entity, Entity):
             raise TypeError("Expected {}, got {}".format(Entity, type(config_entity)))
 
-    def get_apply_action(self, entity:Entity)->NullAction:
+    def apply_to_entity(self, entity:Entity)->Entity:
         """
         Gets the 
         """
@@ -138,13 +143,13 @@ class EntityWidget(GenericTab):
     def combo_change(self):
         self.picture_box.setPixmap(QtGui.QPixmap(os.path.join(self.ARTDIR,self.pictures[self.icon_combo.currentIndex()])).scaledToWidth(400))
 
-    def get_apply_action(self, entity):
+    def apply_to_entity(self, entity):
         """
         Takes an entity and applies the GUIs current configuration to it
 
         returns the modified entity 
         """
-        GenericTab.get_apply_action(self, entity)
+        GenericTab.apply_to_entity(self, entity)
 
         entity.name = self.entity_name.text()
         entity.description = self.description_edit.toPlainText()
@@ -205,8 +210,8 @@ class GovernmentWidget(GenericTab):
 
         self.configure_with(config_entity)
 
-    def get_apply_action(self, entity):
-        GenericTab.get_apply_action(self, entity)
+    def apply_to_entity(self, entity):
+        GenericTab.apply_to_entity(self, entity)
         if not isinstance(entity, Government):
             raise TypeError("Expected {}, got {}".format(Government, type(entity)))
 
@@ -347,7 +352,7 @@ class SettlementWidget(GenericTab):
 
         if self._previous_index!=-1:
             if self.ward_widget is not None:
-                self.ward_widget.get_apply_action( self._entity.wards[self._previous_index])
+                self.ward_widget.apply_to_entity( self._entity.wards[self._previous_index])
                 self.wardCombo.setItemText(self._previous_index, self.ward_widget.nameedit.text())
 
                 # update the population and wealth
@@ -365,8 +370,8 @@ class SettlementWidget(GenericTab):
         self.totalWealthlbl.setText("Total Wealth:    {}".format(self._entity.wealth))
         self.totalPoplbl.setText("Total Population    {}".format(self._entity.wealth))
 
-    def get_apply_action(self, entity):
-        GenericTab.get_apply_action(self, entity)
+    def apply_to_entity(self, entity):
+        GenericTab.apply_to_entity(self, entity)
         if not isinstance(entity, Settlement):
             raise TypeError("Expected {}, got {}".format(Settlement, type(entity)))
 

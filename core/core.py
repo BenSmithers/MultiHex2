@@ -3,6 +3,8 @@ from PyQt5.QtGui import QPolygonF, QColor
 from math import sqrt,sin,cos
 from PyQt5.QtWidgets import QGraphicsItem
 
+from core.map_entities import Entity
+
 from .coordinates import HexID, hex_to_screen, DRAWSIZE
 
 import numpy as np
@@ -313,8 +315,60 @@ class RegionCatalog:
     def __getitem__(self, key)->Region:
         return self._ridcatalog[key]
 
+class EntityCatalog:
+    """
+    Class for keeping track of Entities, their IDs, their QGraphicsScene hashes, and where they are on the map 
+    """
+    def __init__(self):
+        self._eidCatalog = {} # eID->Entity 
+        self._hIDtoEnt = {} #hexID -> eIDs 
+        self._eIDtoHex = {} #eID -> hexID
+        self._eIDtoScreen = {} #eID -> ScreenID
+
+    def __iter__(self):
+        return self._eidCatalog.__iter__()
+    def __contains__(self, key):
+        return key in self._eidCatalog
+
+    def register(self, hID:HexID, entity:Entity, screenID):
+        eID = 0
+        while eID in self._eidCatalog:
+            eID+=1
+        self._eidCatalog[eID] = entity
+        self._eIDtoHex[eID] = hID
+
+        if hID in self._hIDtoEnt:
+            self._hIDtoEnt[hID].append(eID)
+        else:
+            self._hIDtoEnt[hID] = [eID]
+        
+        self._eIDtoScreen[eID] = screenID
+
+    def remove(self, eID:int):
+        del self._eidCatalog[eID]
+
+        hID = self.eIDtoHex[eID]
+        self._hIDtoEnt[hID].remove(eID)
+        if len(self._hIDtoEnt[hID])==0:
+            del self._hIDtoEnt[hID]
+
+        del self._eIDtoHex[eID]
+        del self._eIDtoScreen[eID]
+
+    def access_entities_at(self, hID:HexID)->list:
+        if hID in self._hIDtoEnt:
+            return self._hIDtoEnt[hID]
+    def access_entity(self, eID:int)->Entity:
+        if eID in self._eidCatalog:
+            return self._eidCatalog[eID]
+    def getSID(self, eID:int):
+        if eID in self._eIDtoScreen:
+            return self._eIDtoScreen[eID]
 
 class Catalog:
+    """
+    class for keeping track of Hexes, their IDs, and their QGraphicsScene hashes
+    """
     _dtype = Hex
     def __init__(self, dtype:type):
         Catalog._dtype = dtype

@@ -1,12 +1,19 @@
+"""
+In this file we define the tools used to make and edit entities
+
+We also define the widget/gui that is used to do that.
+"""
 from MultiHex2.tools.basic_tool import Basic_Tool
 from MultiHex2.core import HexID, screen_to_hex, Entity
+from actions.baseactions import MetaAction, NullAction
+from actions.entityactions import *
+from tools.basic_tool import ToolLayer
+
 import os
 
 from PyQt5 import QtGui, QtWidgets, QtCore
 from PyQt5.QtWidgets import QGraphicsSceneEvent
-from actions.baseactions import MetaAction, NullAction
 
-from tools.basic_tool import ToolLayer
 
 
 art_dir = os.path.join( os.path.dirname(__file__),'..','assets','buttons')
@@ -39,6 +46,14 @@ class EntityDialogGUI(object):
         Dialog.setWindowTitle(_translate("Dialog", "Entity Editor"))
 
 class EntityDialog(QtWidgets.QDialog):
+    """
+    This widget is opened up when we're 
+        - making a new entity, or
+        - editing an existing entity 
+
+    It adds tabs to itself according to what kind of entity is worked with. 
+    When this is "accepted" it packages up and stores an action, which can be accepted later
+    """
     def __init__(self,parent, config_object:Entity, new_mode:bool):
         super(EntityDialog, self).__init__(parent)
         self.ui = EntityDialogGUI()
