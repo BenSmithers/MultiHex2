@@ -1,19 +1,26 @@
 #!/usr/bin/python3.8
 
 from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QFileDialog, QGraphicsScene
-from PyQt5 import QtGui
+from PyQt5 import QtGui, QtCore, QtWidgets
 from PyQt5.QtCore import Qt
+
 
 from MultiHex2.guis.main_gui import main_gui
 from MultiHex2.tools import Clicker
 from MultiHex2.tools.hextools import HexBrush,HexSelect
 from MultiHex2.tools.regiontools import RegionAdd
 from MultiHex2.tools.route_test_tool import RouteTester
+from MultiHex2.tools.entity_tools import EntitySelector, AddEntityTool, AddSettlement
 from MultiHex2.tools import Basic_Tool
 from MultiHex2.generation.overland import fullsim
+from MultiHex2.guis.savewarn import SaveWarnDialogGui
 
 import os
 import sys
+import typing
+
+
+from tools.basic_tool import ToolLayer
 
 if sys.platform=="linux":
     SAVEDIR = os.path.join(os.environ["HOME"], ".local", "MultiHex")
@@ -26,6 +33,14 @@ else:
 
 if not os.path.exists(SAVEDIR):
     os.mkdir(SAVEDIR)
+
+class WarnWidget(QtWidgets.QDialog):
+    def __init__(self, parent: typing.Optional[QWidget] = ..., flags: typing.Union[QtCore.Qt.WindowFlags, QtCore.Qt.WindowType] = ...) -> None:
+        super().__init__(parent, flags)
+        self.ui = SaveWarnDialogGui()
+        self.ui.setupUi(self)
+        self.parent = parent
+
 
 class main_window(QMainWindow):
     def __init__(self,parent=None):
@@ -47,18 +62,42 @@ class main_window(QMainWindow):
         self.ui.actionSave.triggered.connect(self.save)
         self.ui.actionQuit.triggered.connect(self.quit)
         self.ui.actionNew.triggered.connect(self.new)
+        self.ui.export_image.triggered.connect(self.export_image)
 
 
         self.add_tool("hex_brush", HexBrush)
         self.add_tool("hex_select", HexSelect)
         self.add_tool("region_add", RegionAdd)
         self.add_tool("route_tester", RouteTester)
+        self.add_tool("entity_select", EntitySelector)
+        self.add_tool("entity_add", AddEntityTool)
+        self.add_tool("settlement_add", AddSettlement)
+
+    def export_image(self):
+        temp= QFileDialog.getSaveFileName(None, 'Exoport Image', SAVEDIR, 'PNGs (*.png)')[0]
+        if temp is None:
+            return
+        elif temp=='':
+            return
+        
+        #self.main_map.dimensions
+        size   = QtCore.QSize(self.scene.dimensions[0], self.scene.dimensions[1])
+        image  = QtGui.QImage(size,QtGui.QImage.Format_ARGB32_Premultiplied)
+        painter= QtGui.QPainter(image)
+        self.scene.render(painter)
+        painter.end()
+        image.save(temp)
 
     def new(self):
         fullsim(self.scene)
 
     def save(self):
         self.scene.reset_save()
+
+        if self.scene.file_name=="":
+            self.saveAs()
+        else:
+            self.scene.save(self.scene.file_name)    
 
     def saveAs(self):
         pathto = QFileDialog.getSaveFileName(None, 'Save As',SAVEDIR, 'Json (*.json)')[0]
@@ -69,7 +108,9 @@ class main_window(QMainWindow):
 
     def quit(self):
         if self.scene.unsaved:
-            print("WARN")
+            self.dialog = WarnWidget(parent=self)
+            self.dialog.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+            self.dialog.exec_()
 
         sys.exit()
 
@@ -85,10 +126,19 @@ class main_window(QMainWindow):
             self.select_tool("basic")
 
     def add_tool(self,tool_name:str, tool:Basic_Tool):
-        self.ui.add_button(tool_name, tool.buttonIcon(), tool.altText() )
+
+        self.ui.add_button(tool_name, tool.buttonIcon(), tool.altText(), tool.tool_layer() )
         def tempfunc():
             return self.select_tool(tool_name)
-        self.ui.buttons[tool_name].clicked.connect(tempfunc)
+        
+        value = tool.tool_layer().value
+        if value==0 or value==1:
+            self.ui.buttons[tool_name].clicked.connect(tempfunc)
+        elif value==2:
+            self.ui.second_buttons[tool_name].clicked.connect(tempfunc)
+        else:
+            raise NotImplementedError("Not layer {}".format(tool.tool_layer()))
+
         self.scene.add_tool(tool_name, tool)
 
     def select_tool(self, tool_name:str):

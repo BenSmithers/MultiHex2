@@ -7,9 +7,11 @@ from MultiHex2.tools.basic_tool import Basic_Tool
 from MultiHex2.core import HexID, screen_to_hex, Entity
 from actions.baseactions import MetaAction, NullAction
 from actions.entityactions import *
+from MultiHex2.core.map_entities import Settlement
 from tools.basic_tool import ToolLayer
 
 import os
+from copy import copy
 
 from PyQt5 import QtGui, QtWidgets, QtCore
 from PyQt5.QtWidgets import QGraphicsSceneEvent
@@ -54,28 +56,24 @@ class EntityDialog(QtWidgets.QDialog):
     It adds tabs to itself according to what kind of entity is worked with. 
     When this is "accepted" it packages up and stores an action, which can be accepted later
     """
-    def __init__(self,parent, config_object:Entity, new_mode:bool):
+    def __init__(self,parent, config_object:Entity):
         super(EntityDialog, self).__init__(parent)
         self.ui = EntityDialogGUI()
         self.ui.setupUi(self)
         self.parent = parent
 
         self.ui.buttonBox.accepted.connect(self.accept)
+        self.accepted = False
 
         if not isinstance(config_object, Entity):
             raise TypeError("Cannot configure {} object!".format(type(config_object)))
+  
         
-        # yeah the syntax here is really ugly, but this function is a static method so it can also be called on 
-        #  an un-instantiated class 
-        
-        # this returns a list of widgets, each of which gets its own tab! 
-
         self._configuring = config_object
         self._action = NullAction()
         self._tabs = []
-
-        self.new_mode = new_mode
-
+        
+        # this returns a list of widgets, each of which gets its own tab! 
         widget_list = config_object.widget(config_object)
         for entry in widget_list:
             newtab = QtWidgets.QWidget(self)
@@ -94,14 +92,9 @@ class EntityDialog(QtWidgets.QDialog):
         return self._action
 
     def accept(self):
-        all_act = []
+        self.accepted=True
         for i_tab in range(len(self._tabs)):
-            all_act.append( self._tabs[i_tab].get_apply_action(self._configuring) )
-            if self.new_mode:
-                self._tabs[i_tab].apply_to(self._configuring)
-
-        self._action = MetaAction(*all_act)
-
+            self._tabs[i_tab].apply_to_entity(self._configuring)
 
         super().accept()
 
@@ -115,13 +108,29 @@ class EntitySelector(Basic_Tool):
     """
     def __init__(self, parent=None):
         super().__init__(parent)
+        self._creation_type = Entity
+
+    @classmethod
+    def tool_layer(cls):
+        return ToolLayer.civilization
 
     def primary_mouse_released(self, event:QGraphicsSceneEvent):
         if self.state==1: # placing state
             loc = event.scenePos()
             coords = screen_to_hex(loc)
+            new_entity = self._creation_type("New Entity")
 
-            # use the dialog to make a new event! 
+            self.dialog = EntityDialog(parent=None,config_object=new_entity)
+            self.dialog.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+            self.dialog.exec_()
+            
+            self.set_state(0)
+            if self.dialog.accepted:
+                eID = self.parent.nextFreeEID()
+                
+                return New_Entity_Action(eid=eID, entity=new_entity,coords=coords)
+
+        return NullAction()
 
     def secondary_mouse_released(self, event:QGraphicsSceneEvent):
         if self.state==0:
@@ -129,7 +138,15 @@ class EntitySelector(Basic_Tool):
             coords = screen_to_hex(loc)
             eids_here = self.parent.eIDs_at_hex(coords)
 
+        return NullAction()
+
     def double_click_event(self, event:QGraphicsSceneEvent):
+        """
+        When we double click, if there's only one entity we immediately open up a config window. 
+        This is used to configure a duplicate of the entity there. 
+
+        Then we return an Action that swaps the configured duplicate with the old entity. 
+        """
         if self.state==0:
             loc = event.scenePos()
             coords = screen_to_hex(loc)
@@ -137,13 +154,16 @@ class EntitySelector(Basic_Tool):
             eids_here = self.parent.eIDs_at_hex(coords)
             if len(eids_here)==1:
                 this_ent = self.parent.accessEid(eids_here[0])
-                self.dialog = EntityDialog(self.parent, this_ent)
+
+                backup = copy(this_ent)
+                self.dialog = EntityDialog(parent=None, config_object=backup)
                 self.dialog.setAttribute(QtCore.Qt.WA_DeleteOnClose)
                 self.dialog.exec_()
 
-                # get the action 
-                return self.dialog.action
+                if self.dialog.accepted:
+                    return Edit_Entity_Action(eID=eids_here[0], old=this_ent, new=backup)
 
+        return NullAction()
 
     @property
     def entityShadow(cls):
@@ -161,6 +181,10 @@ class EntitySelector(Basic_Tool):
 class AddEntityTool(EntitySelector):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self._creation_type = Entity
+        self.auto_state=1
+        self.highlight_icon = "location"
+        self.set_state(1)
 
     @classmethod
     def buttonIcon(cls):
@@ -174,6 +198,10 @@ class AddEntityTool(EntitySelector):
 class AddSettlement(EntitySelector):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self._creation_type = Settlement
+        self.auto_state=1
+        self.set_state(1)
+        self.highlight_icon="town"
 
     @classmethod
     def buttonIcon(cls):

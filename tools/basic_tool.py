@@ -10,11 +10,13 @@ from MultiHex2.actions import NullAction
 art_dir = os.path.join( os.path.dirname(__file__),'..','assets','buttons')
 
 class ToolLayer(Enum):
-    terrain = 0
-    civilization = 1
-    mapuse = 2
+    null = 0
+    terrain = 1
+    civilization = 2
+    mapuse = 4
 
 class Basic_Tool:
+    
     """
     Prototype a basic tool. We use this for consistent typing and templated functions. 
     
@@ -27,12 +29,15 @@ class Basic_Tool:
         self._state = 0
         self.highlight = False # highlight space under the cursor 
 
+        self.auto_state = 0 # automatically set to this state when selected
+        self.highlight_icon = ""
+
     def deselect(self):
         self._state = 0
 
     @classmethod
-    def layer(cls):
-        return ToolLayer.terrain
+    def tool_layer(cls):
+        return ToolLayer.null
 
     @classmethod
     def buttonIcon(cls):
@@ -55,7 +60,6 @@ class Basic_Tool:
         return self._state
 
     def set_state(self, state:int)->None:
-        print("Setting state {}".format(state))
         self._state = state
 
     def primary_mouse_depressed(self,event):

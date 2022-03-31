@@ -1,6 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 import os
+from MultiHex2.tools.basic_tool import ToolLayer
 
 """
 This file defines the gui for the MainWindow's structure
@@ -28,9 +29,23 @@ class main_gui(object):
 
         self.buttonGrid = QtWidgets.QGridLayout()
         self.buttonGrid.setObjectName("buttonGrid")
+
+        # line 
+        self.firstLine = QtWidgets.QFrame(self.centralwidget)
+        self.firstLine.setFrameShape(QtWidgets.QFrame.HLine)
+        self.firstLine.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.firstLine.setObjectName("firstLine")
+
+        self.civButtonGrid = QtWidgets.QGridLayout()
+        self.civButtonGrid.setObjectName("civButtonGrid")
+
+        #ToolLayer
         self.buttons = {}
+        self.second_buttons = {} # civ layer button
         self.toolwidget = None
         self.toolPane.addLayout(self.buttonGrid)
+        self.toolPane.addWidget(self.firstLine)
+        self.toolPane.addLayout(self.civButtonGrid)
         self.toolPane.addItem(spacerItem)
 
 
@@ -53,8 +68,6 @@ class main_gui(object):
         self.menubar.setObjectName("menubar")
         self.menuFile = QtWidgets.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
-        self.menuEditor = QtWidgets.QMenu(self.menubar)
-        self.menuEditor.setObjectName("menuEditor")
         
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -73,15 +86,6 @@ class main_gui(object):
         self.actionQuit = QtWidgets.QAction(MainWindow)
         self.actionQuit.setObjectName("actionQuit")
 
-        self.actionTerrainEditor = QtWidgets.QAction(MainWindow)
-        self.actionTerrainEditor.setCheckable(True)
-        self.actionTerrainEditor.setObjectName("actionTerrainEditor")
-        self.actionCivEditor = QtWidgets.QAction(MainWindow)
-        self.actionCivEditor.setCheckable(True)
-        self.actionCivEditor.setObjectName("actionCivEditor")
-        self.actionMapUse = QtWidgets.QAction(MainWindow)
-        self.actionMapUse.setCheckable(True)
-        self.actionMapUse.setObjectName("actionMapUse")
         
         self.menuFile.addAction(self.actionNew)
         self.menuFile.addAction(self.actionOpen)
@@ -92,9 +96,6 @@ class main_gui(object):
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionQuit)
 
-        self.menuEditor.addAction(self.actionTerrainEditor)
-        self.menuEditor.addAction(self.actionCivEditor)
-        self.menuEditor.addAction(self.actionMapUse)
 
         self.menubar.addAction(self.menuFile.menuAction())
         self.menuFile.setTitle(QtCore.QCoreApplication.translate("MainWinbdow","File"))
@@ -105,17 +106,9 @@ class main_gui(object):
         self.export_image.setText(QtCore.QCoreApplication.translate("MainWindow","Export Image"))
         self.actionQuit.setText(QtCore.QCoreApplication.translate("MainWindow", "Quit"))
 
-        self.menubar.addAction(self.menuEditor.menuAction())
-        self.menuEditor.setTitle(QtCore.QCoreApplication.translate("MainWinbdow","Editor"))
-        self.actionTerrainEditor.setText(QtCore.QCoreApplication.translate("MainWinbdow","Terrain Editor"))
-        self.actionCivEditor.setText(QtCore.QCoreApplication.translate("MainWindow","Civilization Editor"))
-        self.actionMapUse.setText(QtCore.QCoreApplication.translate("MainWindow", "Map Use Mode"))
-
-
-
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-    def add_button(self, name:str, button:QtGui.QPixmap, alt_text=""):
+    def add_button(self, name:str, button:QtGui.QPixmap, alt_text="", layer=ToolLayer.null):
         new_button = QtWidgets.QPushButton(self.centralwidget)
         new_button.setObjectName(name)
         new_button.setToolTip(alt_text)
@@ -123,12 +116,28 @@ class main_gui(object):
         new_button.setIconSize(QtCore.QSize(48,48))
         new_button.setFixedWidth(64)
         new_button.setFixedHeight(64)
-        #new_button.setText(name)
-        buttons = len(self.buttons.keys())
-        is_odd = buttons%2==1
+        layer_val = layer.value
+
+        if layer_val==2:
+            buttons =len(self.second_buttons.keys())
+        elif layer_val==0 or layer_val==1:
+
+            #new_button.setText(name)
+            buttons = len(self.buttons.keys())
+        else:
+            print("Layer {}".format(layer))
+            print(ToolLayer.terrain)
+            print(ToolLayer.terrain==layer)
+            raise NotImplementedError("Unimplemented layer {}".format(layer))
+
+        is_odd = (buttons%2==1)
         column = 1 if is_odd else 0
         row = int(buttons/2)
 
-        self.buttons[name] = new_button
-        self.buttonGrid.addWidget(new_button, row, column)
+        if layer_val==2:
+            self.second_buttons[name] = new_button
+            self.civButtonGrid.addWidget(new_button, row, column)
+        elif layer_val==0 or layer_val==1:
+            self.buttons[name] = new_button
+            self.buttonGrid.addWidget(new_button, row, column)
         

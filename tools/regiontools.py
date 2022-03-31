@@ -1,4 +1,4 @@
-from MultiHex2.tools.basic_tool import Basic_Tool
+from MultiHex2.tools.basic_tool import Basic_Tool, ToolLayer
 from MultiHex2.tools.widgets import RegionWidget
 from MultiHex2.core import Region, screen_to_hex, Hex, HexID
 from actions.baseactions import NullAction
@@ -23,6 +23,10 @@ class RegionAdd(Basic_Tool):
         Basic_Tool.__init__(self, parent)
         self.highlight = True
         self._selected_rid = -1
+
+    @classmethod
+    def tool_layer(cls):
+        return ToolLayer.terrain
 
     def deselect(self):
         self._selected_rid = -1

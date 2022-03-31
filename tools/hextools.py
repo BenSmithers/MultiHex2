@@ -16,9 +16,15 @@ Tools make actions
 art_dir = os.path.join( os.path.dirname(__file__),'..','assets','buttons')
 
 class HexSelect(Basic_Tool):
+    
     def __init__(self, parent):
         Basic_Tool.__init__(self, parent)
+        self.tool_layer = ToolLayer.terrain
         self.highlight = False
+
+    @classmethod
+    def tool_layer(cls):
+        return ToolLayer.terrain
 
     @classmethod
     def buttonIcon(cls):
@@ -36,12 +42,15 @@ class HexBrush(Basic_Tool):
 
     def __init__(self, parent):
         Basic_Tool.__init__(self, parent)
-
         self.highlight = True
         self._brushsize = 1
         self._fill = QtGui.QColor(0,0,0)
         self._params = {}
         self._lastID = None
+        
+    @classmethod
+    def tool_layer(cls):
+        return ToolLayer.terrain
 
     def set_fill(self, fill:QtGui.QColor):
         self._fill = fill
