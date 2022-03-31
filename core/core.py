@@ -3,7 +3,7 @@ from PyQt5.QtGui import QPolygonF, QColor
 from math import sqrt,sin,cos
 from PyQt5.QtWidgets import QGraphicsItem
 
-from core.map_entities import Entity
+from MultiHex2.core.map_entities import Entity
 
 from .coordinates import HexID, hex_to_screen, DRAWSIZE
 
@@ -323,17 +323,20 @@ class EntityCatalog:
         self._eidCatalog = {} # eID->Entity 
         self._hIDtoEnt = {} #hexID -> eIDs 
         self._eIDtoHex = {} #eID -> hexID
-        self._eIDtoScreen = {} #eID -> ScreenID
+        self._hIDtoScreen = {} #eID -> ScreenID
 
     def __iter__(self):
         return self._eidCatalog.__iter__()
     def __contains__(self, key):
         return key in self._eidCatalog
-
-    def register(self, hID:HexID, entity:Entity, screenID):
+    def next_free_eid(self)->int:
         eID = 0
         while eID in self._eidCatalog:
             eID+=1
+        return eID
+
+    def register(self, hID:HexID, entity:Entity, screenID):
+        eID = self.next_free_eid()
         self._eidCatalog[eID] = entity
         self._eIDtoHex[eID] = hID
 
@@ -342,28 +345,43 @@ class EntityCatalog:
         else:
             self._hIDtoEnt[hID] = [eID]
         
-        self._eIDtoScreen[eID] = screenID
+        self._hIDtoScreen[hID] = screenID
+
+        return eID
 
     def remove(self, eID:int):
         del self._eidCatalog[eID]
 
-        hID = self.eIDtoHex[eID]
+        hID = self._eIDtoHex[eID]
         self._hIDtoEnt[hID].remove(eID)
         if len(self._hIDtoEnt[hID])==0:
             del self._hIDtoEnt[hID]
 
         del self._eIDtoHex[eID]
-        del self._eIDtoScreen[eID]
+        del self._hIDtoScreen[hID]
+
+    def update_sid(self, hID:HexID, sID):
+        if hID in self._hIDtoScreen:
+            # good
+            self._hIDtoScreen[hID] = sID
+
+    def update_entity(self, eID:int, entity:Entity):
+        self._eidCatalog[eID] = entity
 
     def access_entities_at(self, hID:HexID)->list:
         if hID in self._hIDtoEnt:
             return self._hIDtoEnt[hID]
+        else:
+            return []
     def access_entity(self, eID:int)->Entity:
         if eID in self._eidCatalog:
             return self._eidCatalog[eID]
-    def getSID(self, eID:int):
-        if eID in self._eIDtoScreen:
-            return self._eIDtoScreen[eID]
+    def getSID(self, hexID:int):
+        if hexID in self._hIDtoScreen:
+            return self._hIDtoScreen[hexID]
+    def gethID(self, eID:int)->HexID:
+        if eID in self._eIDtoHex:
+            return self._eIDtoHex[eID]
 
 class Catalog:
     """

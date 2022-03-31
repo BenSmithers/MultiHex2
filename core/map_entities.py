@@ -8,13 +8,38 @@ We also define the widgets used to configure those primitive properties in here
 """
 from PyQt5 import QtWidgets, QtGui, QtCore
 
+from MultiHex2.core.coordinates import DRAWSIZE
+
 from glob import glob
 import os
 from math import sqrt
-
 from copy import deepcopy
 
-ARTDIR = os.path.join( os.path.dirname(__file__),'..', 'assets')
+ARTDIR = os.path.join( os.path.dirname(__file__),'..', 'assets', )
+
+class IconLib:
+    """
+        A library for pre-loading all the icons we'll be using. This is used by the clicker tool for drawing the entities 
+    """
+    def __init__(self):
+        self._pictures = glob(os.path.join(ARTDIR, "map_icons", "*.svg"))
+        self._pixmaps = {}        
+        for each in self._pictures:
+            name = os.path.split(each)[1].split(".")[0]
+
+            self._pixmaps[name] = QtGui.QPixmap(each).scaledToWidth(DRAWSIZE*1.5)
+    
+    def all_names(self):
+        return list(self._pixmaps.keys())
+
+    def __iter__(self):
+        return self._pixmaps.__iter__()
+
+    def access(self, name:str)->QtGui.QPixmap:
+        if name not in self._pixmaps:
+            raise ValueError("Requested {} pixmap, don't see it! Have {}".format(name, self._pixmaps.keys()))
+        return self._pixmaps[name]
+
 
 class Entity:
     """
@@ -30,7 +55,7 @@ class Entity:
             raise TypeError("Arg 'name' must be {}, received {}".format(str, type(name)))
         self.name        = name
         self.description = ""
-        self.icon        = ""
+        self.icon        = "location"
 
         self._location = location
     
@@ -116,10 +141,8 @@ class EntityWidget(GenericTab):
         self.icon_combo.setObjectName("icon_combo")
 
         self.pictures = glob(os.path.join(self.ARTDIR, "*.svg"))
-        self.pictures = [entry.split(".")[0] for entry in self.pictures]
-
         for each in self.pictures:
-            name = os.path.basename(each)
+            name = os.path.split(each)[1].split(".")[0]
             self.icon_combo.addItem( QtGui.QIcon(QtGui.QPixmap(each)), name )
 
         self.picture_box = QtWidgets.QLabel(self)
@@ -407,6 +430,8 @@ class Settlement(Entity, Government):
     def __init__(self, name, location=None, is_ward=False):
         Entity.__init__(self, name, location)
         Government.__init__(self)
+
+        self.icon = "town"
 
         # these values are assigned to the city-center 
         self._population = 1

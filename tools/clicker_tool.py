@@ -11,6 +11,7 @@ from MultiHex2.core import screen_to_hex
 from MultiHex2.actions import ActionManager
 from MultiHex2.tools.basic_tool import Basic_Tool
 from MultiHex2.tools.regiontools import RegionAdd
+from MultiHex2.core.map_entities import Settlement, IconLib
 from actions.baseactions import NullAction
 from core.coordinates import hex_to_screen
 
@@ -19,7 +20,8 @@ from collections import deque
 from math import inf
 import numpy as np
 
-DEBUG = True
+
+DEBUG = False
 
 class Clicker(QGraphicsScene, ActionManager):
     """
@@ -31,10 +33,11 @@ class Clicker(QGraphicsScene, ActionManager):
 
         self.parent = parent
         self._parent_window = parent_window # used for passing keyboard events up to the gui manager
+        self.file_name = ""
 
-        self._highlighting_cursor = True
         self._highlight = None
         self._highlighted_id = None
+        self._icon_ghost = None
         self._tool = Basic_Tool(self)
 
         self._alltools={}
@@ -59,6 +62,9 @@ class Clicker(QGraphicsScene, ActionManager):
         self.dimensions = (4000,3000)
 
         self._debug_wind = {}
+
+        self.iconLibrary = IconLib()
+
             
         
     def save(self, filename:str):
@@ -70,7 +76,8 @@ class Clicker(QGraphicsScene, ActionManager):
         out_dict = {
             "hexes":{},
             "regions":{},
-            "drawsize":DRAWSIZE
+            "drawsize":DRAWSIZE,
+            "dimensions":[self.dimensions[0], self.dimensions[1]]
             }
         hexes = self._hexCatalog
         for hID in hexes._hidcatalog:
@@ -83,6 +90,8 @@ class Clicker(QGraphicsScene, ActionManager):
         f = open(filename, 'wt')
         json.dump(out_dict, f, indent=4)
         f.close()
+
+        self.file_name = filename
         
         
     def load(self, filename:str):
@@ -94,8 +103,8 @@ class Clicker(QGraphicsScene, ActionManager):
         self._biomeCatalog = RegionCatalog()
         f = open(filename,'rt')
         in_dict = json.load(f)
+        self.file_name = filename
         f.close()
-
         for str_hid in in_dict["hexes"].keys():
             split = str_hid.split(".")
             hid = HexID(int(split[0]), int(split[1]))
@@ -128,6 +137,90 @@ class Clicker(QGraphicsScene, ActionManager):
                 self.undo()
             if event.key()==QtCore.Qt.Key_R:
                 self.redo()
+
+    def mousePressEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
+        if event.button() == self._primary:
+            self._primary_held = True 
+        elif event.button()==self._secondary:
+            self._secondary_held = True
+
+    def mouseMoveEvent(self, event:QGraphicsSceneMouseEvent) -> None:
+        self._tool.mouse_moved(event)
+        event.accept()
+
+        if self._primary_held:
+            action = self._tool.primary_mouse_held(event)
+        elif self._secondary_held:
+            action = self._tool.primary_mouse_held(event)
+        
+        if self._primary_held or self._secondary_held:
+            if (action is not None):
+                if not isinstance(action, NullAction):
+                    self.add_to_meta(action)
+                    self._meta_event_holder = True
+
+        loc = screen_to_hex(event.scenePos())
+        if self.tool.highlight: 
+            if self._icon_ghost is not None:
+                    self.removeItem(self._icon_ghost)
+                    self._icon_ghost = None   
+            if not loc==self._highlighted_id:
+                self._highlighted_id=loc
+                center = hex_to_screen(loc)
+                if self._highlight is not None:
+                    self.removeItem(self._highlight)
+                    self._highlight=None
+                new_hex = Hex(center)
+                self._brush.setStyle(0)
+                self._pen.setColor(QtGui.QColor(110,228,230))
+                self._pen.setStyle(1)
+                self._highlight = self.addPolygon(new_hex, self._pen, self._brush)
+
+        else:
+            if self._highlight is not None:
+                self.removeItem(self._highlight)
+                self._highlight = None
+
+
+            if self.tool.highlight_icon!="":
+                if self.tool.state==1:
+                    this_pos = hex_to_screen(loc)
+                    offset = self.iconLibrary.access(self.tool.highlight_icon).width()/2
+                    if self._icon_ghost is None:
+                        # make it
+                        self._icon_ghost = self.addPixmap(self.iconLibrary.access(self.tool.highlight_icon))
+                        self._icon_ghost.setZValue(200)
+                    self._icon_ghost.setPos(this_pos - QtCore.QPointF(offset, offset))
+                elif self.tool.state == 0:
+                    if self._icon_ghost is not None:
+                        self.removeItem(self._icon_ghost)
+                        self._icon_ghost = None
+            else:
+                if self._icon_ghost is not None:
+                    self.removeItem(self._icon_ghost)
+                    self._icon_ghost = None
+
+    def mouseDoubleClickEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
+        action = self._tool.double_click_event(event)
+        if not isinstance(action, NullAction):
+            self.do_now(action)
+
+    def mouseReleaseEvent(self, event:QGraphicsSceneMouseEvent) -> None:
+        if event.button() == self._primary:
+            action = self._tool.primary_mouse_released(event)
+            self._primary_held=False
+        elif event.button() == self._secondary:
+            action = self._tool.secondary_mouse_released(event)
+            self._secondary_held = False
+        if (event.button()==self._primary) or (event.button()==self._secondary):
+            if self._meta_event_holder:
+                self._meta_event_holder = False
+                if not isinstance(action, NullAction):
+                    self.add_to_meta(action)
+                self.finish_meta()
+            else:
+                if not isinstance(action, NullAction):
+                    self.do_now(action)
 
     def _get_cost_between(self, start_id:HexID, end_id:HexID, ignore_water:bool):
         """
@@ -219,18 +312,74 @@ class Clicker(QGraphicsScene, ActionManager):
                             openSet.insert(iter,neighbor)
         return([])
 
+    ########################### ENTITY METHODS #################################
+
+    def nextFreeEID(self)->int:
+        return self._entityCatalog.next_free_eid()
+    def registerEntity(self, entity, hID:HexID):
+        temp_sid = -1
+        self._entityCatalog.register(hID, entity, temp_sid)
+        self.draw_entities_at_hex(hID)
+    def updateEntity(self, eID:int, entity:Entity):
+        self._entityCatalog.update_entity(eID, entity)
+        here = self._entityCatalog.gethID(eID)
+        self.draw_entities_at_hex(here)
+    def removeEntity(self, eID:int):
+        here = self._entityCatalog.gethID(eID)
+        this_sid = self._entityCatalog.getSID(here)
+        self.removeItem(this_sid)
+        self._entityCatalog.remove(eID)
+
     def accessEid(self,eID)->Entity:
-        return Entity()
+        return self._entityCatalog.access_entity(eID)
 
     def eIDs_at_hex(self, coords:HexID):
         """
         returns eIDs at this HexID
         """
-        return [0,1,2]
+        return self._entityCatalog.access_entities_at(coords)
+
+    def draw_entities_at_hex(self, coords:HexID):
+        """
+        Drawing hierarchy goes
+            Mobile > Settlement > Anything Else
+
+        If there's something more, maybe add a little plus sign? 
+        """
+        pos = hex_to_screen(coords)
+
+        # remove anything already here! 
+        here = self._entityCatalog.getSID(coords)
+        if (here is not None) and here!=-1:
+            self.removeItem(here)
+        self.update()
+
+
+        these_entities = self.eIDs_at_hex(coords)
+        if len(these_entities)==0:
+            return
+        for eID in these_entities:
+            this_entity = self.accessEid(eID)
+
+            # mobiles not yet implemented 
+            if isinstance(this_entity, Settlement):
+                break
+        # current values of (eID, this_entity) are what we'll use 
+        use_this_pm = self.iconLibrary.access(this_entity.icon)
+
+        offset = QtCore.QPointF(use_this_pm.width()/2, use_this_pm.height()/2)
+        sid = self.addPixmap(use_this_pm)
+        sid.setPos(pos-offset)
+        sid.setZValue(20)
+        self._entityCatalog.update_sid(coords, sid)
+
+    
 
     @property
     def hexCatalog(self):
         return self._hexCatalog
+
+    #################################### TOOL ACCESS METHODS ################################3
 
     @property
     def tool(self):
@@ -238,8 +387,8 @@ class Clicker(QGraphicsScene, ActionManager):
     def select_tool(self, tool_name:str):
         self._tool.deselect()
         tool = self._alltools[tool_name]
-        self._highlighting_cursor = tool.highlight
         self._tool = tool
+        self._tool.set_state(tool.auto_state)
         # update the widget part with the tool's config widget 
 
     def add_tool(self, tool_name:str, tool:Basic_Tool):
@@ -250,62 +399,7 @@ class Clicker(QGraphicsScene, ActionManager):
         # add button to button grid
         # when you click on the button, the select tool function is called with the proper name 
 
-    def mousePressEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
-        if event.button() == self._primary:
-            self._primary_held = True 
-        elif event.button()==self._secondary:
-            self._secondary_held = True
-
-    def mouseMoveEvent(self, event:QGraphicsSceneMouseEvent) -> None:
-        self._tool.mouse_moved(event)
-        event.accept()
-
-        if self._primary_held:
-            action = self._tool.primary_mouse_held(event)
-        elif self._secondary_held:
-            action = self._tool.primary_mouse_held(event)
-        
-        if self._primary_held or self._secondary_held:
-            if (action is not None):
-                if not isinstance(action, NullAction):
-                    self.add_to_meta(action)
-                    self._meta_event_holder = True
-
-        if self._highlighting_cursor:
-            loc = screen_to_hex(event.scenePos())
-            if not loc==self._highlighted_id:
-                self._highlighted_id=loc
-                center = hex_to_screen(loc)
-                if self._highlight is not None:
-                    self.removeItem(self._highlight)
-                    self._highlight=None
-                new_hex = Hex(center)
-                self._brush.setStyle(0)
-                self._pen.setColor(QtGui.QColor(110,228,230))
-                self._pen.setStyle(1)
-                self._highlight = self.addPolygon(new_hex, self._pen, self._brush)
-
-        else:
-            if self._highlight is not None:
-                self.removeItem(self._highlight)
-                self._highlight = None
-
-    def mouseReleaseEvent(self, event:QGraphicsSceneMouseEvent) -> None:
-        if event.button() == self._primary:
-            action = self._tool.primary_mouse_released(event)
-            self._primary_held=False
-        elif event.button() == self._secondary:
-            action = self._tool.secondary_mouse_released(event)
-            self._secondary_held = False
-        if (event.button()==self._primary) or (event.button()==self._secondary):
-            if self._meta_event_holder:
-                self._meta_event_holder = False
-                if not isinstance(action, NullAction):
-                    self.add_to_meta(action)
-                self.finish_meta()
-            else:
-                if not isinstance(action, NullAction):
-                    self.do_now(action)
+    ######################### HEX METHODS #############################
 
     def accessHex(self, coords:HexID):
         """
@@ -362,6 +456,8 @@ class Clicker(QGraphicsScene, ActionManager):
         self.removeItem(sid)
         self._hexCatalog.remove(coords)
         self.update()
+
+    ############################### REGION METHODS ###################################3
 
     def regionAddHex(self,rid:int, coords:HexID):
         """
