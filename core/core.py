@@ -1,3 +1,4 @@
+from email.charset import QP
 from PyQt5.QtCore import QPointF
 from PyQt5.QtGui import QPolygonF, QColor
 from math import sqrt,sin,cos
@@ -5,12 +6,14 @@ from PyQt5.QtWidgets import QGraphicsItem
 
 from MultiHex2.core.map_entities import Entity
 
-from .coordinates import HexID, hex_to_screen, DRAWSIZE
+from .coordinates import HexID, hex_to_screen, DRAWSIZE, screen_to_hex
 
 import numpy as np
 from numpy.random import randint
 
 RTHREE = sqrt(3)
+
+
 
 class Hex(QPolygonF):
     def __init__(self, center:QPointF):
@@ -60,13 +63,14 @@ class Hex(QPolygonF):
     def set_fill(self, fill:QColor):
         self._fill = fill
     def set_params(self, params:dict):
-        self._params = params
+        for key in params:
+            self._params[key] = params[key]
     def set_param(self, param:str, value:float):
         self._params[param] = value
     
     def get_cost(self, other:'Hex', ignore_water=False):
         """
-        Gets the cost of movement between two hexes. Used for routing
+        Gets the cost of movement between two neighboring hexes. Used for routing
         """
         # xor operator
         # both should be land OR both should be water
@@ -128,6 +132,27 @@ class Hex(QPolygonF):
         new_hx.geography=obj["geo"]
         new_hx.wind = np.array(obj["wind"])
         return new_hx
+
+def get_adjacent_vertices(point:QPointF):
+    """
+    Returns the vertices adjacent to a given vertex. **this assumes that the point given lies on a vertex of a Hex**
+
+    there are one of two kinds of vertices:
+
+      1  __/   \__  2 
+           \   /
+
+    We don't know which this is. So, we look to the left of the vertex (step of DRAWSIZE), and up/down from it some small step. 
+    We access the IDs for each of those perturbed points; if they're the same it's type 2, otherwise type 1
+    """
+    x_step = -0.5*DRAWSIZE
+    y_step = 0.1*DRAWSIZE
+    type_1 = screen_to_hex(point + QPointF(x_step, y_step)) != screen_to_hex(point + QPointF(x_step, -y_step))
+
+    if type_1:
+        return QPointF(-DRAWSIZE, 0.0),QPointF(0.5*DRAWSIZE, 0.5*RTHREE*DRAWSIZE), QPointF(0.5*DRAWSIZE, -0.5*RTHREE*DRAWSIZE) 
+    else:
+        return QPointF(DRAWSIZE, 0.0),QPointF(-0.5*DRAWSIZE, 0.5*RTHREE*DRAWSIZE), QPointF(-0.5*DRAWSIZE, -0.5*RTHREE*DRAWSIZE) 
 
 class Region(QPolygonF):
     """
