@@ -14,6 +14,7 @@ from MultiHex2.tools.regiontools import RegionAdd
 from MultiHex2.core.map_entities import Settlement, IconLib
 from actions.baseactions import NullAction
 from core.coordinates import hex_to_screen
+from MultiHex2.generation.utils import Climatizer
 
 import json
 from collections import deque
@@ -65,7 +66,12 @@ class Clicker(QGraphicsScene, ActionManager):
 
         self.iconLibrary = IconLib()
 
-            
+    def apply_tileset(self, tileset:dict)->None:
+        climate = Climatizer(tileset)
+
+        for hID in self.hexCatalog:
+            climate.apply_climate_to_hex(self.hexCatalog[hID])
+            self.drawHex(hID)
         
     def save(self, filename:str):
         """

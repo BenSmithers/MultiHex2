@@ -132,7 +132,7 @@
     "ridge": {
       "color": [ 99, 88, 60 ],
       "params":{
-        "altitude_base": 1.5,
+        "altitude_base": 1.0,
         "rainfall_base": 0.5,
         "temperature_base": 0.2,
         "is_land": 10.0
@@ -143,7 +143,7 @@
     "mountain": {
       "color": [ 158, 140, 96 ],
       "params":{
-        "altitude_base": 1.3,
+        "altitude_base": 0.9,
         "rainfall_base": 0.5,
         "temperature_base": 0.2,
         "is_land": 10.0

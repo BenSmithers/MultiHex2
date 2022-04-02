@@ -4,11 +4,72 @@ Define some utilities used by the generators
  - perlin noise generator
 """
 from PyQt5.QtCore import QPointF
+from PyQt5.QtGui import QColor
 
 
 from math import exp
 import numpy as np
 import numpy.random as rnd
+
+from MultiHex2.core.core import Hex
+
+class Climatizer:
+    def __init__(self, tileset:dict):
+        self.tileset = tileset
+        self.params = Climatizer.get_params(tileset)
+        assert(len(self.params)>=1)
+
+    def _get_climate(self, params:list):
+        if len(params)!=len(self.params):
+            raise ValueError("Didn't get the right length of params: {}, not {}".format(len(params), len(self.params)))
+        
+        testing = np.array(params)
+        super = ""
+        subt = ""
+        distance = 10000. # arbitrarily large distance 
+
+        # loop over all the tiles we have
+        for super_type in self.tileset:
+            for sub_type in self.tileset[super_type]:
+                which = self.tileset[super_type][sub_type]["params"]
+                temp = np.array([which[param] for param in self.params])
+
+                # get the spatial distance between the tested set of parameters, and all the available tiles  
+                dist_between = np.sqrt(np.sum((temp - testing)**2))
+                if dist_between<distance:
+                    super = super_type
+                    subt = sub_type
+                    distance = dist_between
+
+        return super, subt
+
+    def apply_climate_to_hex(self, target:Hex):
+        """
+        Get the climate for this hex, apply it
+        """
+        these_params = [target.params[param] for param in self.params]
+        
+        sup, sub = self._get_climate(these_params)
+
+        target.set_params(self.tileset[sup][sub])
+        fill = self.tileset[sup][sub]["color"]
+        target.set_fill(QColor(fill[0], fill[1], fill[2]))
+        target.geography=sub
+
+    @classmethod
+    def get_params(cls, tset:dict)->list:
+        # get the parameters
+        parameters = []
+        ignoring = ["color","is_ray","flattype",]
+        for super_type in tset:
+            for sub_type in tset[super_type]:
+                for param in tset[super_type][sub_type]["params"]:
+                    if param not in ignoring:
+                        parameters.append( param )
+                # we really only need to do this for the first entry. So let's break! 
+                break
+            break
+        return( parameters )
 
 def get_loc(x:float, domain:list,closest=False):
     """

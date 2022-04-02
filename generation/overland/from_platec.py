@@ -3,14 +3,14 @@ from argparse import ArgumentError
 from MultiHex2.tools import Clicker
 from MultiHex2.core import hex_to_screen, screen_to_hex, Hex
 from MultiHex2.core import DRAWSIZE
-from ..utils import point_is_in, get_distribution, gauss
+from ..utils import perlin
 
 from PyQt5.QtCore import QPointF
 from PyQt5.QtGui import QColor
 
 import numpy.random as rnd
 import numpy as np
-from math import pi, acos, exp
+from math import pi, acos, exp, sin
 
 
 import platec
@@ -49,6 +49,7 @@ def gen_land(map:Clicker, seed=None, **kwargs):
     sea_level = 0.65
 
     print("doing platec stuff, seed {}".format(seed))
+    # these were some of the generation presets, decided against changing them, not sure what they all do
     p = platec.create(seed, int(dimensions[1]/scale), int(dimensions[0]/scale),sea_level, 61, 0.025, 1100000, 0.34, 2, 10)
     print("starting")
     while platec.is_finished(p)==0: 
@@ -57,6 +58,8 @@ def gen_land(map:Clicker, seed=None, **kwargs):
     heightmap  = np.reshape( platec.get_heightmap(p), (int(dimensions[0]/scale), int(dimensions[1]/scale) ))
     peak = np.max(heightmap)
     trough = np.min(heightmap)
+    print("Min/max alt {} and {}".format(sigmoid(trough-sea_level), sigmoid(peak-sea_level)))
+    pnoise = perlin(dimensions[0], seed)
     print("Max alt and min alt: {}, {}".format(trough, peak))
     for i in range(len(heightmap)):
         for j in range(len(heightmap[i])):
@@ -66,10 +69,13 @@ def gen_land(map:Clicker, seed=None, **kwargs):
             if loc not in map.hexCatalog:
                 new_hex = Hex(hex_to_screen(loc))
 
+                new_hex.set_param("is_land", 10*int(heightmap[i][j]>sea_level))
                 new_hex.is_land=heightmap[i][j]>sea_level  
 
-                new_hex.set_param("altitude_base", 2*sigmoid(heightmap[i][j] - sea_level))
+                new_hex.set_param("altitude_base", 1.25*sigmoid(heightmap[i][j] - sea_level)-0.25)
                 new_hex.set_param("rainfall_base",0.0)
+                fract = 1.0 - heightmap[i][j]/(2*peak) # will range from 0 to 0.5, use it to make high places colder
+                new_hex.set_param("temperature_base",pnoise[i][j]*0.5 + fract*sin(pi*j/len(heightmap[i])))
 
                 if heightmap[i][j]>16:
                     new_hex.geography="ridge"
