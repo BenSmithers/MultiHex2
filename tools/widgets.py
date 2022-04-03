@@ -15,32 +15,33 @@ from MultiHex2.guis.hex_select_gui import hex_select_gui
 # from MultiHex2.tools.clicker_tool import Clicker
 
 class ToolWidget(QtWidgets.QWidget):
-    def __init__(self, parent, tool):
+    def __init__(self, parent, tool, tileset):
         QtWidgets.QWidget.__init__(self, parent)
         self._tool = tool
 
         self._tool.link_to_widget(self)
+        self.tileset = tileset
        #    self.setMaximumWidth(250)
 
 class RegionWidget(ToolWidget):
-    def __init__(self, parent, tool):
-        ToolWidget.__init__(self, parent, tool)
+    def __init__(self, parent, tool,tileset):
+        ToolWidget.__init__(self, parent, tool,tileset)
         self.ui = RegionToolWidgetGui()
         self.ui.setupUi(self)
         self.setMaximumWidth(250)
         
 
 class HexSelectWidget(ToolWidget):
-    def __init__(self, parent, tool):
-        super().__init__(parent, tool)
+    def __init__(self, parent, tool,tileset):
+        super().__init__(parent, tool,tileset)
         self.ui = hex_select_gui()
         self.ui.setupUi(self)
         
 
 
 class HexBrushWidget(ToolWidget):
-    def __init__(self, parent, tool):
-        ToolWidget.__init__(self, parent, tool)
+    def __init__(self, parent, tool,tileset):
+        ToolWidget.__init__(self, parent, tool,tileset)
         self.ui = HexToolWidgetGui()
         self.ui.setupUi(self)
 
@@ -51,7 +52,8 @@ class HexBrushWidget(ToolWidget):
         self.ui.rightbutton.clicked.connect(self.increase_size)
 
         self._data = {}
-        self._apply_tileset(os.path.join(os.path.dirname(__file__),"..", "resources/main.json"))
+
+        self._apply_tileset(self.tileset)
         self.ui.hex_sub_list.clicked[QtCore.QModelIndex].connect( self.hex_subtype_clicked )
         self.ui.combobox.currentIndexChanged.connect(self.hex_supertype_clicked)
 
@@ -87,6 +89,7 @@ class HexBrushWidget(ToolWidget):
         self._apply_tileset(pathto)
 
     def _apply_tileset(self,pathto:str):
+        self.ui.combobox.clear()
         f = open(pathto,'r')
         self._data = json.load(f)
         f.close()

@@ -17,6 +17,7 @@ def fullsim(map:Clicker, preset="continental"):
 
     #generate_ridges(map, **config["mountains"]["values"])
     #generate_land(map, **config["land"]["values"])
+    map.module = "overland"
     gen_land(map,seed=seed, **config["mountains"]["values"])
     simulate_wind(map,seed=seed, **config)
     simulate_clouds(map,seed=seed, **config)

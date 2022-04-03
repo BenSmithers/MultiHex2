@@ -108,6 +108,17 @@ class main_gui(object):
 
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
+    def clear_buttons(self):
+        for button_key in self.buttons.keys():
+            self.buttonGrid.removeWidget(self.buttons[button_key])
+            self.buttons[button_key].deleteLater()
+        for button_key in self.second_buttons.keys():
+            self.civButtonGrid.removeWidget(self.second_buttons[button_key])
+            self.second_buttons[button_key].deleteLater()
+
+        self.buttons = {}
+        self.second_buttons = {}
+
     def add_button(self, name:str, button:QtGui.QPixmap, alt_text="", layer=ToolLayer.null):
         new_button = QtWidgets.QPushButton(self.centralwidget)
         new_button.setObjectName(name)

@@ -1,5 +1,6 @@
 #!/usr/bin/python3.8
 
+from distutils.command.config import config
 from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QFileDialog, QGraphicsScene
 from PyQt5 import QtGui, QtCore, QtWidgets
 from PyQt5.QtCore import Qt
@@ -14,13 +15,16 @@ from MultiHex2.tools.entity_tools import EntitySelector, AddEntityTool, AddSettl
 from MultiHex2.tools import Basic_Tool
 from MultiHex2.generation.overland import fullsim
 from MultiHex2.guis.savewarn import SaveWarnDialogGui
+from MultiHex2.main_menu import MainMenuDialog
+from tools.basic_tool import ToolLayer
+from MultiHex2.modules import ALL_MODULES
 
 import os
 import sys
 import typing
+import shutil
+import json
 
-
-from tools.basic_tool import ToolLayer
 
 if sys.platform=="linux":
     SAVEDIR = os.path.join(os.environ["HOME"], ".local", "MultiHex")
@@ -65,13 +69,63 @@ class main_window(QMainWindow):
         self.ui.export_image.triggered.connect(self.export_image)
 
 
-        self.add_tool("hex_brush", HexBrush)
-        self.add_tool("hex_select", HexSelect)
-        self.add_tool("region_add", RegionAdd)
-        #self.add_tool("route_tester", RouteTester)
-        self.add_tool("entity_select", EntitySelector)
-        self.add_tool("entity_add", AddEntityTool)
-        self.add_tool("settlement_add", AddSettlement)
+        config_name = "config.json"
+        config_filepath = os.path.join(SAVEDIR, config_name)
+        if not os.path.exists(config_filepath):
+            shutil.copyfile(os.path.join(os.path.dirname(__file__), "resources", "template_config.json"), config_filepath)
+        
+        print(config_filepath)
+        f = open(config_filepath, 'rt')
+        self.config = json.load(f)
+        f.close()
+
+        self._loaded_module = False
+        self._will_generate = False
+        self.module = None
+        self.module = self.load_module(self.config["module"])
+        self.open_menu()
+
+        self.tileset = ""
+        self.generator = None
+
+        if self._will_generate:
+            self.new()
+        
+    def load_module(self, module_name:str):
+        """
+        Clear all the buttons, tell the scene to delete all its tools
+
+        Then, add in all the relevant tools 
+        """
+        if self.module is not None:
+            if self.module.name==module_name: # the module is already loaded, don't waste time
+                return
+
+        self.ui.clear_buttons()
+        self.scene.clear_tools()
+
+        
+        module = ALL_MODULES[module_name]()
+        self.scene.module = module_name
+        self.scene.tileset = module.tileset
+        all_tools = module.tools
+        for key in all_tools:
+            self.add_tool(key, all_tools[key])
+        self.generator = module.generator_function
+        print("Loaded Module '{}'".format(module.name))
+        self._loaded_module = True
+
+        return module
+
+    def open_menu(self):
+        accepted = False
+
+        while not accepted:
+            dialog = MainMenuDialog(self)
+            dialog.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+            dialog.exec_()
+
+            accepted = dialog.Accepted
 
     def export_image(self):
         temp= QFileDialog.getSaveFileName(None, 'Exoport Image', SAVEDIR, 'PNGs (*.png)')[0]
@@ -89,7 +143,10 @@ class main_window(QMainWindow):
         image.save(temp)
 
     def new(self):
-        fullsim(self.scene)
+        if not self._loaded_module:
+            self._will_generate = True
+        else:
+            self.generator(self.scene) 
 
     def save(self):
         self.scene.reset_save()
@@ -121,6 +178,13 @@ class main_window(QMainWindow):
                 self.scene.load( pathto)
                 self.scene.reset_save()
 
+        if self.module is not None:
+            if self.scene.module == self.module.name:
+                return pathto
+
+        self.load_module(self.module.name)
+        return pathto
+
     def keyPressEvent(self, a0: QtGui.QKeyEvent) -> None:
         if a0.key()==Qt.Key_Escape:
             self.select_tool("basic")
@@ -148,7 +212,7 @@ class main_window(QMainWindow):
             self.ui.toolPane.removeWidget(self.ui.toolwidget)
             self.ui.toolwidget.deleteLater()
             self.ui.toolwidget = None
-        self.ui.toolwidget = self.scene.tool.widget()(self.ui.centralwidget, self.scene.tool)
+        self.ui.toolwidget = self.scene.tool.widget()(self.ui.centralwidget, self.scene.tool, self.module.tileset)
         self.ui.toolPane.addWidget(self.ui.toolwidget)
         self.ui.toolPane.update()
         

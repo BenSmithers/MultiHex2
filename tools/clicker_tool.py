@@ -66,9 +66,12 @@ class Clicker(QGraphicsScene, ActionManager):
 
         self.iconLibrary = IconLib()
 
+        self.module = ""
+        self.tileset = ""
+
     def apply_tileset(self, tileset:dict)->None:
         climate = Climatizer(tileset)
-
+        self.tileset = tileset
         for hID in self.hexCatalog:
             climate.apply_climate_to_hex(self.hexCatalog[hID])
             self.drawHex(hID)
@@ -83,7 +86,8 @@ class Clicker(QGraphicsScene, ActionManager):
             "hexes":{},
             "regions":{},
             "drawsize":DRAWSIZE,
-            "dimensions":[self.dimensions[0], self.dimensions[1]]
+            "dimensions":[self.dimensions[0], self.dimensions[1]],
+            "module":self.module
             }
         hexes = self._hexCatalog
         for hID in hexes._hidcatalog:
@@ -119,6 +123,7 @@ class Clicker(QGraphicsScene, ActionManager):
         for str_rid in in_dict["regions"].keys():
             reg = Region.unpack(in_dict["regions"][str_rid])
             self.addRegion(reg)
+        self.module=in_dict["module"]
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
         """
@@ -396,6 +401,9 @@ class Clicker(QGraphicsScene, ActionManager):
         self._tool = tool
         self._tool.set_state(tool.auto_state)
         # update the widget part with the tool's config widget 
+
+    def clear_tools(self):
+        self._alltools = {}
 
     def add_tool(self, tool_name:str, tool:Basic_Tool):
         if tool_name in self._alltools:
