@@ -62,9 +62,12 @@ class Hex(QPolygonF):
 
     def set_fill(self, fill:QColor):
         self._fill = fill
-    def set_params(self, params:dict):
+    def set_params(self, params:dict,*skipkeys):
         for key in params:
-            self._params[key] = params[key]
+            if key in skipkeys:
+                continue
+            else:
+                self._params[key] = params[key]
     def set_param(self, param:str, value:float):
         self._params[param] = value
     
