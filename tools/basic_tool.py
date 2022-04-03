@@ -32,6 +32,8 @@ class Basic_Tool:
         self.auto_state = 0 # automatically set to this state when selected
         self.highlight_icon = ""
 
+        self._widget_instance = None
+
     def deselect(self):
         self._state = 0
 
@@ -48,10 +50,16 @@ class Basic_Tool:
     def altText(cls):
         return "Prototype tool template text"
 
+    def link_to_widget(self, widg:ToolWidget):
+        """
+        Connects an instance of this tool to an instance of the widget that configures it. 
+        """
+        self._widget_instance = widg
+
     @classmethod
     def widget(self):
         """
-        returns the widget that can configure this tool 
+        returns the widget Class that can configure this tool 
         """
         return ToolWidget
 

@@ -11,12 +11,16 @@ import json
 from PyQt5 import QtWidgets, QtGui, QtCore
 from MultiHex2.tools.widgetgui.hextoolgui import Ui_Form as HexToolWidgetGui
 from MultiHex2.tools.widgetgui.regionui import Ui_Form as RegionToolWidgetGui
+from MultiHex2.guis.hex_select_gui import hex_select_gui
 # from MultiHex2.tools.clicker_tool import Clicker
 
 class ToolWidget(QtWidgets.QWidget):
     def __init__(self, parent, tool):
         QtWidgets.QWidget.__init__(self, parent)
         self._tool = tool
+
+        self._tool.link_to_widget(self)
+       #    self.setMaximumWidth(250)
 
 class RegionWidget(ToolWidget):
     def __init__(self, parent, tool):
@@ -25,6 +29,14 @@ class RegionWidget(ToolWidget):
         self.ui.setupUi(self)
         self.setMaximumWidth(250)
         
+
+class HexSelectWidget(ToolWidget):
+    def __init__(self, parent, tool):
+        super().__init__(parent, tool)
+        self.ui = hex_select_gui()
+        self.ui.setupUi(self)
+        
+
 
 class HexBrushWidget(ToolWidget):
     def __init__(self, parent, tool):

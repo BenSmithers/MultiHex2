@@ -401,9 +401,6 @@ class Clicker(QGraphicsScene, ActionManager):
         if tool_name in self._alltools:
             raise ValueError("Cannot add tool {}, already exists in tool dict {}".format(tool_name, self._alltools.keys()))
         self._alltools[tool_name]=tool(self)
-        # TODO 
-        # add button to button grid
-        # when you click on the button, the select tool function is called with the proper name 
 
     ######################### HEX METHODS #############################
 

@@ -53,6 +53,7 @@ class Climatizer:
 
         target.set_params(self.tileset[sup][sub])
         fill = self.tileset[sup][sub]["color"]
+        target._flat = self.tileset[sup][sub]["flattype"]
         target.set_fill(QColor(fill[0], fill[1], fill[2]))
         target.geography=sub
 

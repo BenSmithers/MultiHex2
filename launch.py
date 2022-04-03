@@ -68,7 +68,7 @@ class main_window(QMainWindow):
         self.add_tool("hex_brush", HexBrush)
         self.add_tool("hex_select", HexSelect)
         self.add_tool("region_add", RegionAdd)
-        self.add_tool("route_tester", RouteTester)
+        #self.add_tool("route_tester", RouteTester)
         self.add_tool("entity_select", EntitySelector)
         self.add_tool("entity_add", AddEntityTool)
         self.add_tool("settlement_add", AddSettlement)

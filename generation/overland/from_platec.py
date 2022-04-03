@@ -58,7 +58,7 @@ def gen_land(map:Clicker, seed=None, **kwargs):
     heightmap  = np.reshape( platec.get_heightmap(p), (int(dimensions[0]/scale), int(dimensions[1]/scale) ))
     peak = np.max(heightmap)
     trough = np.min(heightmap)
-    print("Min/max alt {} and {}".format(sigmoid(trough-sea_level), sigmoid(peak-sea_level)))
+    print("Min/max alt {} and {}".format( 2*sigmoid(trough-sea_level)-1.0,  2*sigmoid(peak-sea_level)-1.0 ))
     pnoise = perlin(dimensions[0], seed)
     print("Max alt and min alt: {}, {}".format(trough, peak))
     for i in range(len(heightmap)):
@@ -72,7 +72,7 @@ def gen_land(map:Clicker, seed=None, **kwargs):
                 new_hex.set_param("is_land", 10*int(heightmap[i][j]>sea_level))
                 new_hex.is_land=heightmap[i][j]>sea_level  
 
-                new_hex.set_param("altitude_base", 1.25*sigmoid(heightmap[i][j] - sea_level)-0.25)
+                new_hex.set_param("altitude_base",  2*sigmoid(heightmap[i][j]-sea_level)-1.0 )
                 new_hex.set_param("rainfall_base",0.0)
                 fract = 1.0 - heightmap[i][j]/(2*peak) # will range from 0 to 0.5, use it to make high places colder
                 new_hex.set_param("temperature_base",pnoise[i][j]*0.5 + fract*sin(pi*j/len(heightmap[i])))

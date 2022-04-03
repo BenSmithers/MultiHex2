@@ -1,6 +1,6 @@
 from MultiHex2.tools.basic_tool import Basic_Tool
 from MultiHex2.actions import Add_Remove_Hex
-from MultiHex2.tools.widgets import HexBrushWidget
+from MultiHex2.tools.widgets import HexBrushWidget, HexSelectWidget
 from MultiHex2.core import hex_to_screen, screen_to_hex, Hex
 import os 
 
@@ -22,6 +22,26 @@ class HexSelect(Basic_Tool):
         self.tool_layer = ToolLayer.terrain
         self.highlight = False
 
+    def primary_mouse_released(self, event):
+        loc = screen_to_hex(event.scenePos())
+        this_hex = self.parent.accessHex(loc)
+
+        if this_hex is None:
+            self._widget_instance.ui.geo_disp.setText("...")
+            self._widget_instance.ui.hid_disp.setText("00-00-00")
+            self._widget_instance.ui.textBrowser.setText("...")
+        else:
+            self._widget_instance.ui.geo_disp.setText(this_hex.geography)
+            self._widget_instance.ui.hid_disp.setText(str(loc))
+            full_str = ""
+            for key in this_hex.params.keys():
+                full_str += "{}: {}\n".format(key, this_hex.params[key])
+                
+            self._widget_instance.ui.textBrowser.setText(full_str)                
+
+
+        return NullAction()
+
     @classmethod
     def tool_layer(cls):
         return ToolLayer.terrain
@@ -34,6 +54,10 @@ class HexSelect(Basic_Tool):
     @classmethod
     def altText(cls):
         return "Hex Select Tool"
+
+    @classmethod
+    def widget(self):
+        return HexSelectWidget
 
 class HexBrush(Basic_Tool):
     """
