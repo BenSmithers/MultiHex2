@@ -27,6 +27,6 @@ class Overland(Module):
             "settlement_add":AddSettlement
         }
 
-        self._tileset_location=os.path.join(os.path.dirname(__file__), "..","resources","main.json")
+        self._tileset_location=os.path.join(os.path.dirname(__file__), "..","resources","tilesets","main.json")
 
         self._generator = fullsim
