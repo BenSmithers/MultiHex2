@@ -70,18 +70,15 @@ class main_window(QMainWindow):
 
 
         config_name = "config.json"
-        config_filepath = os.path.join(SAVEDIR, config_name)
-        if not os.path.exists(config_filepath):
-            shutil.copyfile(os.path.join(os.path.dirname(__file__), "resources", "template_config.json"), config_filepath)
+        self.config_filepath = os.path.join(SAVEDIR, config_name)
+        if not os.path.exists(self.config_filepath):
+            shutil.copyfile(os.path.join(os.path.dirname(__file__), "resources", "template_config.json"), self.config_filepath)
         
-        print(config_filepath)
-        f = open(config_filepath, 'rt')
-        self.config = json.load(f)
-        f.close()
+        self.module = None
+        self.reload_config()
 
         self._loaded_module = False
         self._will_generate = False
-        self.module = None
         self.module = self.load_module(self.config["module"])
         self.open_menu()
 
@@ -91,6 +88,24 @@ class main_window(QMainWindow):
         if self._will_generate:
             self.new()
         
+    def reload_config(self):
+        """
+        Load in a config file. 
+
+        If there's no module loaded yet, don't do anything yet! We're still in the setup phase
+
+        Otherwise check if the module type has changed, and if so swap out the modules
+        """
+        f = open(self.config_filepath, 'rt')
+        self.config = json.load(f)
+        f.close()
+
+        self.scene.set_primary_mouse(self.config["primary_mouse"]=="left")
+
+        if self.module is not None:
+            if self.config["module"]!=self.module.name:
+                self.load_module(self.config["module"])
+
     def load_module(self, module_name:str):
         """
         Clear all the buttons, tell the scene to delete all its tools

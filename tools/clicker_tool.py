@@ -69,6 +69,14 @@ class Clicker(QGraphicsScene, ActionManager):
         self.module = ""
         self.tileset = ""
 
+    def set_primary_mouse(self, left_button=True):
+        if left_button:
+            self._primary = Qt.LeftButton
+            self._secondary = Qt.RightButton
+        else:
+            self._primary = Qt.RightButton
+            self._secondary = Qt.LeftButton
+
     def apply_tileset(self, tileset:dict)->None:
         climate = Climatizer(tileset)
         self.tileset = tileset
