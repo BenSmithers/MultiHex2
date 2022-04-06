@@ -23,6 +23,15 @@ class Module:
     
         self._tileset_location = ""
         self._generator = generic
+        self._skip_geo=[] 
+
+    @property
+    def skip_geo(self):
+        """
+        when assigning a geography/climate to a hex (using the apply_tileset function)
+        skip the hexes that have these geographies
+        """
+        return self._skip_geo
 
     @property
     def tileset(self):

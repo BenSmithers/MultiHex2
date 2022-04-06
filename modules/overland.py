@@ -30,3 +30,5 @@ class Overland(Module):
         self._tileset_location=os.path.join(os.path.dirname(__file__), "..","resources","tilesets","main.json")
 
         self._generator = fullsim
+
+        self._skip_geo = ["mountain","ridge", "peak"]

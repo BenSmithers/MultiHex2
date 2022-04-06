@@ -81,6 +81,8 @@ class Clicker(QGraphicsScene, ActionManager):
         climate = Climatizer(tileset)
         self.tileset = tileset
         for hID in self.hexCatalog:
+            if self.hexCatalog[hID].geography in self._parent_window.module.skip_geo:
+                continue
             climate.apply_climate_to_hex(self.hexCatalog[hID])
             self.drawHex(hID)
         

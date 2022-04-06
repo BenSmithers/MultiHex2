@@ -20,15 +20,22 @@ ARTDIR = os.path.join( os.path.dirname(__file__),'..', 'assets', )
 class IconLib:
     """
         A library for pre-loading all the icons we'll be using. This is used by the clicker tool for drawing the entities 
+
+        Modules can provide a folder of icons which can overwrite (and add to) the default set of icons
     """
-    def __init__(self):
+    def __init__(self, module_folder=""):
         self._pictures = glob(os.path.join(ARTDIR, "map_icons", "*.svg"))
         self._pixmaps = {}        
         for each in self._pictures:
             name = os.path.split(each)[1].split(".")[0]
 
             self._pixmaps[name] = QtGui.QPixmap(each).scaledToWidth(DRAWSIZE*1.5)
-    
+
+        module_overwrite = glob(os.path.join(module_folder, "*"))
+        for each in module_overwrite:
+            name = os.path.split(each)[1].split(".")[0]
+            self._pixmaps[name] = QtGui.QPixmap(each).scaledToWidth(DRAWSIZE*1.5)
+
     def all_names(self):
         return list(self._pixmaps.keys())
 
