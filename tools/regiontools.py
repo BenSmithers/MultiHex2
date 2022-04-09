@@ -1,6 +1,7 @@
 from MultiHex2.tools.basic_tool import Basic_Tool, ToolLayer
 from MultiHex2.tools.widgets import RegionWidget
 from MultiHex2.core import Region, screen_to_hex, Hex, HexID
+from MultiHex2.core.core import County
 from actions.baseactions import NullAction
 from MultiHex2.actions.regionactions import Merge_Regions_Action, Region_Add_Remove, New_Region_Action
 
@@ -23,6 +24,8 @@ class RegionAdd(Basic_Tool):
         Basic_Tool.__init__(self, parent)
         self.highlight = True
         self._selected_rid = -1
+
+        self.regionType = Region
 
     @classmethod
     def tool_layer(cls):
@@ -47,12 +50,12 @@ class RegionAdd(Basic_Tool):
 
     def primary_mouse_released(self, event: QtWidgets.QGraphicsSceneMouseEvent):
         loc =  screen_to_hex( event.scenePos() )
-        this_rid = self.parent.accessHexRegion(loc) # region under hex, none if no region
+        this_rid = self.parent.accessHexRegion(loc, self.tool_layer()) # region under hex, none if no region
         if self._selected_rid == -1:
             # make new region
             if this_rid is None:
                 hex_here = Hex(hex_to_screen(loc))
-                action = New_Region_Action(region=Region(hex_here), rid=self.parent.get_next_rid())
+                action = New_Region_Action(region=self.regionType(hex_here), rid=self.parent.get_next_rid(self.tool_layer()), layer=self.tool_layer())
                 self._selected_rid = action.rID
                 return action
             else:
@@ -65,7 +68,7 @@ class RegionAdd(Basic_Tool):
             if this_rid is None:
                 # add to that region
                 # ["rID", 'hexID']
-                return Region_Add_Remove(rID = self._selected_rid, hexID=loc)
+                return Region_Add_Remove(rID = self._selected_rid, hexID=loc, layer=self.tool_layer())
             else:
                 self._selected_rid = this_rid
                 return NullAction()
@@ -81,5 +84,23 @@ class RegionAdd(Basic_Tool):
 
     @classmethod
     def altText(cls):
-        return "Hex Brush Tool"
+        return "Biome Draw Tool"
 
+
+class CivAdd(RegionAdd):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.regionType = County
+
+    @classmethod
+    def tool_layer(cls):
+        return ToolLayer.civilization
+
+    @classmethod
+    def buttonIcon(cls):
+        assert(os.path.exists(os.path.join(art_dir, "county.svg")))
+        return QtGui.QPixmap(os.path.join(art_dir, "county.svg")).scaled(48,48)
+
+    @classmethod
+    def altText(cls):
+        return "County Draw Tool"

@@ -9,6 +9,8 @@ import os
 import json
 
 from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5.QtWidgets import QColorDialog
+
 from MultiHex2.tools.widgetgui.hextoolgui import Ui_Form as HexToolWidgetGui
 from MultiHex2.tools.widgetgui.regionui import Ui_Form as RegionToolWidgetGui
 from MultiHex2.guis.hex_select_gui import hex_select_gui
@@ -21,14 +23,28 @@ class ToolWidget(QtWidgets.QWidget):
 
         self._tool.link_to_widget(self)
         self.tileset = tileset
-       #    self.setMaximumWidth(250)
+        self.setMaximumWidth(250)
+        self.setMinimumWidth(250)
 
 class RegionWidget(ToolWidget):
     def __init__(self, parent, tool,tileset):
         ToolWidget.__init__(self, parent, tool,tileset)
         self.ui = RegionToolWidgetGui()
         self.ui.setupUi(self)
-        self.setMaximumWidth(250)
+
+        self.ui.color_choice_button.clicked.connect(self.choose_color)
+        self.ui.delete_button.clicked.connect(self.delete_region)
+        self.ui.apply_button.clicked.connect(self.delete_region)
+
+    def choose_color(self):
+        old_one = QtGui.QColor(0,0,0)
+        new_color = QColorDialog.getColor(initial = old_one, parent=self.parent)
+
+    def delete_region(self):
+        pass
+
+    def apply(self):
+        pass
         
 
 class HexSelectWidget(ToolWidget):
@@ -44,8 +60,6 @@ class HexBrushWidget(ToolWidget):
         ToolWidget.__init__(self, parent, tool,tileset)
         self.ui = HexToolWidgetGui()
         self.ui.setupUi(self)
-
-        self.setMaximumWidth(250)
 
         self.ui.tilesetbutton.clicked.connect(self.load_tileset)
         self.ui.leftbutton.clicked.connect(self.decrease_size)

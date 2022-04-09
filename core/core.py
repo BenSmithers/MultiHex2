@@ -4,6 +4,7 @@ from PyQt5.QtGui import QPolygonF, QColor
 from math import sqrt,sin,cos
 from PyQt5.QtWidgets import QGraphicsItem
 
+from MultiHex2.core.map_entities import Government
 from MultiHex2.core.map_entities import Entity
 
 from .coordinates import HexID, hex_to_screen, DRAWSIZE, screen_to_hex
@@ -230,6 +231,10 @@ class Region(QPolygonF):
         new._name = self._name
         new._fill = self._fill
         return new
+
+class County(Region, Government):
+    def __init__(self, origin: QPolygonF, *hexIDs: HexID):
+        super().__init__(origin, *hexIDs)
 
 class RegionCatalog:
     """
