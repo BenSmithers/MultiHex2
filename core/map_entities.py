@@ -31,10 +31,11 @@ class IconLib:
 
             self._pixmaps[name] = QtGui.QPixmap(each).scaledToWidth(DRAWSIZE*1.5)
 
-        module_overwrite = glob(os.path.join(module_folder, "*"))
-        for each in module_overwrite:
-            name = os.path.split(each)[1].split(".")[0]
-            self._pixmaps[name] = QtGui.QPixmap(each).scaledToWidth(DRAWSIZE*1.5)
+        if module_folder!="":
+            module_overwrite = glob(os.path.join(module_folder, "*"))
+            for each in module_overwrite:
+                name = os.path.split(each)[1].split(".")[0]
+                self._pixmaps[name] = QtGui.QPixmap(each).scaledToWidth(DRAWSIZE*1.5)
 
     def all_names(self):
         return list(self._pixmaps.keys())

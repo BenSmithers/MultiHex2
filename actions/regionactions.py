@@ -12,17 +12,17 @@ class New_Region_Action(MapAction):
     """
     def __init__(self, **kwargs):
         MapAction.__init__(self, recurring=None, **kwargs)
-        self.needed=["region", "rid"]
+        self.needed=["region", "rid", "layer"]
         self.verify(kwargs)
-        #self.rlayer=kwargs["rlayer"]
         self.region=kwargs["region"]
         self.rID=kwargs["rid"]
+        self.layer=kwargs["layer"]
 
 
     def __call__(self, map:QGraphicsScene):
-        this_rid = map.addRegion( self.region )
+        this_rid = map.addRegion( self.region, self.layer )
         assert(this_rid == self.rID)
-        return Delete_Region_Action(rID=self.rID, region=self.region)
+        return Delete_Region_Action(rID=self.rID, region=self.region, layer=self.layer)
 
 class Delete_Region_Action(MapAction):
     """
@@ -30,16 +30,16 @@ class Delete_Region_Action(MapAction):
     """
     def __init__(self, **kwargs):
         MapAction.__init__(self, recurring=None, **kwargs)
-        self.needed=["rID"]
+        self.needed=["rID", "layer"]
         self.verify(kwargs)
-        #self.rlayer=kwargs["rlayer"]
+        self.layer=kwargs["layer"]
         self.rID=kwargs["rID"]
 
     def __call__(self, map:QGraphicsScene):
-        old_region = map.accessRegion(self.rID)
+        old_region = map.accessRegion(self.rID, self.layer)
         map.deleteRegion(self.rID)
 
-        return New_Region_Action(region=old_region, rid=self.rID)
+        return New_Region_Action(region=old_region, rid=self.rID, layer=self.layer)
 
 
 class Region_Add_Remove(MapAction):
@@ -48,11 +48,11 @@ class Region_Add_Remove(MapAction):
     """
     def __init__(self, **kwargs):
         MapAction.__init__(self, recurring=None, **kwargs)
-        self.needed = ["rID", 'hexID']
+        self.needed = ["rID", 'hexID', 'layer']
         self.verify(kwargs)
         self.rID = kwargs["rID"]
         self.hexID = kwargs["hexID"]
-        #self.rlayer = kwargs["rlayer"]
+        self.layer = kwargs["layer"]
         
         self.old_rid = None
 
@@ -60,27 +60,27 @@ class Region_Add_Remove(MapAction):
     def __call__(self, map:QGraphicsScene):
         if self.rID is None: # removing this hex from a region
 
-            self.old_rid = map.accessHexRegion(self.hexID)
-            old_region = copy(map.accessRegion(self.rID))
+            self.old_rid = map.accessHexRegion(self.hexID, self.layer)
+            old_region = copy(map.accessRegion(self.rID, self.layer))
 
-            map.regionRemoveHex( self.hexID )
+            map.regionRemoveHex( self.hexID, self.layer )
 
             # this might have deleted the region, check if its still part of the catalog
-            if map.accessRegion(self.old_rid) is None:
+            if map.accessRegion(self.old_rid, self.layer) is None:
                 # if it did, the inverse is to make a new region with the old rid
-                return New_Region_Action(rID=self.old_rid, region=old_region)
+                return New_Region_Action(rID=self.old_rid, region=old_region, layer=self.layer)
             else:
                 # if it didn't delete the region, then we just add the hex back in
-                return Region_Add_Remove(rID=self.old_rid, hexID=self.hexID)
+                return Region_Add_Remove(rID=self.old_rid, hexID=self.hexID, layer=self.layer)
         else:
             # there's a chance this action is the inverse of one that deleted the region we're adding back to
 
-            if map.accessRegion(self.rID) is None:
+            if map.accessRegion(self.rID, self.layer) is None:
                 raise ValueError("Cannot add to region {}, which doesn't exist".format(self.rID))
             else:
-                map.regionAddHex(self.rID , self.hexID ) 
+                map.regionAddHex(self.rID , self.hexID , self.layer) 
             
-            return Region_Add_Remove(rID=None, hexID=self.hexID)
+            return Region_Add_Remove(rID=None, hexID=self.hexID, layer=self.layer)
 
 class Merge_Regions_Action(MapAction):
     def __init__(self, **kwargs):
@@ -89,7 +89,7 @@ class Merge_Regions_Action(MapAction):
         self.verify(kwargs)
         self.rid1 = kwargs["rID1"]
         self.rid2 = kwargs["rID2"]
-       # self.rlayer = kwargs["rlayer"]
+        self.layer = kwargs["layer"]
 
         self._drawtype=True
     
@@ -100,14 +100,14 @@ class Merge_Regions_Action(MapAction):
         We have to delete the combined region (Region 1), then create the sub-regions (1 and 2)
         We need to also be sure to make the sub-regions in order of increasing region number 
         """
-        map.mergeRegions(self.rid1, self.rid2)
+        map.mergeRegions(self.rid1, self.rid2, layer=self.layer)
 
-        region1 = map.accessRegion(self.rid1)
-        region2 = map.accessRegion(self.rid2)
+        region1 = map.accessRegion(self.rid1, layer=self.layer)
+        region2 = map.accessRegion(self.rid2, layer=self.layer)
 
-        inverse = MetaAction(Delete_Region_Action(rID=self.rid1))
-        add1 = New_Region_Action(rID=self.rid1, region=region1)
-        add2 = New_Region_Action(rID=self.rid2, region=region2)
+        inverse = MetaAction(Delete_Region_Action(rID=self.rid1, layer=self.layer))
+        add1 = New_Region_Action(rID=self.rid1, region=region1, layer=self.layer)
+        add2 = New_Region_Action(rID=self.rid2, region=region2, layer=self.layer)
         """
          the order matters! 
          if these are in the wrong order we may go 

@@ -9,7 +9,7 @@ from MultiHex2.core import Catalog, RegionCatalog, EntityCatalog
 from MultiHex2.core import Hex, HexID, Region, Entity
 from MultiHex2.core import screen_to_hex
 from MultiHex2.actions import ActionManager
-from MultiHex2.tools.basic_tool import Basic_Tool
+from MultiHex2.tools.basic_tool import Basic_Tool, ToolLayer
 from MultiHex2.tools.regiontools import RegionAdd
 from MultiHex2.core.map_entities import Settlement, IconLib
 from actions.baseactions import NullAction
@@ -52,6 +52,7 @@ class Clicker(QGraphicsScene, ActionManager):
 
         self._hexCatalog = Catalog(dtype=Hex)
         self._biomeCatalog = RegionCatalog()
+        self._countyCatalog = RegionCatalog()
         self._entityCatalog = EntityCatalog()
 
         self._pen = QtGui.QPen() # STROKE EFFECTS
@@ -414,6 +415,8 @@ class Clicker(QGraphicsScene, ActionManager):
 
     def clear_tools(self):
         self._alltools = {}
+        self.add_tool("basic", Basic_Tool) 
+        self.select_tool("basic")
 
     def add_tool(self, tool_name:str, tool:Basic_Tool):
         if tool_name in self._alltools:
@@ -480,94 +483,123 @@ class Clicker(QGraphicsScene, ActionManager):
 
     ############################### REGION METHODS ###################################3
 
-    def regionAddHex(self,rid:int, coords:HexID):
+    def _get_region_cat(self, layer:ToolLayer):
+        """
+            shorthand for getting the catalog corresponding to this layer
+        """
+        if layer==ToolLayer.null or layer==ToolLayer.terrain:
+            return self._biomeCatalog
+        elif layer==ToolLayer.civilization:
+            return self._countyCatalog
+        else:
+            raise NotImplementedError("Nothing for {}".format(layer))
+
+    def regionAddHex(self,rid:int, coords:HexID, layer:ToolLayer):
         """
         Adds a hex to a region
         """
-        self._biomeCatalog.add_hex(coords, rid) # update the catalog so it knows about the new association
+        using = self._get_region_cat(layer)
 
-        region = self._biomeCatalog.get_region(rid) # access the region from the catalog
+        using.add_hex(coords, rid) # update the catalog so it knows about the new association
+
+        region = using.get_region(rid) # access the region from the catalog
         new_region = Region(Hex(hex_to_screen(coords)), coords) 
         region = region.merge(new_region) # convert the new space into a region, merge it
-        self._biomeCatalog.updateRegion(rid, region) # make the catalog aware of the modified region
-        self.drawRegion(rid) # redraw it 
+        using.updateRegion(rid, region) # make the catalog aware of the modified region
 
-    def accessRegion(self, rid:int)->'Region':
+
+        self.drawRegion(rid, layer) # redraw it 
+
+    def accessRegion(self, rid:int, layer:ToolLayer)->'Region':
         """
         Returns the region at this rid from the catalog
         """
-        return self._biomeCatalog.get_region(rid)
-    def accessHexRegion(self,hid:HexID)->int:
+        return self._get_region_cat(layer).get_region(rid)
+    def accessHexRegion(self,hid:HexID, layer:ToolLayer)->int:
         """
         Returns the region at this hexid, returns None if none exists
         """
-        return self._biomeCatalog.get_rid(hid)
-    def mergeRegions(self, rid1:int, rid2:int):
-        region1 = self.accessRegion(rid1)
-        region2 = self.accessRegion(rid2)
+        return self._get_region_cat(layer).get_rid(hid)
+        
+    def mergeRegions(self, rid1:int, rid2:int, layer:ToolLayer):
+        """
+        Merges the two regions
+        """
+        region1 = self.accessRegion(rid1, layer)
+        region2 = self.accessRegion(rid2, layer)
         if region1 is None:
             raise ValueError("Cannot merge region {}, does not exist".format(rid1))
         if region2 is None:
             raise ValueError("Cannot merge region {}, does not exist".format(rid2))
         
+        using = self._get_region_cat(layer)
         region1 = region1.merge(region2)
-        self._biomeCatalog.updateRegion(rid1, region1)
-        self._biomeCatalog.delete_region(rid2)
+        using.updateRegion(rid1, region1)
+        using.delete_region(rid2)
 
-    def get_next_rid(self):
-        return self._biomeCatalog.get_next_rid()
+    def get_next_rid(self, layer:ToolLayer):
+        return self._get_region_cat(layer).get_next_rid()
 
-    def deleteRegion(self, rid:int):
+    def deleteRegion(self, rid:int, layer:ToolLayer):
         """
         Just straight up delete the region
         """
         if isinstance(self.tool, RegionAdd):
             self.tool.select(-1)
-        sid = self._biomeCatalog.getSID(rid) 
-        self.removeItem(sid) # undraw
-        self._biomeCatalog.delete_region(rid)  # clear it from the catalog 
 
-    def addRegion(self, region:Region)->int:
+        using = self._get_region_cat(layer)
+        sid = using.getSID(rid) 
+        self.removeItem(sid) # undraw
+        using.delete_region(rid, layer)  # clear it from the catalog 
+
+    def addRegion(self, region:Region, layer:ToolLayer)->int:
         """
         Add the new region, which spans this set of Hexes 
         """
-        rid = self._biomeCatalog.register_region(region) # add the region to the catalog
-        sceneID = self.drawRegion(rid) 
-        self._biomeCatalog.updateSID(rid, sceneID) # draw it and update the catalog with the scene ID (sid)
+        using = self._get_region_cat(layer)
+
+        rid = using.register_region(region) # add the region to the catalog
+        sceneID = self.drawRegion(rid, layer) 
+        using.updateSID(rid, sceneID) # draw it and update the catalog with the scene ID (sid)
         return rid
 
-    def regionRemoveHex(self, coords:HexID):
+    def regionRemoveHex(self, coords:HexID, layer:ToolLayer):
         """
             removes a hex from a region
         """
-        rid = self._biomeCatalog.get_rid(coords) # get the region id 
+        using = self._get_region_cat(layer)
+
+        rid = using.get_rid(coords) # get the region id 
         if rid is None:
             # not in a region
             return
 
-        self._biomeCatalog.remove_hex(coords)
+        using.remove_hex(coords)
 
         if rid in self._biomeCatalog:
-            self.drawRegion(rid)
+            self.drawRegion(rid, layer)
 
 
-    def eraseRegion(self, rid):
+    def eraseRegion(self, rid, layer:ToolLayer):
         """
         Removes the drawing of the rid region
         """
-        sid = self._biomeCatalog.get_sid(rid)
+        using = self._get_region_cat(layer)
+        sid = using.get_sid(rid)
         if sid is not None:
             self.removeItem(sid)
 
-        self._biomeCatalog.updateSID(rid, None)
+        using.updateSID(rid, None)
 
-    def drawRegion(self, rid:int):
+    def drawRegion(self, rid:int, layer:ToolLayer):
         """
             See if it has been drawn, erase it, and redraw it
         """
-        self.eraseRegion(rid)
+        using = self._get_region_cat(layer)
 
-        region = self._biomeCatalog.get_region(rid)
+        self.eraseRegion(rid, layer)
+
+        region = using.get_region(rid)
 
         self._brush.setStyle(6)
         self._brush.setColor(region.fill)
@@ -576,7 +608,7 @@ class Clicker(QGraphicsScene, ActionManager):
 
         new_sid = self.addPolygon(region,pen=self._pen, brush=self._brush)
         new_sid.setZValue(100)
-        self._biomeCatalog.updateSID(rid, new_sid)
+        using.updateSID(rid, new_sid)
         self.update()
         return new_sid
 

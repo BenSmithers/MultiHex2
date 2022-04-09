@@ -5,7 +5,7 @@ This is the main provided module for overland maps
 import os
 
 from MultiHex2.tools.hextools import HexBrush,HexSelect
-from MultiHex2.tools.regiontools import RegionAdd
+from MultiHex2.tools.regiontools import CivAdd, RegionAdd
 from MultiHex2.tools.route_test_tool import RouteTester
 from MultiHex2.tools.entity_tools import EntitySelector, AddEntityTool, AddSettlement
 
@@ -22,6 +22,7 @@ class Overland(Module):
             "hex_select":HexSelect,
             "hex_brush":HexBrush,
             "region_add":RegionAdd,
+            "county_add":CivAdd,
             "entity_select":EntitySelector,
             "entity_add":AddEntityTool,
             "settlement_add":AddSettlement
