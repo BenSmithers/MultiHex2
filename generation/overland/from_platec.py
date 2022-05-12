@@ -50,7 +50,8 @@ def gen_land(map:Clicker, seed=None, **kwargs):
 
     print("doing platec stuff, seed {}".format(seed))
     # these were some of the generation presets, decided against changing them, not sure what they all do
-    p = platec.create(seed, int(dimensions[1]/scale), int(dimensions[0]/scale),sea_level, 61, 0.025, 1100000, 0.34, 2, 10)
+            # seed, width, height, sea_level, erosion_period, folding_ratio, aggr_overlap_abs, aggr_overlap rel, cycle count, number of plates
+    p = platec.create(seed, int(dimensions[1]/scale), int(dimensions[0]/scale),sea_level, 61, 0.010, 5000, 0.10, 2, 4)
     print("starting")
     while platec.is_finished(p)==0: 
         platec.step(p)
