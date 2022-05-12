@@ -38,9 +38,9 @@
     "dark forest": {
       "color": [ 50, 87, 48 ],
       "params":{
-        "altitude_base": 0.5,
+        "altitude_base": 0.25,
         "rainfall_base": 0.9,
-        "temperature_base": 0.6,
+        "temperature_base": 0.9,
         "is_land": 10.0
       },
       "is_ray": true,
@@ -49,9 +49,9 @@
     "gentle forest": {
       "color": [ 65, 115, 62 ],
       "params":{
-        "altitude_base": 0.5,
+        "altitude_base": 0.75,
         "rainfall_base": 0.7,
-        "temperature_base": 0.4,
+        "temperature_base": 0.5,
         "is_land": 10.0
       },
       "is_ray": true,
@@ -62,7 +62,7 @@
       "params":{
         "altitude_base": 0.0,
         "rainfall_base": 1.0,
-        "temperature_base": 0.9,
+        "temperature_base": 1.0,
         "is_land": 10.0
       },
       "is_ray": true,

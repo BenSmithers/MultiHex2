@@ -97,3 +97,25 @@ def hex_to_screen(id:HexID)->QPointF:
     x_loc = DRAWSIZE*(M[0]*id.xid)
     y_loc = DRAWSIZE*(M[2]*id.xid + M[3]*id.yid)
     return QPointF(x_loc, y_loc)
+
+
+def get_adjacent_vertices(point:QPointF):
+    """
+    Returns the vertices adjacent to a given vertex. **this assumes that the point given lies on a vertex of a Hex**
+
+    there are one of two kinds of vertices:
+
+      1  __/   \__  2 
+           \   /
+
+    We don't know which this is. So, we look to the left of the vertex (step of DRAWSIZE), and up/down from it some small step. 
+    We access the IDs for each of those perturbed points; if they're the same it's type 2, otherwise type 1
+    """
+    x_step = -0.5*DRAWSIZE
+    y_step = 0.1*DRAWSIZE
+    type_1 = screen_to_hex(point + QPointF(x_step, y_step)) != screen_to_hex(point + QPointF(x_step, -y_step))
+
+    if type_1:
+        return QPointF(-DRAWSIZE, 0.0),QPointF(0.5*DRAWSIZE, 0.5*RTHREE*DRAWSIZE), QPointF(0.5*DRAWSIZE, -0.5*RTHREE*DRAWSIZE) 
+    else:
+        return QPointF(DRAWSIZE, 0.0),QPointF(-0.5*DRAWSIZE, 0.5*RTHREE*DRAWSIZE), QPointF(-0.5*DRAWSIZE, -0.5*RTHREE*DRAWSIZE) 
