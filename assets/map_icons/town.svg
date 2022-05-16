@@ -1,64 +1,78 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-
-<svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="200mm"
-   height="200mm"
-   viewBox="0 0 200 200"
-   version="1.1"
-   id="svg8"
-   inkscape:version="0.92.3 (2405546, 2018-03-11)"
-   sodipodi:docname="town.svg">
-  <defs
-     id="defs2" />
-  <sodipodi:namedview
-     id="base"
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1.0"
-     inkscape:pageopacity="0.0"
-     inkscape:pageshadow="2"
-     inkscape:zoom="0.7"
-     inkscape:cx="315.22248"
-     inkscape:cy="312.12533"
-     inkscape:document-units="mm"
-     inkscape:current-layer="layer1"
-     showgrid="false"
-     inkscape:snap-page="true"
-     inkscape:window-width="1853"
-     inkscape:window-height="1025"
-     inkscape:window-x="67"
-     inkscape:window-y="27"
-     inkscape:window-maximized="1" />
-  <metadata
-     id="metadata5">
-    <rdf:RDF>
-      <cc:Work
-         rdf:about="">
-        <dc:format>image/svg+xml</dc:format>
-        <dc:type
-           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
-  <g
-     inkscape:label="Layer 1"
-     inkscape:groupmode="layer"
-     id="layer1"
-     transform="translate(0,-97)">
-    <circle
-       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:20;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
-       id="path817"
-       cx="100"
-       cy="197"
-       r="76.943451" />
-  </g>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 25.4.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 200 200" style="enable-background:new 0 0 200 200;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#F9F7C7;}
+	.st1{fill:#58332B;}
+	.st2{fill:#CEBC8A;}
+	.st3{fill:#F5B426;}
+	.st4{fill:#5C4540;}
+	.st5{fill:#F2F2F2;}
+	.st6{fill:#D1C08E;}
+	.st7{fill:none;stroke:#603813;stroke-linecap:round;stroke-miterlimit:10;}
+	.st8{fill:#FFFFFF;}
+</style>
+<g id="Layer_2">
+	<polygon class="st0" points="156.3,138.8 155.9,74.7 90.5,78.4 90.5,129.7 	"/>
+	<polygon class="st1" points="131.5,135.5 132.8,108.2 143.5,108.2 143,137.1 	"/>
+	<polygon class="st2" points="154.9,138.8 171.6,130.6 171.6,79.2 154.5,81.9 	"/>
+	<path class="st3" d="M95.5,70.7c-1.3,0.6-10.4,6.6-9,8c1.4,1.4,8.7,1.6,12.1,1.8c3.3,0.2,17.8,0.5,21.9,0.9
+		c4.1,0.5,19.7-1.3,23.4-0.6c3.6,0.7,9.3,1.9,12.5,1.8c3.2-0.1,15.8-0.8,17.4-1.5s1.1-6-1-8.3S160,58.4,157.4,56
+		c-2.5-2.4-5.8-7.2-6.4-9.2c-0.5-2.1,0.3-2.7-3.1-2.5c-3.5,0.2-30.4,4.7-32.1,5.5c-1.7,0.8-5.3,4.1-6,5.5c-0.7,1.3-4.9,7.2-6.4,9
+		C102,66.1,98.2,69.6,95.5,70.7z"/>
+	<polygon class="st4" points="96.5,114.6 101.7,114.7 101.8,122.3 96.5,121.6 	"/>
+	<polygon class="st4" points="121.3,97.2 126.5,97.2 126.8,104.9 121.5,104.3 	"/>
+	<polygon class="st4" points="113.4,123 118.7,122.9 118.8,131.1 114,131.1 	"/>
+	<polygon class="st4" points="98.9,89.6 104.2,90 103.5,98.2 98.8,97.8 	"/>
+	<polygon class="st4" points="140.5,89.7 145.8,89.5 146,97.7 141.2,97.8 	"/>
+	<polygon class="st5" points="109.1,59.7 108.2,50 111.8,49.7 112.8,60.5 	"/>
+	<polygon class="st6" points="111.8,49.7 115,48.8 115.7,59.2 112.8,60.5 	"/>
+</g>
+<g id="Layer_3">
+	<line class="st7" x1="147.5" y1="166.8" x2="146.8" y2="159"/>
+	<line class="st7" x1="159.1" y1="160.4" x2="159" y2="169.7"/>
+	<line class="st7" x1="170.4" y1="163.9" x2="170.9" y2="173"/>
+	<line class="st7" x1="181.9" y1="165.2" x2="182.9" y2="174.4"/>
+	<line class="st7" x1="144.9" y1="160.3" x2="161.1" y2="162.9"/>
+	<line class="st7" x1="145.5" y1="164.4" x2="161.1" y2="167.7"/>
+	<line class="st7" x1="158.4" y1="163.3" x2="172.2" y2="165.8"/>
+	<line class="st7" x1="158.2" y1="166.3" x2="172.4" y2="170.1"/>
+	<line class="st7" x1="170.4" y1="171" x2="183.7" y2="171.8"/>
+	<line class="st7" x1="169.7" y1="164.6" x2="183.7" y2="166.7"/>
+	<path class="st7" d="M151.6,154.6c0,0.2,0,5.7,0,5.7"/>
+	<line class="st7" x1="152.4" y1="155.1" x2="146.3" y2="161.2"/>
+	<line class="st7" x1="157.4" y1="152.3" x2="157.4" y2="156.5"/>
+	<line class="st7" x1="162.2" y1="147.9" x2="162.2" y2="152.2"/>
+	<path class="st7" d="M150.4,159.4c0.1,0,7.8-5,7.8-5"/>
+	<line class="st7" x1="156.5" y1="152.9" x2="163.1" y2="148.6"/>
+	<line class="st7" x1="163.1" y1="151.1" x2="156.5" y2="154.3"/>
+	<line class="st7" x1="187.5" y1="162.3" x2="187.5" y2="169.2"/>
+	<line class="st7" x1="190.3" y1="157.4" x2="190.3" y2="161.5"/>
+	<line class="st7" x1="181.5" y1="167.2" x2="188.3" y2="162.3"/>
+	<line class="st7" x1="187" y1="164.4" x2="190.9" y2="157.9"/>
+	<path class="st7" d="M187,167.2c0.5-0.3,3.6-6.5,3.6-6.5"/>
+	<line class="st7" x1="181.9" y1="172.3" x2="187.9" y2="165"/>
+	<line class="st7" x1="184.3" y1="151.7" x2="184.3" y2="155.1"/>
+	<line class="st7" x1="183.7" y1="152.2" x2="190.6" y2="158.1"/>
+	<line class="st7" x1="169.7" y1="148.6" x2="169.7" y2="151.1"/>
+	<line class="st7" x1="177" y1="149.3" x2="177" y2="152.7"/>
+	<line class="st7" x1="176.1" y1="151.7" x2="184.9" y2="154.6"/>
+	<line class="st7" x1="168.9" y1="150.8" x2="177.7" y2="151.1"/>
+	<line class="st7" x1="161.5" y1="151.1" x2="170.4" y2="149.9"/>
+	<line class="st7" x1="168.9" y1="148.3" x2="178.1" y2="149.9"/>
+	<line class="st7" x1="184.9" y1="152.2" x2="176.1" y2="149.1"/>
+</g>
+<g id="Layer_1">
+	<rect x="70.4" y="96.1" class="st8" width="5" height="8.8"/>
+	<polygon class="st6" points="75.4,96.1 79.9,95.6 79.9,106 75.4,106 	"/>
+	<polygon class="st0" points="73.5,172.6 91,174.4 90.5,136.4 13,138.3 13,164.5 	"/>
+	<path class="st1" d="M62.2,171.1l-0.1-27.4h10.7l1,29C73.8,172.6,62.2,171.1,62.2,171.1z"/>
+	<polygon class="st2" points="91,174.4 110.8,165 110.8,138.8 90.5,140.1 	"/>
+	<path class="st3" d="M16.3,129.2c-1.7,0.6-12.8,6.6-11.1,8c1.7,1.4,10.7,1.6,14.8,1.8c4.1,0.2,21.8,0.5,26.9,0.9s24.2-1.3,28.7-0.6
+		c4.4,0.7,11.5,1.9,15.4,1.8c3.9-0.1,19.4-0.8,21.4-1.5c2-0.7,1.3-6-1.2-8.3s-15.7-14.5-18.8-16.8c-3.1-2.4-7.2-7.2-7.8-9.2
+		c-0.7-2.1,0.4-2.7-3.9-2.5s-37.4,4.7-39.5,5.5s-6.5,4.1-7.3,5.5c-0.8,1.3-6,7.2-7.8,9C24.2,124.6,19.6,128,16.3,129.2z"/>
+	<polygon class="st4" points="20.4,147.1 25.6,147.2 25.7,154.9 20.4,154.2 	"/>
+	<polygon class="st4" points="35.1,147.8 40.4,147.7 40.5,156 35.7,156 	"/>
+</g>
 </svg>
