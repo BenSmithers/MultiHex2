@@ -2,6 +2,9 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 import os
 from MultiHex2.tools.basic_tool import ToolLayer
+from MultiHex2.clock import MultiHexCalendar
+from MultiHex2.clock import Time
+from actions.eventWidget import EventWidget
 
 """
 This file defines the gui for the MainWindow's structure
@@ -46,8 +49,9 @@ class main_gui(object):
         self.toolPane.addLayout(self.buttonGrid)
         self.toolPane.addWidget(self.firstLine)
         self.toolPane.addLayout(self.civButtonGrid)
+        
         self.toolPane.addItem(spacerItem)
-
+        
 
         self.horizontalLayout.addLayout(self.toolPane)
 
@@ -55,7 +59,20 @@ class main_gui(object):
         self.graphicsView = QtWidgets.QGraphicsView(self.centralwidget) # <--- this is the screen
         self.graphicsView.setObjectName("graphicsView") 
         self.horizontalLayout.addWidget(self.graphicsView)
+        
 
+        self.clockPane = QtWidgets.QVBoxLayout()
+        self.clockPane.setObjectName("clockPane")
+        self.clock = MultiHexCalendar(self.centralwidget, Time())
+        self.clockPane.addWidget(self.clock)
+
+        self.events = EventWidget(self.centralwidget, None)
+        self.clockPane.addWidget(self.events)
+
+        secondSpacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        #self.clockPane.addItem(secondSpacerItem)
+        self.horizontalLayout.addLayout(self.clockPane)
+        
 
         # and nest it! 
         MainWindow.setCentralWidget(self.centralwidget)

@@ -8,6 +8,7 @@ Three classes are defined here
 """
 
 
+from copy import copy
 from PyQt5 import QtWidgets, QtCore
 
 from math import pi, floor
@@ -19,7 +20,7 @@ degrees = pi/180.
 
 minutes_in_hour = 60
 hours_in_day    = 24
-days_in_month   = 33
+days_in_month   = 29
 months_in_year  = 12
 
 minutes_in_day   = minutes_in_hour*hours_in_day
@@ -309,7 +310,7 @@ class Time:
         """
         Implements the ">" operator. Opposite of "<" operator but they can't be equal! 
         """
-        return( (not self.__lt__(other)) and (self.minute!=other.minute))
+        return( (not self.__lt__(other)) and self!=other)
 
     def __mul__(self, other):
         if not isinstance(other, int):
@@ -354,13 +355,13 @@ year = Time(year=1)
 
 class Clock:
     """
-    Simple clock class to keep track of the time 
+    More than just a clock! Manages times, light levels, lunar cycles
     """
 
-    def __init__(self):
+    def __init__(self, time:Time):
         
         # GMT like time counter
-        self._time = Time(0 , 0)
+        self._time = copy(time)
 
         self._axial_tilt = 23.5*degrees
         self._coax = cos(self._axial_tilt)
@@ -646,7 +647,7 @@ class Clock:
         """
         return( self.get_light_level( self.get_time_in_minutes(), lat,lon))
 
-    def get_next_suntime( self, lat, lon):
+    def get_next_suntime( self, lat, lon)->Time:
         """
         Returns the time of the next sunrise or sunset 
         """
@@ -739,12 +740,14 @@ class MultiHexCalendar(QtWidgets.QWidget):
 
         The arg 'parent' is the widget's parent
         The arg 'time' is the starting time for the calendar. 
+        
         """
         QtWidgets.QWidget.__init__(self, parent)
         if not isinstance(time, Time):
             raise TypeError("Expected {}, got {}".format(Time, type(time)))
 
-        self.time = time
+        self.time = copy(time)
+        self.currentTime = time #TRUE TIME
 
         self.setObjectName("MuliHexCalendar")
         self.layout = QtWidgets.QVBoxLayout(self)
@@ -762,7 +765,7 @@ class MultiHexCalendar(QtWidgets.QWidget):
         self.rightButton.setText("->")
         self.yearLabel = QtWidgets.QLabel(self)
         self.yearLabel.setObjectName("yearLabel")
-        self.yearLabel.setText("{}".format(self.time.year))
+        self.yearLabel.setText("{}".format(self.time.year +1))
         self.yearLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.year_layout.addWidget(self.leftButton)
         self.year_layout.addWidget(self.yearLabel)
@@ -865,25 +868,50 @@ class MultiHexCalendar(QtWidgets.QWidget):
         weekday_of_first_of_month = Time(year=self.time.year, month = self.time.month, day=0).get_day_of_week()
 
         while day < self.days:
+            self.day_buttons[day].setStyleSheet("")
+            
             if day==weekday_of_first_of_month and days_so_far==0:
                 counting = True
 
             if counting:
                 days_so_far += 1
-                self.day_buttons[day].setText(str(days_so_far))
-                self.day_buttons[day].setEnabled(True)
+                self.day_buttons[day].setText(str(days_so_far+1))
+                if self.time.year < self.currentTime.year:
+                    self.day_buttons[day].setEnabled(False)
+                elif self.time.year == self.currentTime.year: 
+                    if self.time.month < self.currentTime.month:
+                        self.day_buttons[day].setEnabled(False)
+                    elif self.time.month == self.currentTime.month:
+                        if days_so_far < self.currentTime.day:
+                            self.day_buttons[day].setEnabled(False)
+                        else:
+                            self.day_buttons[day].setEnabled(True)
+                    else:
+                        self.day_buttons[day].setEnabled(True)  
+                else:
+                    self.day_buttons[day].setEnabled(True)
             else:
                 self.day_buttons[day].setText("")
                 self.day_buttons[day].setEnabled(False)
+
+            if (days_so_far==self.currentTime.day and self.currentTime.month==self.time.month and self.time.year==self.currentTime.year):
+                self.day_buttons[day].setStyleSheet("background-color: red")
 
             if days_so_far==days_in_month:
                 counting=False
 
             day+=1
 
+    def set_time(self, time:Time):
+        self.time = copy(time)
+        self.currentTime = copy(time)
+
+        self.set_year(self.time.year)
+        self.set_month(self.time.month)
+
     def buttonPress(self, what):
         self.signals.signal.emit(what)
-
+        print(what)
 
     def leftMon(self):
         new = self.month_combo.currentIndex() -1
@@ -908,16 +936,31 @@ class MultiHexCalendar(QtWidgets.QWidget):
         elif month_diff <0:
             self.time = self.time- Time(month=-1*month_diff)
         self.fill_days()
-        self.yearLabel.setText("{}".format(self.time.year))
+        self.yearLabel.setText("{}".format(self.time.year +1))
+
+    def set_year(self, year:int):
+        self.time._year = year
+        self.yearLabel.setText("{}".format(self.time.year+1))
+        self.fill_days()
+
+    def set_month(self, month:int):
+        if (month> months_in_year) or (month<0):
+            raise ValueError("Invalid month {}".format(month))
+        
+        self.time._month = month
+
+        self.month_combo.setCurrentIndex(month)
+        self.fill_days()
+        self.yearLabel.setText("{}".format(self.time.year+1))
 
     def add_year(self):
         self.time += Time(year=1)
-        self.yearLabel.setText("{}".format(self.time.year))
+        self.yearLabel.setText("{}".format(self.time.year+1))
         self.fill_days()
 
     def remove_year(self):
         self.time -= Time(year=1)
-        self.yearLabel.setText("{}".format(self.time.year))
+        self.yearLabel.setText("{}".format(self.time.year+1))
         self.fill_days()
 
 

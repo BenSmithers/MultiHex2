@@ -12,6 +12,7 @@ from MultiHex2.actions import ActionManager
 from MultiHex2.tools.basic_tool import Basic_Tool, ToolLayer
 from MultiHex2.tools.regiontools import RegionAdd
 from MultiHex2.core.map_entities import Settlement, IconLib
+from MultiHex2.clock import Time, Clock
 from actions.baseactions import NullAction
 from core.coordinates import hex_to_screen
 from MultiHex2.generation.utils import Climatizer
@@ -98,8 +99,15 @@ class Clicker(QGraphicsScene, ActionManager):
             "regions":{},
             "drawsize":DRAWSIZE,
             "dimensions":[self.dimensions[0], self.dimensions[1]],
-            "module":self.module
+            "module":self.module,
+            "time":{
+                "year":self._clock.year,
+                "month":self._clock.month,
+                "day":self._clock.day,
+                "hour":self._clock.hour,
+                "minute":self._clock.minute
             }
+        }
         hexes = self._hexCatalog
         for hID in hexes._hidcatalog:
             hex=hexes._hidcatalog[hID]
@@ -134,7 +142,18 @@ class Clicker(QGraphicsScene, ActionManager):
         for str_rid in in_dict["regions"].keys():
             reg = Region.unpack(in_dict["regions"][str_rid])
             self.addRegion(reg)
+
+        _time_dict= in_dict["time"]
+        time = Time(minute=_time_dict["minute"], hour=_time_dict["hour"], 
+                     day=_time_dict["day"], month=_time_dict["month"],year=_time_dict["year"]
+            )
+
+        self.configure_with_clock(Clock(time))
+
         self.module=in_dict["module"]
+
+        self._parent_window.ui.clock.set_time(time)
+        self._parent_window.ui.events.update()
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
         """
@@ -456,8 +475,8 @@ class Clicker(QGraphicsScene, ActionManager):
         self._brush.setStyle(Qt.BrushStyle.SolidPattern)
         self._brush.setColor(hexobj.fill)
         self._pen.setWidth(1)
-        self._pen.setStyle(0)
-        self._pen.setColor(QtGui.QColor(240,240,240))
+        self._pen.setStyle(1)
+        self._pen.setColor(QtGui.QColor(170,170,170))
         sid = self.addPolygon(hexobj, self._pen, self._brush)
         sid.setZValue(0)
 

@@ -1,7 +1,9 @@
-from enum import Enum 
+from enum import Enum
+import os 
+import numpy as np
 from collections import deque
-from multiprocessing.sharedctypes import Value
-from MultiHex2.clock import Time
+
+from MultiHex2.clock import Time, Clock
 
 from PyQt5.QtWidgets import QGraphicsScene
 
@@ -35,6 +37,8 @@ class MapEvent:
         # whether or not the event should appear in the Event List
         self._show = True
 
+        self._interupt = False
+
         self.needed = []
         self.verify(kwargs)
     
@@ -50,6 +54,9 @@ class MapEvent:
     def show(self):
         return(self._show)
 
+    def __call__(self,map:QGraphicsScene):
+        raise NotImplementedError("Must override base implementation in {}".format(self.__class__))
+
 class MapAction(MapEvent):
     """
     These are MapEvents that actually effect the map. We call these when they come up. 
@@ -57,10 +64,10 @@ class MapAction(MapEvent):
     We have a drawtype entry to specify whether or not this Action has an associated redraw command 
     """
     def __init__(self, recurring=None, **kwargs):
-        MapEvent.__init__(self,recurring=None, **kwargs)
+        MapEvent.__init__(self,recurring=recurring, **kwargs)
 
     
-    def __call__(self, map:QGraphicsScene):
+    def __call__(self, map:QGraphicsScene)->'MapAction':
         """
         This function is accessed through the `action(map)` syntax
 
@@ -125,8 +132,8 @@ class ActionManager:
     def __init__(self):
         self._queue = []
 
-        #self.database_dir = get_base_dir()
-        self.database_filename = "event_database.csv"
+        self.database_dir = os.path.join(os.path.dirname(__file__), "..","resources")
+        self.database_filename = "example_events.csv"
 
         self._unsaved = False
 
@@ -139,6 +146,57 @@ class ActionManager:
         self._meta_inverses = []
 
         self._meta_event_holder = None
+
+        self._clock = Time()
+
+    @property
+    def clock(self):
+        return self._clock
+
+    def queue(self):
+        return self._queue
+
+    def configure_with_clock(self, this_clock:Clock):
+        self._clock = this_clock
+        time = this_clock.time
+
+        fullpath = os.path.join(self.database_dir, self.database_filename)
+        data = np.loadtxt(fullpath, dtype=str, comments="#", delimiter=",")
+        for row in data:
+            # we do the "-1" on most of these to convert between common terminology and internal clockwork
+            # ie, language counts months and days from "1"
+            # code counts them from "0"
+            if row[-1] == "annual":
+                recurring = Time(year=int(row[4]))
+                start_time = Time(minute=int(row[0]), hour=int(row[1]), day=int(row[2])-1, month=int(row[3])-1, year=time.year)
+                if start_time<time:
+                    start_time = start_time + Time(year=1)
+            elif row[-1]=="monthly":
+                recurring = Time(month=int(row[3]))
+                start_time = Time(minute=int(row[0]), hour=int(row[1]), day=int(row[2])-1, month=time.month, year=time.year)
+                if start_time< time:
+                    start_time = start_time + Time(month=1)
+            elif row[-1]=="daily":
+                recurring = Time(day=int(row[2]))
+                start_time = Time(minute=int(row[0]), hour=int(row[1]), day=time.day, month=time.month, year=time.year)
+                if start_time< time:
+                    start_time = start_time + Time(day=1)
+            elif row[-1]=="hourly":
+                recurring = Time(hour=int(row[1]))
+                start_time = Time(minute=int(row[0]), hour=time.hour, day=time.day, month=time.month, year=time.year)
+                if start_time< time:
+                    start_time = start_time + Time(hour=1)
+            else:
+                # not recurring 
+                start_time = Time(minute=int(row[0]), hour=int(row[1]), day=int(row[2]), month=int(row[3]), year=int(row[4]))
+                recurring = None
+            print("registering... ")
+            print("    start time {}".format(start_time))
+            print("    desc {}".format(row[5]))
+            print("    recurring {}".format(recurring))
+            event = MapEvent(recurring=recurring)
+            event.brief_desc=row[5]
+            self.add_event(event, time=start_time)
 
     @property
     def unsaved(self):
@@ -258,17 +316,15 @@ class ActionManager:
         if len(self.queue)==0:
             self._queue.append( [time, event] )
         else:
-            if time<self.queue[0][0]:
-                self._queue.insert(0, [time,event])
-            elif time > self.queue[-1][0]:
+            if time > self.queue[-1][0]:
                 self._queue.append([time,event])
-
             else:
                 loc = 0
-                while time > self.queue[loc][0]:
-                    loc+=1
+                while time > self._queue[loc][0]:
+                    loc +=1 
+                    
+                self._queue.insert(loc,[time,event] )
 
-                self._queue.insert(loc, [time,event])
 
     def skip_to_next_event(self):
         if len(self.queue)==0:
@@ -279,11 +335,13 @@ class ActionManager:
         # If this is an action, do it. Otherwise it's an event, nothing is done. 
         if isinstance(data[1], MapAction):
             self._unsaved=True
-            data[1].do()
-            if data[1].recurring is not None:
-                self.add_event(data[1], data[0]+data[1].recurring)
+            data[1](self)
+        
+        if data[1].recurring is not None:
+            self.add_event(data[1], data[0]+data[1].recurring)
 
         self.clock.skip_to(data[0])
+        self._parent_window.ui.clock.set_time(self.clock.time)
         self.queue.pop(0)
 
     def skip_by_time(self, time):
@@ -291,7 +349,7 @@ class ActionManager:
 
     def skip_to_time(self, time):
         if len(self.queue)!=0:
-            while time<self.queue[0][0]:
+            while time>self.queue[0][0]:
                 # moves time up to the next event, does the action (if there is one), and pops the event from the queue
                 self.skip_to_next_event()
 
@@ -299,7 +357,12 @@ class ActionManager:
                     break
 
         self.clock.skip_to(time)
+        self._parent_window.ui.clock.set_time(time)
 
+    def skip_to_suntime(self):
+        time = self.clock.get_next_suntime(0., 0.)
+
+        self.skip_to_time(time)
 
     @property
     def queue(self):

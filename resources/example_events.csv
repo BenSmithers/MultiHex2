@@ -1,0 +1,8 @@
+# use "#" for comments
+# for an annual frequency, the entry under "year" will dictate how many years are between events. Similar for monthly, daily, etc
+# minute, hour, day, month, year, name, frequency
+0, 0, 12, 05, 1,Birthday,annual
+0, 0, 21, 12, 1,Winters Eve,annual
+0, 0, 3, 1, 0,New Month Day,monthly
+0, 0, 1, 3, 1,New Spring Day,annual
+0, 0, 1, 7, 1,Midsommar,annual

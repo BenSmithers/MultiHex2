@@ -8,10 +8,7 @@ from PyQt5.QtCore import Qt
 
 from MultiHex2.guis.main_gui import main_gui
 from MultiHex2.tools import Clicker
-from MultiHex2.tools.hextools import HexBrush,HexSelect
-from MultiHex2.tools.regiontools import RegionAdd
-from MultiHex2.tools.route_test_tool import RouteTester
-from MultiHex2.tools.entity_tools import EntitySelector, AddEntityTool, AddSettlement
+from MultiHex2.clock import Time
 from MultiHex2.tools import Basic_Tool
 from MultiHex2.generation.overland import fullsim
 from MultiHex2.guis.savewarn import SaveWarnDialogGui
@@ -57,6 +54,7 @@ class main_window(QMainWindow):
         self.ui.setupUi(self)
 
         self.scene = Clicker( self.ui.graphicsView, self )
+        self.ui.events.configure(self.scene)
         # Allow the graphics view to follow the mouse when it isn't being clicked, and associate the clicker control with the ui 
         self.ui.graphicsView.setScene( self.scene )
         self.ui.graphicsView.setMouseTracking(True)
@@ -88,6 +86,12 @@ class main_window(QMainWindow):
         if self._will_generate:
             self.new()
         
+    def update_clock_gui(self,time:Time):
+        self.ui.clock.set_time(time)
+
+    def jump_to_time(self, time:Time):
+        self.scene.skip_to_time(time)
+
     def reload_config(self):
         """
         Load in a config file. 
@@ -162,6 +166,8 @@ class main_window(QMainWindow):
             self._will_generate = True
         else:
             self.generator(self.scene) 
+            self.ui.clock.set_time(self.scene.clock.time)
+            self.ui.events.update()
 
     def save(self):
         self.scene.reset_save()
