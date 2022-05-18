@@ -2,7 +2,7 @@ from .sim_weather import simulate_wind,simulate_clouds
 from MultiHex2.tools import Clicker
 from .from_platec import gen_land
 
-from MultiHex2.clock import Time
+from MultiHex2.clock import Time,Clock
 import json
 import os
 import numpy as np
@@ -20,7 +20,7 @@ def fullsim(map:Clicker, preset="continental"):
     year = randint(800, 16000)
     month = randint(0,12)
     day  = randint(0,30)
-    map._clock = Time(hour=12, day=day, month=month, year=year)
+    map.configure_with_clock(Clock(Time(hour=12, day=day, month=month, year=year)))
 
     #generate_ridges(map, **config["mountains"]["values"])
     #generate_land(map, **config["land"]["values"])

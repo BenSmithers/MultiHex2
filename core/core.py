@@ -115,10 +115,11 @@ class Hex(QPolygonF):
         Takes the hex object and save the essentials such that this can be reconstructed later. 
         """
         vals = {
-            "red":self.fill.red(),
-            "green":self.fill.green(),
-            "blue":self.fill.blue(),
+            "red":self._fill.red(),
+            "green":self._fill.green(),
+            "blue":self._fill.blue(),
             "params":self.params,
+            "flat":self._flat,
             "x":self.x,
             "Y":self.y,
             "geo":self.geography,
@@ -135,6 +136,7 @@ class Hex(QPolygonF):
         new_hx._params = obj["params"]
         new_hx.geography=obj["geo"]
         new_hx.wind = np.array(obj["wind"])
+        new_hx._flat = obj["flat"]
         return new_hx
 
 

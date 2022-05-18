@@ -143,8 +143,9 @@ class EventWidget(QtWidgets.QWidget):
         self.ui.evt_date_disp.setText("{}{} of {} {}, {}:{:02d}".format(time.day+1,get_cardinal(time.day+1), time.month_str(), time.year+1, time.hour, time.minute))
 
         next_suntime = str(self.action_manager.clock.get_next_suntime(0., 0.))
-        next_event = str(self.action_manager.queue[0][0])
-        self.ui.evt_next_evt_button.setToolTip(next_event)
+        if len(self.action_manager.queue)!=0:
+            next_event = str(self.action_manager.queue[0][0])
+            self.ui.evt_next_evt_button.setToolTip(next_event)
         self.ui.evt_next_sun_button.setToolTip(next_suntime)
 
     def _add_row_entry(self, date, description):

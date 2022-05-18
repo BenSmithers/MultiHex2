@@ -38,7 +38,7 @@
     "dark forest": {
       "color": [ 50, 87, 48 ],
       "params":{
-        "altitude_base": 0.25,
+        "altitude_base": 0.1,
         "rainfall_base": 0.9,
         "temperature_base": 0.9,
         "is_land": 10.0
@@ -49,8 +49,8 @@
     "gentle forest": {
       "color": [ 65, 115, 62 ],
       "params":{
-        "altitude_base": 0.75,
-        "rainfall_base": 0.7,
+        "altitude_base": 0.0,
+        "rainfall_base": 0.8,
         "temperature_base": 0.5,
         "is_land": 10.0
       },
@@ -61,7 +61,7 @@
       "color": [ 76, 133, 94 ],
       "params":{
         "altitude_base": 0.0,
-        "rainfall_base": 1.0,
+        "rainfall_base": 3.0,
         "temperature_base": 1.0,
         "is_land": 10.0
       },
@@ -73,18 +73,7 @@
     "prarie": {
       "color": [ 155, 181, 114 ],
       "params":{
-        "altitude_base": 0.3,
-        "rainfall_base": 0.6,
-        "temperature_base": 0.5,
-        "is_land": 10.0
-      },
-      "is_ray": true,
-      "flattype":false
-    },
-    "scrub": {
-      "color": [ 198, 207, 134 ],
-      "params":{
-        "altitude_base": 0.8,
+        "altitude_base": 0.0,
         "rainfall_base": 0.5,
         "temperature_base": 0.5,
         "is_land": 10.0
@@ -95,8 +84,8 @@
     "savanah": {
       "color": [ 175, 181, 114 ],
       "params":{
-        "altitude_base": 0.5,
-        "rainfall_base": 0.1,
+        "altitude_base": 0.0,
+        "rainfall_base": 0.2,
         "temperature_base": 0.8,
         "is_land": 10.0
       },
@@ -108,7 +97,7 @@
     "tundra": {
       "color": [ 156, 213, 214 ],
       "params":{
-        "altitude_base": 0.5,
+        "altitude_base": 0.0,
         "rainfall_base": 0.0,
         "temperature_base": 0.0,
         "is_land": 10.0
@@ -119,9 +108,9 @@
     "desert": {
       "color": [ 207, 182, 116 ],
       "params":{
-        "altitude_base": 0.5,
-        "rainfall_base": 0.1,
-        "temperature_base": 0.9,
+        "altitude_base": 0.0,
+        "rainfall_base": 0.0,
+        "temperature_base": 1.0,
         "is_land": 10.0
       },
       "is_ray": true,

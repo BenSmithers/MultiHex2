@@ -21,7 +21,9 @@ import json
 from collections import deque
 from math import inf
 import numpy as np
+from time import time
 
+import gzip
 
 DEBUG = False
 
@@ -101,13 +103,14 @@ class Clicker(QGraphicsScene, ActionManager):
             "dimensions":[self.dimensions[0], self.dimensions[1]],
             "module":self.module,
             "time":{
-                "year":self._clock.year,
-                "month":self._clock.month,
-                "day":self._clock.day,
-                "hour":self._clock.hour,
-                "minute":self._clock.minute
+                "year":self._clock.time.year,
+                "month":self._clock.time.month,
+                "day":self._clock.time.day,
+                "hour":self._clock.time.hour,
+                "minute":self._clock.time.minute
             }
         }
+        t1 = time()
         hexes = self._hexCatalog
         for hID in hexes._hidcatalog:
             hex=hexes._hidcatalog[hID]
@@ -115,10 +118,15 @@ class Clicker(QGraphicsScene, ActionManager):
         for rID in self._biomeCatalog:
             region=self._biomeCatalog[rID]
             out_dict["regions"]["{}".format(rID)]=region.pack()
+        t2 = time()
 
         f = open(filename, 'wt')
         json.dump(out_dict, f, indent=4)
         f.close()
+        t3 = time()
+
+        #print("Packing took {} seconds".format(t2-t1))
+        #print("Dumping took {} seconds".format(t3-t2))
 
         self.file_name = filename
         
