@@ -13,7 +13,6 @@ from MultiHex2.tools import Basic_Tool
 from MultiHex2.generation.overland import fullsim
 from MultiHex2.guis.savewarn import SaveWarnDialogGui
 from MultiHex2.main_menu import MainMenuDialog
-from tools.basic_tool import ToolLayer
 from MultiHex2.modules import ALL_MODULES
 
 import os
@@ -221,6 +220,8 @@ class main_window(QMainWindow):
             self.ui.buttons[tool_name].clicked.connect(tempfunc)
         elif value==2:
             self.ui.second_buttons[tool_name].clicked.connect(tempfunc)
+        elif value==4:
+            self.ui.map_use_buttons[tool_name].clicked.connect(tempfunc)
         else:
             raise NotImplementedError("Not layer {}".format(tool.tool_layer()))
 

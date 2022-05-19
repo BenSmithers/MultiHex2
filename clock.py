@@ -210,7 +210,7 @@ class Time:
                 else:
                     out = "{}:{:02d} PM".format( int(self.hour - hours_in_day/2 ), self.minute)
 
-            return("{} {}, {}, at {}".format(self.month_str(), self._day+1, self._year, out))
+            return("{} {}, {}, at {}".format(self.month_str(), self._day+1, self._year+1, out))
         else:
             out = ""
             if self._year!=0:
@@ -599,6 +599,8 @@ class Clock:
     def get_light_level(self, time_minutes, lat, long):
         """
         Returns the light level (-1 to 1) at the given latitude, longitude, and point in time
+
+        Latitude should be in radians
 
         < -0.1 is nighttime 
         -0.1 < ll < 0.1 is twilight

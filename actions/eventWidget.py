@@ -48,7 +48,13 @@ class EventWidgetGui:
         self.evt_date_disp = QtWidgets.QLabel(Form)
         self.evt_date_disp.setObjectName("evt_date_disp")
         self.evt_date_disp.setText("10 August 2020, 8:43 PM")
+
+        self.local_date_disp = QtWidgets.QLabel(Form)
+        self.local_date_disp.setObjectName("local_date_disp")
+        self.local_date_disp.setText("10 August 2020, 8:43 PM")
         self.evt_formLayout.setWidget(4, QtWidgets.QFormLayout.SpanningRole, self.evt_date_disp)
+        self.evt_formLayout.setWidget(5, QtWidgets.QFormLayout.SpanningRole, self.local_date_disp)
+
         self.evt_next_evt_layout = QtWidgets.QHBoxLayout()
         self.evt_next_evt_layout.setObjectName("evt_next_evt_layout")
         self.evt_next_evt_button = QtWidgets.QPushButton(Form)
@@ -63,10 +69,10 @@ class EventWidgetGui:
         self.evt_next_some_button.setObjectName("evt_next_some_button")
         self.evt_next_some_button.setText("Something")
         self.evt_next_evt_layout.addWidget(self.evt_next_some_button)
-        self.evt_formLayout.setLayout(5, QtWidgets.QFormLayout.SpanningRole, self.evt_next_evt_layout)
+        self.evt_formLayout.setLayout(6, QtWidgets.QFormLayout.SpanningRole, self.evt_next_evt_layout)
         self.evt_scroll_area = QtWidgets.QScrollArea()
         self.evt_scroll_area.setObjectName("evt_scroll_area")
-        self.evt_formLayout.setWidget(6, QtWidgets.QFormLayout.SpanningRole, self.evt_scroll_area)
+        self.evt_formLayout.setWidget(7, QtWidgets.QFormLayout.SpanningRole, self.evt_scroll_area)
         self.evt_scroll_layout = QtWidgets.QVBoxLayout()
         self.evt_scroll_layout.setObjectName("evt_scroll_layout")
         self.evt_evt_table = QtWidgets.QTableWidget(Form)
@@ -100,11 +106,11 @@ class EventWidgetGui:
         self.evt_skip_combo.addItem("Months")
         self.evt_skip_combo.addItem("Years")
         self.evt_skip_layout.addWidget(self.evt_skip_combo)
-        self.evt_formLayout.setLayout(7, QtWidgets.QFormLayout.SpanningRole, self.evt_skip_layout)
+        self.evt_formLayout.setLayout(8, QtWidgets.QFormLayout.SpanningRole, self.evt_skip_layout)
         self.evt_new_evt_button=QtWidgets.QPushButton(Form)
         self.evt_new_evt_button.setObjectName("evt_new_evt_button")
         self.evt_new_evt_button.setText("Add New Event")
-        self.evt_formLayout.setWidget(8, QtWidgets.QFormLayout.SpanningRole, self.evt_new_evt_button)
+        self.evt_formLayout.setWidget(9, QtWidgets.QFormLayout.SpanningRole, self.evt_new_evt_button)
         
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -122,12 +128,23 @@ class EventWidget(QtWidgets.QWidget):
         self.ui = EventWidgetGui()
         self.ui.setupUi(self)
 
+        self._lat = 0.0
+        self._lon = 0.0
+
         self.ui.evt_next_sun_button.clicked.connect(self.next_suntime_button_clicked)
         self.ui.evt_next_evt_button.clicked.connect(self.next_event_button_clicked)
         self.ui.evt_skip_button.clicked.connect(self.skip_button_clicked)
 
+    def set_lat_lon(self, latitude:float, longitude:float):
+        self._lat = latitude
+        self._lon = longitude
+
+        self.ui.evt_lon_disp.setText("{:.4f}".format(longitude))
+        self.ui.evt_lat_disp.setText("{:.4f}".format(latitude))
+
     def configure(self, action_manager):
         self.action_manager = action_manager
+        self.action_manager.configure_event_widget(self)
 
     def update(self):
         time = self.action_manager.clock.time
@@ -140,9 +157,16 @@ class EventWidget(QtWidgets.QWidget):
             event = entry[1]
             self._add_row_entry(evt_time, event.brief_desc)
         
-        self.ui.evt_date_disp.setText("{}{} of {} {}, {}:{:02d}".format(time.day+1,get_cardinal(time.day+1), time.month_str(), time.year+1, time.hour, time.minute))
 
-        next_suntime = str(self.action_manager.clock.get_next_suntime(0., 0.))
+        #self.ui.evt_date_disp.setText("{}{} of {} {}, {}:{:02d}".format(time.day+1,get_cardinal(time.day+1), time.month_str(), time.year+1, time.hour, time.minute))
+        self.ui.evt_date_disp.setText("UMT: " + str(time))
+
+        local_time = self.action_manager.clock.get_local_time(self._lon)
+        #self.ui.local_date_disp.setText("{}{} of {} {}, {}:{:02d}".format(local_time.day+1,get_cardinal(local_time.day+1), 
+        #                                    local_time.month_str(), local_time.year+1, local_time.hour, local_time.minute))
+        self.ui.local_date_disp.setText("Local: " + str(local_time))
+
+        next_suntime = str(self.action_manager.clock.get_next_suntime(self._lat, self._lon))
         if len(self.action_manager.queue)!=0:
             next_event = str(self.action_manager.queue[0][0])
             self.ui.evt_next_evt_button.setToolTip(next_event)

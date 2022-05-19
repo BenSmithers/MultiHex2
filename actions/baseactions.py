@@ -5,8 +5,7 @@ from collections import deque
 
 from MultiHex2.clock import Time, Clock
 
-from PyQt5.QtWidgets import QGraphicsScene
-
+from PyQt5.QtWidgets import QGraphicsScene, QWidget
 
 class actionDrawTypes(Enum):
     null = 0
@@ -135,6 +134,8 @@ class ActionManager:
         self.database_dir = os.path.join(os.path.dirname(__file__), "..","resources")
         self.database_filename = "example_events.csv"
 
+        self._event_widget = None
+
         self._unsaved = False
 
         # we keep a list of Actions' inverses we've done, so we can always go back through
@@ -149,12 +150,21 @@ class ActionManager:
 
         self._clock = Time()
 
+        self._latitude = 0.0
+        self._longitude = 0.0
+
+    def update_times(self):
+        self._event_widget.update()
+
     @property
     def clock(self):
         return self._clock
 
     def queue(self):
         return self._queue
+
+    def configure_event_widget(self, widg:QWidget):
+        self._event_widget = widg
 
     def configure_with_clock(self, this_clock:Clock):
         self._clock = this_clock
@@ -190,13 +200,15 @@ class ActionManager:
                 # not recurring 
                 start_time = Time(minute=int(row[0]), hour=int(row[1]), day=int(row[2]), month=int(row[3]), year=int(row[4]))
                 recurring = None
-            print("registering... ")
-            print("    start time {}".format(start_time))
-            print("    desc {}".format(row[5]))
-            print("    recurring {}".format(recurring))
             event = MapEvent(recurring=recurring)
             event.brief_desc=row[5]
             self.add_event(event, time=start_time)
+
+    def config_with(self, latitude:float, longitude:float)->None:
+        self._latitude = latitude
+        self._longitude = longitude
+
+        self._event_widget.set_lat_lon(self._latitude, self._longitude)
 
     @property
     def unsaved(self):
@@ -360,7 +372,7 @@ class ActionManager:
         self._parent_window.ui.clock.set_time(time)
 
     def skip_to_suntime(self):
-        time = self.clock.get_next_suntime(0., 0.)
+        time = self.clock.get_next_suntime(self._latitude, self._longitude)
 
         self.skip_to_time(time)
 

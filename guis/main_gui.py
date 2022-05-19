@@ -39,17 +39,29 @@ class main_gui(object):
         self.firstLine.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.firstLine.setObjectName("firstLine")
 
+        self.secondline = QtWidgets.QFrame(self.centralwidget)
+        self.secondline.setFrameShape(QtWidgets.QFrame.HLine)
+        self.secondline.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.secondline.setObjectName("secondline")
+
         self.civButtonGrid = QtWidgets.QGridLayout()
         self.civButtonGrid.setObjectName("civButtonGrid")
+
+        self.mapUseButtonGrid =  QtWidgets.QGridLayout()
+        self.mapUseButtonGrid.setObjectName("mapUseButtonGrid")
 
         #ToolLayer
         self.buttons = {}
         self.second_buttons = {} # civ layer button
+        self.map_use_buttons = {} # map use layer
         self.toolwidget = None
         self.toolPane.addLayout(self.buttonGrid)
         self.toolPane.addWidget(self.firstLine)
         self.toolPane.addLayout(self.civButtonGrid)
-        
+        self.toolPane.addWidget(self.secondline)
+        self.toolPane.addLayout(self.mapUseButtonGrid)
+
+
         self.toolPane.addItem(spacerItem)
         
 
@@ -132,9 +144,13 @@ class main_gui(object):
         for button_key in self.second_buttons.keys():
             self.civButtonGrid.removeWidget(self.second_buttons[button_key])
             self.second_buttons[button_key].deleteLater()
+        for button_key in self.map_use_buttons.keys():
+            self.mapUseButtonGrid.removeWidget(self.map_use_buttons[button_key])
+            self.map_use_buttons[button_key].deleteLater()
 
         self.buttons = {}
         self.second_buttons = {}
+        self.map_use_buttons = {}
 
     def add_button(self, name:str, button:QtGui.QPixmap, alt_text="", layer=ToolLayer.null):
         new_button = QtWidgets.QPushButton(self.centralwidget)
@@ -152,6 +168,8 @@ class main_gui(object):
 
             #new_button.setText(name)
             buttons = len(self.buttons.keys())
+        elif layer_val==4:
+            buttons = len(self.map_use_buttons.keys())
         else:
             print("Layer {}".format(layer))
             print(ToolLayer.terrain)
@@ -165,6 +183,9 @@ class main_gui(object):
         if layer_val==2:
             self.second_buttons[name] = new_button
             self.civButtonGrid.addWidget(new_button, row, column)
+        elif layer_val==4:
+            self.map_use_buttons[name] = new_button
+            self.mapUseButtonGrid.addWidget(new_button, row, column)
         elif layer_val==0 or layer_val==1:
             self.buttons[name] = new_button
             self.buttonGrid.addWidget(new_button, row, column)
