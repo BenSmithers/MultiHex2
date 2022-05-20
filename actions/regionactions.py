@@ -5,6 +5,34 @@ from PyQt5.QtWidgets import QGraphicsScene
 
 from copy import copy
 
+class MetaRegionUpdate(MapAction):
+    """
+    Changes information like the name and fill type of a region 
+    """
+    def __init__(self, recurring=None, **kwargs):
+        MapAction.__init__(self, recurring=None, **kwargs)
+        self.needed=["name","fill", "rid", "layer"]
+
+        self.verify(kwargs)
+
+        self.new_name = kwargs["name"]
+        self.fill = kwargs["fill"]
+        self.rID = kwargs["rid"]
+        self.layer = kwargs["layer"]
+
+    def __call__(self, map: QGraphicsScene) -> 'MetaRegionUpdate':
+        region = map.accessRegion(self.rID, self.layer)
+        old_fill = region.fill
+        old_name = region.name
+        
+        region.set_name(self.new_name)
+        region.set_fill(self.fill)
+        # redraw it! 
+        map.drawRegion(self.rID, self.layer)
+        return MetaRegionUpdate(name=old_name, fill=old_fill, rid=self.rID, layer=self.layer)
+
+
+
 class New_Region_Action(MapAction):
     """
     This action registers a region in the Hexmap

@@ -2,7 +2,7 @@
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent, QMainWindow, QApplication
-from PyQt5.QtWidgets import QGraphicsItem, QGraphicsView
+from PyQt5.QtWidgets import QGraphicsItem, QGraphicsView, QGraphicsDropShadowEffect
 
 from MultiHex2.core.core import DRAWSIZE
 from MultiHex2.core import Catalog, RegionCatalog, EntityCatalog
@@ -575,8 +575,9 @@ class Clicker(QGraphicsScene, ActionManager):
             self.tool.select(-1)
 
         using = self._get_region_cat(layer)
-        sid = using.getSID(rid) 
-        self.removeItem(sid) # undraw
+        sids = using.getSID(rid) 
+        for sid in sids:
+            self.removeItem(sid) # undraw
         using.delete_region(rid, layer)  # clear it from the catalog 
 
     def addRegion(self, region:Region, layer:ToolLayer)->int:
@@ -587,7 +588,6 @@ class Clicker(QGraphicsScene, ActionManager):
 
         rid = using.register_region(region) # add the region to the catalog
         sceneID = self.drawRegion(rid, layer) 
-        using.updateSID(rid, sceneID) # draw it and update the catalog with the scene ID (sid)
         return rid
 
     def regionRemoveHex(self, coords:HexID, layer:ToolLayer):
@@ -612,9 +612,10 @@ class Clicker(QGraphicsScene, ActionManager):
         Removes the drawing of the rid region
         """
         using = self._get_region_cat(layer)
-        sid = using.get_sid(rid)
-        if sid is not None:
-            self.removeItem(sid)
+        sids = using.get_sid(rid)
+        if sids is not None:
+            for sid in sids:
+                self.removeItem(sid)
 
         using.updateSID(rid, None)
 
@@ -635,8 +636,24 @@ class Clicker(QGraphicsScene, ActionManager):
 
         new_sid = self.addPolygon(region,pen=self._pen, brush=self._brush)
         new_sid.setZValue(100)
-        using.updateSID(rid, new_sid)
+
+        drop = QGraphicsDropShadowEffect()
+        drop.setOffset(1)
+        font = QtGui.QFont("Decorative")
+        new_color= QtGui.QColor( 250, 250, 250)
+        font_size = 14
+
+        font.setPointSize( font_size )
+
+        loc = region.average_location()
+        text_sid = self.addText(region.name, font)
+        text_sid.setPos(loc)
+        text_sid.setZValue(110)
+        text_sid.setGraphicsEffect( drop )
+        text_sid.setDefaultTextColor( new_color )
+
+        using.updateSID(rid, new_sid, text_sid)
         self.update()
-        return new_sid
+        return new_sid, text_sid
 
 

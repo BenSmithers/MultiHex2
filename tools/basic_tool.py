@@ -34,6 +34,10 @@ class Basic_Tool:
 
         self._widget_instance = None
 
+    @property
+    def widget_instance(self):
+        return self._widget_instance
+
     def deselect(self):
         self._state = 0
 

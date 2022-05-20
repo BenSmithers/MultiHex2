@@ -26,6 +26,15 @@ class RegionAdd(Basic_Tool):
         self._selected_rid = -1
 
         self.regionType = Region
+        self._need_to_update_widget = False
+
+    def get_selected_region(self):
+        if self._selected_rid!=-1:
+            return self.parent.accessRegion(self._selected_rid, self.tool_layer())
+
+    @property
+    def selected(self):
+        return self._selected_rid
 
     @classmethod
     def tool_layer(cls):
@@ -33,13 +42,33 @@ class RegionAdd(Basic_Tool):
 
     def deselect(self):
         self._selected_rid = -1
+        self._need_to_update_widget = True
         return super().deselect()
+
+    def update_gui(self):
+        # update widget 
+        if self._selected_rid != -1:
+            this_region = self.get_selected_region()
+            self.widget_instance.ui.name_edit.setText(this_region.name)
+            color = this_region.fill
+            self.widget_instance.ui.color_choice_button.setStyleSheet("background-color:rgb({},{},{})".format(color.red(), color.green(), color.blue()))
+        else:
+            self.widget_instance.ui.name_edit.setText("")
+            self.widget_instance.ui.color_choice_button.setStyleSheet("")
+
+        self._need_to_update_widget = False
 
     def select(self, rid:int):
         """
         Select a region
         """
         self._selected_rid = rid
+        self._need_to_update_widget = True
+
+    def mouse_moved(self, event):
+        if self._need_to_update_widget:
+            self.update_gui()
+        return NullAction()
 
     def secondary_mouse_held(self, event):
         return self.secondary_mouse_released(event)
@@ -56,11 +85,13 @@ class RegionAdd(Basic_Tool):
             if this_rid is None:
                 hex_here = Hex(hex_to_screen(loc))
                 action = New_Region_Action(region=self.regionType(hex_here), rid=self.parent.get_next_rid(self.tool_layer()), layer=self.tool_layer())
-                self._selected_rid = action.rID
+                self.select(action.rID)
+                #self._selected_rid = action.rID
                 return action
             else:
                 # choose the region under the cursor 
-                self._selected_rid = this_rid
+                self.select(this_rid)
+                #self._selected_rid = this_rid
                 return NullAction()
 
         else:
@@ -70,7 +101,8 @@ class RegionAdd(Basic_Tool):
                 # ["rID", 'hexID']
                 return Region_Add_Remove(rID = self._selected_rid, hexID=loc, layer=self.tool_layer())
             else:
-                self._selected_rid = this_rid
+                self.select(this_rid)
+                #self._selected_rid = this_rid
                 return NullAction()
 
     @classmethod

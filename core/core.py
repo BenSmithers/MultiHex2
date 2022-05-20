@@ -146,9 +146,19 @@ class Region(QPolygonF):
     """
     def __init__(self, origin:QPolygonF, *hexIDs:HexID):
         super().__init__(origin)
-        self._name = ""
+        self._name = "Test Name Do Not Eat"
         self._hexIDs = list(hexIDs)
         self._fill = QColor(randint(1,255),randint(1,255),randint(1,255))
+
+    def average_location(self):
+        mean_x = 0.0
+        mean_y = 0.0
+        n = len(self._hexIDs)
+        for hid in self.hexIDs:
+            pt = hex_to_screen(hid)
+            mean_x += pt.x()/n
+            mean_y += pt.y()/n
+        return QPointF(mean_x, mean_y)
 
     @property
     def hexIDs(self)->list:
@@ -190,6 +200,8 @@ class Region(QPolygonF):
 
     def set_name(self, name:str):
         self._name = name
+    def set_fill(self,fill:QColor):
+        self._fill = fill
 
     def merge(self, other:'Region')->'Region':
         """
@@ -225,7 +237,7 @@ class RegionCatalog:
     def __init__(self):
         self._hidcatalog = {} # hexID -> regionID
         self._ridcatalog = {} # regionID -> Region
-        self._interface = {} # regionID -> screenID
+        self._interface = {} # regionID -> screenID (tuple)
 
     def __contains__(self, rid):
         return rid in self._ridcatalog
@@ -273,7 +285,7 @@ class RegionCatalog:
         else: 
             return
 
-    def updateSID(self, rid:int, sid):
+    def updateSID(self, rid:int, *sid):
         self._interface[rid] = sid
 
     def updateRegion(self, rid:int, region:Region):
