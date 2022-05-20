@@ -20,10 +20,19 @@ class Module:
         self._tools = {}
 
         self._name = "Default Module"
+
+        self._text_source = "Morrowind"
     
         self._tileset_location = ""
         self._generator = generic
         self._skip_geo=[] 
+
+    @property
+    def text_source(self):
+        """
+        Which name file to load in for making MCMC tables and generating names 
+        """
+        return self._text_source
 
     @property
     def skip_geo(self):

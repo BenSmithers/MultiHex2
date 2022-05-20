@@ -3,6 +3,7 @@ from MultiHex2.tools.widgets import RegionWidget
 from MultiHex2.core import Region, screen_to_hex, Hex, HexID
 from MultiHex2.core.core import County
 from actions.baseactions import NullAction
+from MultiHex2.generation.name_gen import create_name
 from MultiHex2.actions.regionactions import Merge_Regions_Action, Region_Add_Remove, New_Region_Action
 
 import os 
@@ -31,6 +32,8 @@ class RegionAdd(Basic_Tool):
     def get_selected_region(self):
         if self._selected_rid!=-1:
             return self.parent.accessRegion(self._selected_rid, self.tool_layer())
+        else:
+            return None
 
     @property
     def selected(self):
@@ -51,6 +54,7 @@ class RegionAdd(Basic_Tool):
             this_region = self.get_selected_region()
             self.widget_instance.ui.name_edit.setText(this_region.name)
             color = this_region.fill
+            self.widget_instance.new_color = color
             self.widget_instance.ui.color_choice_button.setStyleSheet("background-color:rgb({},{},{})".format(color.red(), color.green(), color.blue()))
         else:
             self.widget_instance.ui.name_edit.setText("")
@@ -84,7 +88,12 @@ class RegionAdd(Basic_Tool):
             # make new region
             if this_rid is None:
                 hex_here = Hex(hex_to_screen(loc))
-                action = New_Region_Action(region=self.regionType(hex_here), rid=self.parent.get_next_rid(self.tool_layer()), layer=self.tool_layer())
+
+                actual_hex = self.parent.accessHex(loc)
+                new_region = self.regionType(hex_here)
+                new_region.set_geography(actual_hex.geography)
+                new_region.set_name(create_name(new_region.geography, filename=self.widget_instance.text_source))
+                action = New_Region_Action(region=new_region, rid=self.parent.get_next_rid(self.tool_layer()), layer=self.tool_layer())
                 self.select(action.rID)
                 #self._selected_rid = action.rID
                 return action

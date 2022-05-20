@@ -11,37 +11,50 @@ import json
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import QColorDialog
 
+from MultiHex2.generation.name_gen import create_name
 from MultiHex2.tools.widgetgui.hextoolgui import Ui_Form as HexToolWidgetGui
 from MultiHex2.tools.widgetgui.regionui import Ui_Form as RegionToolWidgetGui
 from MultiHex2.guis.hex_select_gui import hex_select_gui
 from MultiHex2.actions.regionactions import MetaRegionUpdate
 # from MultiHex2.tools.clicker_tool import Clicker
+from MultiHex2.generation.name_gen import create_name
 
 
 class ToolWidget(QtWidgets.QWidget):
-    def __init__(self, parent, tool, tileset):
+    def __init__(self, parent, tool, tileset, text_source):
         QtWidgets.QWidget.__init__(self, parent)
         self._tool = tool
 
         self._tool.link_to_widget(self)
         self.tileset = tileset
+        self.text_source = text_source
         self.setMaximumWidth(250)
         self.setMinimumWidth(250)
         self.new_color = QtGui.QColor(0,0,0)
 
 class RegionWidget(ToolWidget):
-    def __init__(self, parent, tool,tileset):
-        ToolWidget.__init__(self, parent, tool,tileset)
+    def __init__(self, parent, tool,tileset, text_source):
+        ToolWidget.__init__(self, parent, tool,tileset, text_source)
         self.ui = RegionToolWidgetGui()
         self.ui.setupUi(self)
 
         self.ui.color_choice_button.clicked.connect(self.choose_color)
         self.ui.delete_button.clicked.connect(self.delete_region)
         self.ui.apply_button.clicked.connect(self.apply)
+        self.ui.new_name_button.clicked.connect(self.random_name)
+
+    def random_name(self):
+        if self._tool.get_selected_region() is not None:
+            what = self._tool.get_selected_region().geography
+        else:
+            what = ""
+        print("for {}".format(what))
+        new_name = create_name(what, filename=self.text_source)
+        self.ui.name_edit.setText(new_name)
 
     def choose_color(self):
-        old_one = QtGui.QColor(0,0,0)
-        self.new_color = QColorDialog.getColor(initial = old_one, parent=self)
+        
+        self.new_color = QColorDialog.getColor(initial = self.new_color, parent=self)
 
         self.ui.color_choice_button.setStyleSheet("background-color:rgb({},{},{})".format(self.new_color.red(), self.new_color.green(), self.new_color.blue()))
 
@@ -58,16 +71,16 @@ class RegionWidget(ToolWidget):
         
 
 class HexSelectWidget(ToolWidget):
-    def __init__(self, parent, tool,tileset):
-        super().__init__(parent, tool,tileset)
+    def __init__(self, parent, tool,tileset,text_source):
+        super().__init__(parent, tool,tileset,text_source)
         self.ui = hex_select_gui()
         self.ui.setupUi(self)
         
 
 
 class HexBrushWidget(ToolWidget):
-    def __init__(self, parent, tool,tileset):
-        ToolWidget.__init__(self, parent, tool,tileset)
+    def __init__(self, parent, tool,tileset,text_source):
+        ToolWidget.__init__(self, parent, tool,tileset,text_source)
         self.ui = HexToolWidgetGui()
         self.ui.setupUi(self)
 

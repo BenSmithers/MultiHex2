@@ -646,7 +646,16 @@ class Clicker(QGraphicsScene, ActionManager):
         font.setPointSize( font_size )
 
         loc = region.average_location()
+
         text_sid = self.addText(region.name, font)
+        
+        width = text_sid.boundingRect().width()
+        if width>300:
+            text_sid.setTextWidth(300)
+            width = 300
+            
+        loc = QtCore.QPointF( loc.x()-width*0.5, loc.y())
+
         text_sid.setPos(loc)
         text_sid.setZValue(110)
         text_sid.setGraphicsEffect( drop )

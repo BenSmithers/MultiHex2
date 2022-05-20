@@ -234,7 +234,7 @@ class main_window(QMainWindow):
             self.ui.toolPane.removeWidget(self.ui.toolwidget)
             self.ui.toolwidget.deleteLater()
             self.ui.toolwidget = None
-        self.ui.toolwidget = self.scene.tool.widget()(self.ui.centralwidget, self.scene.tool, self.module.tileset)
+        self.ui.toolwidget = self.scene.tool.widget()(self.ui.centralwidget, self.scene.tool, self.module.tileset, self.module.text_source)
         self.ui.toolPane.addWidget(self.ui.toolwidget)
         self.ui.toolPane.update()
         

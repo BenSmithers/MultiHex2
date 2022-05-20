@@ -146,9 +146,18 @@ class Region(QPolygonF):
     """
     def __init__(self, origin:QPolygonF, *hexIDs:HexID):
         super().__init__(origin)
-        self._name = "Test Name Do Not Eat"
+        self._name = "New Region"
         self._hexIDs = list(hexIDs)
         self._fill = QColor(randint(1,255),randint(1,255),randint(1,255))
+
+        self._geography = ""
+    
+    @property
+    def geography(self):
+        return self._geography
+
+    def set_geography(self, geo:str):
+        self._geography = geo
 
     def average_location(self):
         mean_x = 0.0
