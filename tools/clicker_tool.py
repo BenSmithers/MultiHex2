@@ -98,7 +98,9 @@ class Clicker(QGraphicsScene, ActionManager):
         """
         out_dict = {
             "hexes":{},
-            "regions":{},
+            "bregions":{},
+            "cregions":{},
+            "entities":{},
             "drawsize":DRAWSIZE,
             "dimensions":[self.dimensions[0], self.dimensions[1]],
             "module":self.module,
@@ -117,7 +119,15 @@ class Clicker(QGraphicsScene, ActionManager):
             out_dict["hexes"]["{}.{}".format(hID.xid, hID.yid)]=hex.pack()
         for rID in self._biomeCatalog:
             region=self._biomeCatalog[rID]
-            out_dict["regions"]["{}".format(rID)]=region.pack()
+            out_dict["bregions"]["{}".format(rID)]=region.pack()
+        for rID in self._countyCatalog:
+            region = self._countyCatalog[rID]
+            out_dict["cregions"]["{}".format(rID)]=region.pack()
+        if False:
+            for eID in self._entityCatalog:
+                entity = self._entityCatalog.access_entity(eID)
+                out_dict["entities"]["{}".format(eID)]=entity.pack()
+        
         t2 = time()
 
         f = open(filename, 'wt')
@@ -147,9 +157,12 @@ class Clicker(QGraphicsScene, ActionManager):
             hid = HexID(int(split[0]), int(split[1]))
             hexobj = Hex.unpack(in_dict["hexes"][str_hid])
             self.addHex(hexobj, hid)
-        for str_rid in in_dict["regions"].keys():
-            reg = Region.unpack(in_dict["regions"][str_rid])
-            self.addRegion(reg)
+        for str_rid in in_dict["bregions"].keys():
+            reg = Region.unpack(in_dict["bregions"][str_rid])
+            self.addRegion(reg, ToolLayer.terrain )
+        for str_rid in in_dict["cregions"].keys():
+            reg = Region.unpack(in_dict["cregions"][str_rid])
+            self.addRegion(reg, ToolLayer.civilization)
 
         _time_dict= in_dict["time"]
         time = Time(minute=_time_dict["minute"], hour=_time_dict["hour"], 
