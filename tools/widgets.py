@@ -51,7 +51,6 @@ class RegionWidget(ToolWidget):
             what = self._tool.get_selected_region().geography
         else:
             what = ""
-        print("for {}".format(what))
         new_name = create_name(what, filename=self.text_source)
         self.ui.name_edit.setText(new_name)
 
