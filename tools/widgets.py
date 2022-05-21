@@ -44,7 +44,10 @@ class RegionWidget(ToolWidget):
         self.ui.new_name_button.clicked.connect(self.random_name)
 
     def random_name(self):
-        if self._tool.get_selected_region() is not None:
+
+        if self._tool.tool_layer().value==2:
+            what = "county"
+        elif self._tool.get_selected_region() is not None:
             what = self._tool.get_selected_region().geography
         else:
             what = ""

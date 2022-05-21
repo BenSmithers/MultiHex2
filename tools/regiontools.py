@@ -92,7 +92,10 @@ class RegionAdd(Basic_Tool):
                 actual_hex = self.parent.accessHex(loc)
                 new_region = self.regionType(hex_here)
                 new_region.set_geography(actual_hex.geography)
-                new_region.set_name(create_name(new_region.geography, filename=self.widget_instance.text_source))
+                if self.tool_layer()==ToolLayer.civilization:
+                    new_region.set_name(create_name("county", filename=self.widget_instance.text_source))
+                else:
+                    new_region.set_name(create_name(new_region.geography, filename=self.widget_instance.text_source))
                 action = New_Region_Action(region=new_region, rid=self.parent.get_next_rid(self.tool_layer()), layer=self.tool_layer())
                 self.select(action.rID)
                 #self._selected_rid = action.rID

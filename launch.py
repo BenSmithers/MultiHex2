@@ -35,8 +35,8 @@ if not os.path.exists(SAVEDIR):
     os.mkdir(SAVEDIR)
 
 class WarnWidget(QtWidgets.QDialog):
-    def __init__(self, parent: typing.Optional[QWidget] = ..., flags: typing.Union[QtCore.Qt.WindowFlags, QtCore.Qt.WindowType] = ...) -> None:
-        super().__init__(parent, flags)
+    def __init__(self, parent) -> None:
+        super().__init__(parent)
         self.ui = SaveWarnDialogGui()
         self.ui.setupUi(self)
         self.parent = parent

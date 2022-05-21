@@ -127,7 +127,9 @@ def fetch_synonyms(what):
         "scrub":["Wastes", "Scrubland","Flats","Expanse","Rot"],
         "tundra": ["Boreal","Frost","Arctic"],
         "river": ["Creek","River","Stream", "Rapids"],
-        "savanah":["Savanah"]
+        "savanah":["Savanah"],
+        "kingdom":["Kingdom"],
+        "county":["Barony","County", "Nation"]
     }
 
     return switcher.get(what, ["Land"])

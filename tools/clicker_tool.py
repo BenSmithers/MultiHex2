@@ -447,10 +447,16 @@ class Clicker(QGraphicsScene, ActionManager):
     def tool(self):
         return self._tool
     def select_tool(self, tool_name:str):
+        old_layer = self._tool.tool_layer()
+
         self._tool.deselect()
         tool = self._alltools[tool_name]
         self._tool = tool
         self._tool.set_state(tool.auto_state)
+
+        if (self._tool.tool_layer() != ToolLayer.null):
+            self.reDrawRegions()
+
         # update the widget part with the tool's config widget 
 
     def clear_tools(self):
@@ -632,20 +638,47 @@ class Clicker(QGraphicsScene, ActionManager):
 
         using.updateSID(rid, None)
 
+    def reDrawRegions(self):
+        print("redrawing! Selected {}".format(self.tool.tool_layer()))
+
+        using = self._get_region_cat(ToolLayer.terrain)
+        for rid in using:
+            self.drawRegion(rid, ToolLayer.terrain)
+
+        using = self._get_region_cat(ToolLayer.civilization)
+        for rid in using:
+            self.drawRegion(rid, ToolLayer.civilization)
+
+
     def drawRegion(self, rid:int, layer:ToolLayer):
         """
             See if it has been drawn, erase it, and redraw it
+
+            If the selected tool is Terrain, we draw borders for the biomes only 
+            If the selected 
+
         """
+
+        active = self._tool.tool_layer()
+        civmode = (active.value== 2) or (active.value ==3)
+            
+
         using = self._get_region_cat(layer)
-
         self.eraseRegion(rid, layer)
-
         region = using.get_region(rid)
 
-        self._brush.setStyle(6)
-        self._brush.setColor(region.fill)
-        self._pen.setColor(region.fill)
-        self._pen.setStyle(0)
+        if (civmode and layer==ToolLayer.civilization) or ((not civmode) and layer==ToolLayer.terrain):
+            self._brush.setStyle(1)
+            self._brush.setColor(QtGui.QColor(region.fill.red(), region.fill.green(), region.fill.blue(), 100))
+            self._pen.setColor(region.fill)
+            self._pen.setStyle(0)
+            font_size = 16
+        else: # don't fill 
+            self._brush.setStyle(0)
+            self._brush.setColor(QtGui.QColor(region.fill.red(), region.fill.green(), region.fill.blue(), 1))
+            self._pen.setColor(region.fill)
+            self._pen.setStyle(0)
+            font_size = 12
 
         new_sid = self.addPolygon(region,pen=self._pen, brush=self._brush)
         new_sid.setZValue(100)
@@ -654,7 +687,6 @@ class Clicker(QGraphicsScene, ActionManager):
         drop.setOffset(1)
         font = QtGui.QFont("Decorative")
         new_color= QtGui.QColor( 250, 250, 250)
-        font_size = 14
 
         font.setPointSize( font_size )
 
