@@ -80,6 +80,19 @@ class RegionAdd(Basic_Tool):
     def primary_mouse_held(self, event):
         return self.primary_mouse_released(event)
     
+    def secondary_mouse_released(self, event):
+        """
+        Removes hex from region
+        """
+        loc =  screen_to_hex( event.scenePos() )
+        this_rid = self.parent.accessHexRegion(loc, self.tool_layer()) 
+
+        if this_rid is None:
+            return NullAction()
+        else:
+            self.select(this_rid)
+            return Region_Add_Remove(rID = None, hexID=loc, layer=self.tool_layer())
+        
 
     def primary_mouse_released(self, event: QtWidgets.QGraphicsSceneMouseEvent):
         loc =  screen_to_hex( event.scenePos() )

@@ -19,7 +19,6 @@ class HexSelect(Basic_Tool):
     
     def __init__(self, parent):
         Basic_Tool.__init__(self, parent)
-        self.tool_layer = ToolLayer.terrain
         self.highlight = False
 
     def primary_mouse_released(self, event):
