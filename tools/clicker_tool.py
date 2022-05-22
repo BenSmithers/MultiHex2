@@ -538,7 +538,7 @@ class Clicker(QGraphicsScene, ActionManager):
         elif layer==ToolLayer.civilization:
             return self._countyCatalog
         else:
-            raise NotImplementedError("Nothing for {}".format(layer))
+            raise NotImplementedError("Nothing for {}. Did you use a relative import? Don't!".format(layer))
 
     def regionAddHex(self,rid:int, coords:HexID, layer:ToolLayer):
         """

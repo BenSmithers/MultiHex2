@@ -127,6 +127,7 @@ def fetch_synonyms(what):
         "scrub":["Wastes", "Scrubland","Flats","Expanse","Rot"],
         "tundra": ["Boreal","Frost","Arctic"],
         "river": ["Creek","River","Stream", "Rapids"],
+        "ice": ["Glacier","Ice Wastes","Arctic"],
         "savanah":["Savanah"],
         "kingdom":["Kingdom"],
         "county":["Barony","County", "Nation"]

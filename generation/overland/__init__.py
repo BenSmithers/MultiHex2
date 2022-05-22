@@ -1,6 +1,7 @@
 from .sim_weather import simulate_wind,simulate_clouds
 from MultiHex2.tools import Clicker
 from .from_platec import gen_land
+from .biome_maker import add_biomes
 
 from MultiHex2.clock import Time,Clock
 import json
@@ -33,4 +34,5 @@ def fullsim(map:Clicker, preset="continental"):
     tset_file.close()
     
     map.apply_tileset(tset)
+    add_biomes(map, seed=seed, **config)
     
