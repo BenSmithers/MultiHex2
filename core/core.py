@@ -351,6 +351,9 @@ class RegionCatalog:
     def __getitem__(self, key)->Region:
         return self._ridcatalog[key]
 
+    def __len__(self):
+        return len(self._ridcatalog.keys())
+
 class EntityCatalog:
     """
     Class for keeping track of Entities, their IDs, their QGraphicsScene hashes, and where they are on the map 
