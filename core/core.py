@@ -1,4 +1,3 @@
-from email.charset import QP
 from PyQt5.QtCore import QPointF
 from PyQt5.QtGui import QPolygonF, QColor
 from math import sqrt,sin,cos
@@ -11,6 +10,7 @@ from .coordinates import HexID, hex_to_screen, DRAWSIZE, screen_to_hex
 
 import numpy as np
 from numpy.random import randint
+from collections import deque
 
 RTHREE = sqrt(3)
 
@@ -238,6 +238,87 @@ class Region(QPolygonF):
 class County(Region, Government):
     def __init__(self, origin: QPolygonF, *hexIDs: HexID):
         super().__init__(origin, *hexIDs)
+
+class Path:
+    def __init__(self, *positions):
+        self._viable_dtypes = (QPointF, HexID)
+        self._dtype = int
+        self._step = None #QPointF or integer
+
+        for entry in positions:
+            if self._dtype == int:
+                self._dtype = type(entry)
+                if not type(entry) in self._viable_dtypes:
+                    raise TypeError("Tried making path with unsupported data type {}".format(type(entry)))
+                
+            else:
+                if type(entry)!=self._dtype:
+                    raise TypeError("Inconsistent typing with starting positions")
+
+        self._vertices = deque(positions)
+
+        # verify the step size is acurate 
+        
+        for i in range(len(self._vertices)-1):
+            this_step =  self._vertices[i+1] - self._vertices[i]
+            if self._step is None:
+                self._step = this_step
+            else:
+                if this_step != self._step:
+                    raise ValueError("Inconsistent step sizes! {} vs {}".format(self._step, this_step)) 
+
+    def add_to_end(self, other):
+        if not isinstance(other, self._dtype):
+            raise ValueError("Expected object of dtype {}, got {}".format(self._dtype, type(other)))
+
+        step = other - self._vertices[-1]
+        if step!=self._step:
+            raise ValueError("Inconsistent step sizes! {} vs {}".format(self._step, step)) 
+        
+        self._vertices.append(other)
+
+    def add_to_start(self, other):
+        if not isinstance(other, self._dtype):
+            raise ValueError("Expected object of dtype {}, got {}".format(self._dtype, type(other)))
+
+        step = other - self._vertices[0]
+        if step!=self._step:
+            raise ValueError("Inconsistent step sizes! {} vs {}".format(self._step, step)) 
+        
+        self._vertices.appendleft(other)
+
+
+    def __contains__(self, thing):
+        """
+        Implements "thing in Path" method
+        """
+        if not isinstance(thing, self._dtype):
+            return False
+
+        return thing in self._vertices
+
+    @property
+    def vertices(self):
+        return self._vertieces
+
+    def pop_from_end(self):
+        """
+        Removes the end point from the path and returns it
+        """
+        return self._vertices.pop()
+
+    def pop_from_start(self):
+        """
+        Removes the start point from the path and returns it 
+        """
+        return self._vertices.popleft()
+
+
+    def get_end(self):
+        return self._vertices[-1]
+
+    def get_start(self):
+        return self._vertices[0]
 
 class RegionCatalog:
     """

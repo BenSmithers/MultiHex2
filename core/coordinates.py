@@ -1,6 +1,8 @@
 from PyQt5.QtCore import QPointF
 from math import sqrt
 
+from core.core import Hex
+
 RTHREE = sqrt(3)
 DRAWSIZE = 20.
 
@@ -62,6 +64,14 @@ class HexID:
         return results
     def __repr__(self) -> str:
         return "{}_{}_{}".format(self._xid, self._yid, self._zid)
+
+    def __sub__(self, other:'HexID')->int:
+        """
+            returns the distance between this and another HexID
+        """
+        inter_id = HexID(self.xid - other.xid, self.yid - other.yid, self.zid - other.zid)
+
+        return int((abs(inter_id.xid) + abs(inter_id.yid) + abs(inter_id).zid)/2)
 
         # -30 degrees, increment by 60 with each
 
