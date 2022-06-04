@@ -8,11 +8,6 @@ on:
     branches:
       - "master"
 
-
-name: Python package
-
-on: [push]
-
 jobs:
   build:
 
