@@ -114,9 +114,10 @@ def get_adjacent_vertices(point:QPointF):
     Returns the vertices adjacent to a given vertex. **this assumes that the point given lies on a vertex of a Hex**
 
     there are one of two kinds of vertices:
+        1  opens right
+        2  opens left
 
-      1  __/   \__  2 
-           \   /
+    I can't draw these, it breaks the linter 
 
     We don't know which this is. So, we look to the left of the vertex (step of DRAWSIZE), and up/down from it some small step. 
     We access the IDs for each of those perturbed points; if they're the same it's type 2, otherwise type 1

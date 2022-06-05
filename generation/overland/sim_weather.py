@@ -181,8 +181,8 @@ def simulate_clouds(map:Clicker, seed=None, **kwargs):
 def erode_land(map:Clicker, seed=None, **kwargs):
     """
     Choose a random hex on the map that's land. Look at neighbors, move to next lowest neighboring hex.
-    If altitude gradient exceeds a threshold, remove \eps altitude from start hex and add it to buffer
-    If altitude gradient is less than threshold, remove \eps from buffer and split the \eps between present and subsequent hex  
+    If altitude gradient exceeds a threshold, remove eps altitude from start hex and add it to buffer
+    If altitude gradient is less than threshold, remove eps from buffer and split the eps between present and subsequent hex  
 
     Repeat until buffer is empty. 
     """
