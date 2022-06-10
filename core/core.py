@@ -288,6 +288,9 @@ class Path:
         self._vertices.appendleft(other)
 
 
+    def __iter__(self):
+        return self.vertices.__iter__
+
     def __contains__(self, thing):
         """
         Implements "thing in Path" method
@@ -320,21 +323,111 @@ class Path:
     def get_start(self):
         return self._vertices[0]
 
-class RegionCatalog:
+"""
+All these catalogs are almost exactly identical... 
+TODO update these to inherit from some generic catalog! 
+"""
+
+class GeneralCatalog:
+    def __init__(self):
+        self._idCatalog = {} # objectID -> object
+        self._interface = {} # objectID -> screenID 
+
+    def __contains__(self, id:int):
+        return id in self._idCatalog
+
+    def get_next_id(self)->int:
+        id = 0
+        while id in self._idCatalog:
+            id+=1
+        return id
+
+    def register(self, obj)->int:
+        id = self.get_next_id()
+        self._idCatalog[id] = obj
+
+        return id
+
+    def get(self, id:int):
+        if id in self._idCatalog:
+            return self._idCatalog[id]
+        else:
+            return
+        
+    def get_sid(self, id:int):
+        if id in self._interface:
+            return self._interface[id]
+        else:
+            return
+
+    def update_obj(self, id:int, obj):
+        if id not in self._idCatalog:
+            raise KeyError("Object not here!")
+        
+        self._idCatalog[id] = obj
+
+    def update_sid(self, id:int, sid):
+        if id not in self._idCatalog:
+            print("sid {} {} catalog".format(id, "in" if sid in self._interface else "not in"))
+            raise KeyError("Obj {} not registered".format(id))
+        
+        self._interface[id] = sid
+        
+    def remove(self, hid):
+        """
+        Remove from catalog
+        """
+        if hid in self._idCatalog:
+            del self._idCatalog[hid]
+        else:
+            raise ValueError("Error, QGraphicsItem {} not in catalog.".format(hid))
+
+        if hid in self._interface:
+            del self._interface[hid]
+        else:
+            raise ValueError("Tried removing hexID {} from catalog, but no entry found in interface".format(hid))
+
+    def __getitem__(self, key):
+        return self._idCatalog[key]
+
+    def __iter__(self):
+        return self._idCatalog.__iter__()
+
+class PathCatalog(GeneralCatalog):
+    """
+    Object for keeping track of Paths, their screen IDs, and the hexes bordering these paths 
+    """
+
+    def __init__(self):
+        GeneralCatalog.__init__(self)
+        self._hexint = {} # hexID -> pids 
+
+    def register_path(self, path:Path)->int:
+        pid = self.register(path)
+
+        for vertex in path:
+            if isinstance(vertex, HexID):
+                if vertex in self._hexint:
+                    self._hexint[vertex] += [path]
+                else:
+                    self._hexint[vertex] = [path]
+            else:
+                raise NotImplementedError()
+
+        return pid
+
+
+class RegionCatalog(GeneralCatalog):
     """
     Object for keeping track of Regions and the hexes that encompass them 
     """
     def __init__(self):
+        GeneralCatalog.__init__(self)
         self._hidcatalog = {} # hexID -> regionID
-        self._ridcatalog = {} # regionID -> Region
-        self._interface = {} # regionID -> screenID (tuple)
 
-    def __contains__(self, rid):
-        return rid in self._ridcatalog
-
-    def getSID(self, id):
+    def get_sid(self, id):
         """
-        Gets the scene id for the region atthe specified HexID/Region ID
+        Gets the scene id for the region at the specified HexID/Region ID
         """
         if isinstance(id, HexID):
             if id not in self._hidcatalog:
@@ -344,20 +437,15 @@ class RegionCatalog:
             else:
                 return self._interface[self._hidcatalog[id]]
         elif isinstance(id, int): #region id
-            if id not in self._interface:
-                return
-            else:
-                return self._interface[id]
+            return GeneralCatalog.get_sid(self, id)
         else:
             raise TypeError("Not sure what to do with {}".format(type(id)))
-    def get_region(self, rid)->Region:
+    def get(self, rid)->Region:
         """
         Returns region for a region ID
         """
-        if rid in self._ridcatalog:
-            return self._ridcatalog[rid]
-        else:
-            return 
+        return GeneralCatalog.get(self,rid)
+
     def get_rid(self, id:HexID)->int:
         """
         Returns Region ID for a hex id, or returns None if the hex isn't in a region
@@ -366,44 +454,15 @@ class RegionCatalog:
             return self._hidcatalog[id]
         else:
             return
-    def get_sid(self, rid:int):
-        """
-            return the screen id if the region has an entry, otherwise returns NONE
-        """
-        if rid in self._interface:
-            return self._interface[rid]
-        else: 
-            return
 
-    def updateSID(self, rid:int, *sid):
+    def update_sid(self, rid:int, *sid):
         self._interface[rid] = sid
 
-    def updateRegion(self, rid:int, region:Region):
-        self._ridcatalog[rid] = region
-
-    def get_next_rid(self):
-        rid = 1
-        while rid in self._ridcatalog:
-            rid+=1
-        return rid
-
-    def register_region(self, region:Region)->int:
-        """
-        Takes a region and the hexes that start as part of it, register them in the dictionaries 
-        """
-        rid = self.get_next_rid()
-
-        self._ridcatalog[rid] = region
-
-        for id in region.hexIDs:
-            self._hidcatalog[id]=rid
-
-        return rid
     def delete_region(self, rID:int):
-        for hexID in self._ridcatalog[rID].hexIDs:
+        for hexID in self._idCatalog[rID].hexIDs:
             del self._hidcatalog[hexID]
 
-        del self._ridcatalog[rID]
+        del self._idCatalog[rID]
         del self._interface[rID]
 
     def add_hex(self, hID:HexID, rID:int):
@@ -419,21 +478,21 @@ class RegionCatalog:
 
         del self._hidcatalog[hID]
 
-        region = self._ridcatalog[rid]
+        region = self._idCatalog[rid]
         region = region.subtract(Region(Hex(hex_to_screen(hID)), hID))
-        self._ridcatalog[rid] = region
+        self._idCatalog[rid] = region
 
         if (region.hexIDs)==0:
             self.delete_region(rid)
 
     def __iter__(self):
-        return self._ridcatalog.__iter__()
+        return self._idCatalog.__iter__()
 
     def __getitem__(self, key)->Region:
-        return self._ridcatalog[key]
+        return self._idCatalog[key]
 
     def __len__(self):
-        return len(self._ridcatalog.keys())
+        return len(self._idCatalog.keys())
 
 class EntityCatalog:
     """
@@ -503,44 +562,29 @@ class EntityCatalog:
         if eID in self._eIDtoHex:
             return self._eIDtoHex[eID]
 
-class Catalog:
+class HexCatalog(GeneralCatalog):
     """
     class for keeping track of Hexes, their IDs, and their QGraphicsScene hashes
     """
     _dtype = Hex
     def __init__(self, dtype:type):
-        Catalog._dtype = dtype
-        self._hidcatalog = {} # hex id -> obj
-        self._interface = {} # hexid to screen id
+        GeneralCatalog.__init__(self)
+        HexCatalog._dtype = dtype
 
     def get_all_hids(self):
-        return self._hidcatalog.keys()
-
-    def updateSID(self, hID:HexID, sid=None):
-        if sid is None:
-            del self._interface[hID]     
-        else:
-            self._interface[hID] = sid
-
-    def getSID(self,hID:HexID)->QGraphicsItem:
-        if hID in self._interface:
-            return self._interface[hID]
-        else:
-            return
+        return self._idCatalog.keys()
 
     def remove(self, hid:HexID):
         """
         Remove from catalog
         """
-        if hid in self._hidcatalog:
-            del self._hidcatalog[hid]
-            self._hidcatalog[hid] = None
+        if hid in self._idCatalog:
+            del self._idCatalog[hid]
         else:
             raise ValueError("Error, QGraphicsItem {} not in catalog.".format(hid))
 
         if hid in self._interface:
-            sid = self._interface[hid]
-            self._interface[hid] = None
+            del self._interface[hid]
         else:
             raise ValueError("Tried removing hexID {} from catalog, but no entry found in interface".format(hid))
     
@@ -549,15 +593,6 @@ class Catalog:
         """
         Called when we're registering 
         """
-        self._hidcatalog[hid] = item
+        self._idCatalog[hid] = item
         self._interface[hid] = None
             
-
-    def __getitem__(self, key)->_dtype:
-        return self._hidcatalog[key]
-
-    def __contains__(self, key)->bool:
-        return key in self._hidcatalog
-
-    def __iter__(self):
-        return self._hidcatalog.__iter__()

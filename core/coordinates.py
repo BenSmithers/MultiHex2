@@ -1,8 +1,6 @@
 from PyQt5.QtCore import QPointF
 from math import sqrt
 
-from core.core import Hex
-
 RTHREE = sqrt(3)
 DRAWSIZE = 20.
 

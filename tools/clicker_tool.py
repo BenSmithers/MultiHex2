@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent, QMainWindo
 from PyQt5.QtWidgets import QGraphicsItem, QGraphicsView, QGraphicsDropShadowEffect
 
 from MultiHex2.core.core import DRAWSIZE
-from MultiHex2.core import Catalog, RegionCatalog, EntityCatalog
+from MultiHex2.core import HexCatalog, RegionCatalog, EntityCatalog
 from MultiHex2.core import Hex, HexID, Region, Entity
 from MultiHex2.core import screen_to_hex
 from MultiHex2.actions import ActionManager
@@ -53,7 +53,7 @@ class Clicker(QGraphicsScene, ActionManager):
         self._primary_held = False
         self._secondary_held  = False
 
-        self._hexCatalog = Catalog(dtype=Hex)
+        self._hexCatalog = HexCatalog(dtype=Hex)
         self._biomeCatalog = RegionCatalog()
         self._countyCatalog = RegionCatalog()
         self._entityCatalog = EntityCatalog()
@@ -146,7 +146,7 @@ class Clicker(QGraphicsScene, ActionManager):
         clears out the catalogs in the clicker and replaces them with our own 
         """
         self.clear()
-        self._hexCatalog = Catalog(dtype=Hex)
+        self._hexCatalog = HexCatalog(dtype=Hex)
         self._biomeCatalog = RegionCatalog()
         f = open(filename,'rt')
         in_dict = json.load(f)
@@ -487,13 +487,13 @@ class Clicker(QGraphicsScene, ActionManager):
         
         self._hexCatalog.register(hexobj, coords)
         sid = self.drawHex(coords)
-        self._hexCatalog.updateSID(coords, sid)
+        self._hexCatalog.update_sid(coords, sid)
 
     def eraseHex(self, coords:HexID)->None:
-        sid = self._hexCatalog.getSID(coords)
+        sid = self._hexCatalog.get_sid(coords)
         if sid is not None:
             self.removeItem(sid)
-            self._hexCatalog.updateSID(coords, None)
+            self._hexCatalog.update_sid(coords, None)
 
     def drawHex(self, coords)->QGraphicsItem:
         self.eraseHex(coords)
@@ -522,7 +522,7 @@ class Clicker(QGraphicsScene, ActionManager):
 
     def removeHex(self, coords:HexID):
         # remove drawing
-        sid = self._hexCatalog.getSID(coords)
+        sid = self._hexCatalog.get_sid(coords)
         self.removeItem(sid)
         self._hexCatalog.remove(coords)
         self.update()
@@ -548,10 +548,10 @@ class Clicker(QGraphicsScene, ActionManager):
 
         using.add_hex(coords, rid) # update the catalog so it knows about the new association
 
-        region = using.get_region(rid) # access the region from the catalog
+        region = using.get(rid) # access the region from the catalog
         new_region = Region(Hex(hex_to_screen(coords)), coords) 
         region = region.merge(new_region) # convert the new space into a region, merge it
-        using.updateRegion(rid, region) # make the catalog aware of the modified region
+        using.update_obj(rid, region) # make the catalog aware of the modified region
 
 
         self.drawRegion(rid, layer) # redraw it 
@@ -560,7 +560,7 @@ class Clicker(QGraphicsScene, ActionManager):
         """
         Returns the region at this rid from the catalog
         """
-        return self._get_region_cat(layer).get_region(rid)
+        return self._get_region_cat(layer).get(rid)
     def accessHexRegion(self,hid:HexID, layer:ToolLayer)->int:
         """
         Returns the region at this hexid, returns None if none exists
@@ -580,11 +580,11 @@ class Clicker(QGraphicsScene, ActionManager):
         
         using = self._get_region_cat(layer)
         region1 = region1.merge(region2)
-        using.updateRegion(rid1, region1)
+        using.update_obj(rid1, region1)
         using.delete_region(rid2)
 
     def get_next_rid(self, layer:ToolLayer):
-        return self._get_region_cat(layer).get_next_rid()
+        return self._get_region_cat(layer).get_next_id()
 
     def deleteRegion(self, rid:int, layer:ToolLayer):
         """
@@ -594,7 +594,7 @@ class Clicker(QGraphicsScene, ActionManager):
             self.tool.select(-1)
 
         using = self._get_region_cat(layer)
-        sids = using.getSID(rid) 
+        sids = using.get_sid(rid) 
         for sid in sids:
             self.removeItem(sid) # undraw
         using.delete_region(rid, layer)  # clear it from the catalog 
@@ -605,7 +605,7 @@ class Clicker(QGraphicsScene, ActionManager):
         """
         using = self._get_region_cat(layer)
 
-        rid = using.register_region(region) # add the region to the catalog
+        rid = using.register(region) # add the region to the catalog
         sceneID = self.drawRegion(rid, layer) 
         return rid
 
@@ -636,7 +636,7 @@ class Clicker(QGraphicsScene, ActionManager):
             for sid in sids:
                 self.removeItem(sid)
 
-        using.updateSID(rid, None)
+        using.update_sid(rid, None)
 
     def reDrawRegions(self):
         print("redrawing! Selected {}".format(self.tool.tool_layer()))
@@ -665,7 +665,7 @@ class Clicker(QGraphicsScene, ActionManager):
 
         using = self._get_region_cat(layer)
         self.eraseRegion(rid, layer)
-        region = using.get_region(rid)
+        region = using.get(rid)
 
         if (civmode and layer==ToolLayer.civilization) or ((not civmode) and layer==ToolLayer.terrain):
             self._brush.setStyle(1)
@@ -706,7 +706,7 @@ class Clicker(QGraphicsScene, ActionManager):
         text_sid.setGraphicsEffect( drop )
         text_sid.setDefaultTextColor( new_color )
 
-        using.updateSID(rid, new_sid, text_sid)
+        using.update_sid(rid, new_sid, text_sid)
         self.update()
         return new_sid, text_sid
 
