@@ -1,5 +1,5 @@
-from core.core import Path
-from core.coordinates import HexID
+from MultiHex2.core.core import Path
+from MultiHex2.core.coordinates import HexID
 
 from PyQt5.QtCore import QPointF
 
