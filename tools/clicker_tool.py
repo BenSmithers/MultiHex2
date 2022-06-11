@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent, QMainWindow, QApplication
 from PyQt5.QtWidgets import QGraphicsItem, QGraphicsView, QGraphicsDropShadowEffect
 
-from MultiHex2.core.core import DRAWSIZE
+from MultiHex2.core.core import DRAWSIZE, PathCatalog, Road
 from MultiHex2.core import HexCatalog, RegionCatalog, EntityCatalog
 from MultiHex2.core import Hex, HexID, Region, Entity
 from MultiHex2.core import screen_to_hex
@@ -57,6 +57,7 @@ class Clicker(QGraphicsScene, ActionManager):
         self._biomeCatalog = RegionCatalog()
         self._countyCatalog = RegionCatalog()
         self._entityCatalog = EntityCatalog()
+        self._roadCatalog = PathCatalog()
 
         self._pen = QtGui.QPen() # STROKE EFFECTS
         self._pen.setColor(QtGui.QColor(240,240,240))
@@ -114,8 +115,8 @@ class Clicker(QGraphicsScene, ActionManager):
         }
         t1 = time()
         hexes = self._hexCatalog
-        for hID in hexes._hidcatalog:
-            hex=hexes._hidcatalog[hID]
+        for hID in hexes:
+            hex = hexes.get(hID)
             out_dict["hexes"]["{}.{}".format(hID.xid, hID.yid)]=hex.pack()
         for rID in self._biomeCatalog:
             region=self._biomeCatalog[rID]
@@ -440,6 +441,27 @@ class Clicker(QGraphicsScene, ActionManager):
     @property
     def hexCatalog(self):
         return self._hexCatalog
+
+    #################################### PATH ACCESS METHODS #####################
+
+    @property
+    def roadCatalog(self):
+        return self._roadCatalog
+
+    def next_free_rid(self):
+        return self._roadCatalog.get_next_id()
+
+    def register_road(self, road:Road):
+        rid = self._roadCatalog.register(road)
+        self.draw_road(rid)
+
+    def remove_road(self, rid:int):
+        sid = self._roadCatalog.get_sid(rid)
+        self.removeItem(sid)
+        self._roadCatalog.remove(rid)
+
+    def draw_road(self, rid):
+        return 
 
     #################################### TOOL ACCESS METHODS ################################3
 

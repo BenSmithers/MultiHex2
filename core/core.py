@@ -323,10 +323,15 @@ class Path:
     def get_start(self):
         return self._vertices[0]
 
-"""
-All these catalogs are almost exactly identical... 
-TODO update these to inherit from some generic catalog! 
-"""
+class Road(Path):
+    def __init__(self, *positions):
+        super().__init__(*positions)
+
+        self._quality = 1.0
+    
+    @property
+    def quality(self):
+        return self._quality
 
 class GeneralCatalog:
     def __init__(self):
@@ -570,6 +575,9 @@ class HexCatalog(GeneralCatalog):
     def __init__(self, dtype:type):
         GeneralCatalog.__init__(self)
         HexCatalog._dtype = dtype
+
+    def get_next_id(self) -> int:
+        raise NotImplementedError("You shouldn't be using this function with a HexCatalog; the IDs are not enumerated!")
 
     def get_all_hids(self):
         return self._idCatalog.keys()
