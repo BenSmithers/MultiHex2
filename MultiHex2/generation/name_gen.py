@@ -144,7 +144,7 @@ def determine_name_style(syns, name):
              or "The [Name] [Region]"
     Description: This randomly decides between two methods of arranging the region and the name.
     """
-    if random.randint(1,3)==1:
+    if random.randint(1,4)==1:
         f=open(os.path.join(resources_dir, "text_files", "adjectives"),'rt')
         adjective = random.choice(f.readlines())[:-1]
         f.close()

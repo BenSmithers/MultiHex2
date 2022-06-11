@@ -1,6 +1,5 @@
 #!/usr/bin/python3.8
 
-from distutils.command.config import config
 from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QFileDialog, QGraphicsScene
 from PyQt5 import QtGui, QtCore, QtWidgets
 from PyQt5.QtCore import Qt
@@ -17,7 +16,6 @@ from MultiHex2.modules import ALL_MODULES
 
 import os
 import sys
-import typing
 import shutil
 import json
 
