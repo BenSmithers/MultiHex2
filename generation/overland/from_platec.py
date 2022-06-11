@@ -60,7 +60,10 @@ def gen_land(map:Clicker, seed=None, **kwargs):
     peak = np.max(heightmap)
     trough = np.min(heightmap)
     print("Min/max alt {} and {}".format( 2*sigmoid(trough-sea_level)-1.0,  2*sigmoid(peak-sea_level)-1.0 ))
-    pnoise = perlin(dimensions[0], seed)
+    pnoise = perlin(dimensions[0],octave=5, seed=seed)
+    pnoise += perlin(dimensions[0],octave=10, seed=seed)
+    pnoise += perlin(dimensions[0],octave=2, seed=seed) 
+
     print("Max alt and min alt: {}, {}".format(trough, peak))
     for i in range(len(heightmap)):
         for j in range(len(heightmap[i])):
@@ -76,7 +79,7 @@ def gen_land(map:Clicker, seed=None, **kwargs):
                 new_hex.set_param("altitude_base",  2*sigmoid(heightmap[i][j]-sea_level)-1.0 )
                 new_hex.set_param("rainfall_base",0.0)
                 fract = 1.0 - heightmap[i][j]/(2*peak) # will range from 0 to 0.5, use it to make high places colder
-                new_hex.set_param("temperature_base",pnoise[i][j]*0.5 + fract*sin(pi*j/len(heightmap[i])))
+                new_hex.set_param("temperature_base",pnoise[i][j]*0.15 + fract*sin(pi*j/len(heightmap[i])))
 
                 if heightmap[i][j]>16:
                     new_hex.geography="ridge"

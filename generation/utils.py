@@ -149,13 +149,15 @@ def bilinear_interp(p0, p1, p2, q11, q12, q21, q22):
 
     return( mat_mult_final/((x2-x1)*(y2-y1)) )
 
-def perlin(granularity, seed=0)->np.ndarray:
+def perlin(granularity,octave=5, seed=0)->np.ndarray:
     """
     returns a mesh of perlin noise given a seed and granularity 
     
     returns numpy array with values ranging between -0.5 and 0.5
     """
-    lin = np.linspace(0,5,granularity,endpoint=False)
+
+    
+    lin = np.linspace(0,octave,granularity,endpoint=False)
     x,y = np.meshgrid(lin, lin)
 
     # permutation table
