@@ -5,10 +5,10 @@ We also define the widget/gui that is used to do that.
 """
 from MultiHex2.tools.basic_tool import Basic_Tool
 from MultiHex2.core import HexID, screen_to_hex, Entity
-from actions.baseactions import MetaAction, NullAction
-from actions.entityactions import *
+from MultiHex2.actions.baseactions import MetaAction, NullAction
+from MultiHex2.actions.entityactions import *
 from MultiHex2.core.map_entities import Settlement
-from tools.basic_tool import ToolLayer
+from MultiHex2.tools.basic_tool import ToolLayer
 
 import os
 from copy import copy

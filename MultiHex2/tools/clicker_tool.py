@@ -13,8 +13,8 @@ from MultiHex2.tools.basic_tool import Basic_Tool, ToolLayer
 from MultiHex2.tools.regiontools import RegionAdd
 from MultiHex2.core.map_entities import Settlement, IconLib
 from MultiHex2.clock import Time, Clock
-from actions.baseactions import NullAction
-from core.coordinates import hex_to_screen
+from MultiHex2.actions.baseactions import NullAction
+from MultiHex2.core.coordinates import hex_to_screen
 from MultiHex2.generation.utils import Climatizer
 
 import json

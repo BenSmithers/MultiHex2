@@ -4,7 +4,7 @@ import os
 from MultiHex2.tools.basic_tool import ToolLayer
 from MultiHex2.clock import MultiHexCalendar
 from MultiHex2.clock import Time
-from actions.eventWidget import EventWidget
+from MultiHex2.actions.eventWidget import EventWidget
 
 """
 This file defines the gui for the MainWindow's structure

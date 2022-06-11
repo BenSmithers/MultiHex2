@@ -5,10 +5,10 @@ import os
 
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
-from actions.baseactions import NullAction
-from core.coordinates import hex_to_screen
+from MultiHex2.actions.baseactions import NullAction
+from MultiHex2.core.coordinates import hex_to_screen
 
-from tools.basic_tool import ToolLayer
+from MultiHex2.tools.basic_tool import ToolLayer
 
 """
 Tools make actions 

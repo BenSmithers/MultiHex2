@@ -5,9 +5,9 @@ from MultiHex2.core import hex_to_screen, screen_to_hex, Hex
 import os 
 
 from PyQt5 import QtGui
-from actions.baseactions import NullAction
+from MultiHex2.actions.baseactions import NullAction
 
-from tools.basic_tool import ToolLayer
+from MultiHex2.tools.basic_tool import ToolLayer
 
 """
 Tools make actions 

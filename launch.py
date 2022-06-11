@@ -43,7 +43,7 @@ class WarnWidget(QtWidgets.QDialog):
 class main_window(QMainWindow):
     def __init__(self,parent=None):
         QWidget.__init__(self, parent)
-        self.setWindowIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__),'assets','multihex_small_logo.svg')))
+        self.setWindowIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__),"MultiHex2", 'assets','multihex_small_logo.svg')))
 
         # standard boiler-plate gui initialization
         # we instantiate the default GUI before anything else 
