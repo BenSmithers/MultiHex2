@@ -60,6 +60,7 @@ class SettingsGui(object):
 
         self.primary_mouse_label = QtWidgets.QLabel(Dialog)
         self.primary_mouse_label.setObjectName("primary_mouse_label")
+        
         self.verticalLayout.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.primary_mouse_label)
 
         self.primary_mouse_combo = QtWidgets.QComboBox(Dialog)
@@ -91,6 +92,10 @@ class SettingsGui(object):
         self.buttonBox.rejected.connect(Dialog.reject)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
+        self.retranslateUi(Dialog)
+
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "MultiHex Settings"))
+        self.primary_mouse_label.setText(_translate("Dialog","Primary Mouse Button"))
+        self.module_lbl.setText(_translate("Dialog","Use Module"))

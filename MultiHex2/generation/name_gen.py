@@ -116,7 +116,7 @@ def fetch_synonyms(what):
     """
     switcher = {
         "shallows":["Bay", "Shallows"],
-        "ocean":["Sea", "Ocean"],
+        "ocean":["Sea", "Ocean", "Depths"],
         "prarie": ["Grasslands", "Fields", "Prairie", "Plains", "Steppes"],
         "desert": ["Desert", "Badlands", "Wastes", "Barrens"],
         "mountain": ["Mountains", "Peaks", "Crags"],

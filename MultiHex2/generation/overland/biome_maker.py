@@ -35,7 +35,8 @@ def add_biomes(map:Clicker, seed=None, **kwargs):
             continue
 
         if this_hex.geography == "ocean":
-            continue
+            if rnd.randint(1,5)!=1:
+                continue
 
         new_region = Region(this_hex, locid)
         new_region.set_name( create_name(this_hex.geography))

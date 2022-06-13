@@ -64,10 +64,10 @@ class main_window(QMainWindow):
         self.ui.export_image.triggered.connect(self.export_image)
 
 
-        config_name = "config.json"
+        config_name = ".config.json"
         self.config_filepath = os.path.join(SAVEDIR, config_name)
         if not os.path.exists(self.config_filepath):
-            shutil.copyfile(os.path.join(os.path.dirname(__file__), "resources", "template_config.json"), self.config_filepath)
+            shutil.copyfile(os.path.join(os.path.dirname(__file__),"MultiHex2", "resources", "template_config.json"), self.config_filepath)
         
         self.module = None
         self.reload_config()

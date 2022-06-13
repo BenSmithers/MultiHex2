@@ -1,7 +1,7 @@
 # MultiHex
 
 <p align="center">
-  <img src="https://github.com/BenSmithers/MultiHex2/blob/main/assets/multihex_logo.png" alt="MultiHex Logo" width="500" height="500">
+  <img src="https://github.com/BenSmithers/MultiHex2/blob/main/MultiHex2/assets/multihex_logo.png" alt="MultiHex Logo" width="500" height="500">
 </p>
 
 A Hex-Map maker, editor, and interface by Ben Smithers. This is an open-source MultiHex tool for (eventually) all your hex-map needs. It will always be open-source and always be freely available on github. It's under active development and there are no official stable releases at the moment. The `main` branch is kept stable (with a few known bugs).
@@ -9,11 +9,29 @@ A Hex-Map maker, editor, and interface by Ben Smithers. This is an open-source M
 It's a refactor of my earlier project [MultiHex](https://github.com/BenSmithers/MultiHex).
 I'm moving over as much of the code as I can, but lots will still have to be remade. 
 
-# Prerequesites
+# Installation 
 
+You should be able to run this from here by setting the environmental variable
+```
+export PYTHONPATH=$PYTHONPATH:/path/to/here
+```
+Or, alternatively, just run
+```
+python -m pip install . 
+```
+which should then move install these files somewhere python knows about.
+
+# Prerequesites
+Only Python3 is supported. For python module requirements, try running 
+```
+python -m pip install -r requirements.txt
+```
+which installs 
 - PyQt5 (not 4!)
 - NumPy
-- Python 3 (2 isn't and never will be supported)
+
+The world generator for the main module also requires the [plate-tectonics](https://github.com/Mindwerks/plate-tectonics) package. 
+Eventually I'll update this to be an optional dependency.
 
 # Clock system plans
 
