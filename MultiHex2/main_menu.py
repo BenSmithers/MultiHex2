@@ -22,9 +22,28 @@ class MainMenuDialog(QDialog):
         self.ui.settings_button.clicked.connect(self.button_settings)
         self.ui.quit_button.clicked.connect(self.button_quit)
 
+        self._accepted = False
+
+    @property
+    def Accepted(self):
+        return self._accepted
+    @property
+    def Rejected(self):
+        return not self._accepted
+
+    def accept(self):
+        self._accepted = True
+        QDialog.accept(self)
+    def reject(self):
+        self._accepted = False
+
     def button_new(self):
-        self.accept()
-        self.parent.new()
+        success = self.parent.new()
+        if success:
+            self.accept()
+        else:
+            self.reject()
+
     def button_load(self):
         loaded = self.parent.load()
         if loaded!="":

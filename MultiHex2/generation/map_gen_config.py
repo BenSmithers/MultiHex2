@@ -70,6 +70,21 @@ class MapGenConfigDialog(QDialog):
 
         self.ui = MapMakerDialogGui()
         self.ui.setupUi(self)
+        self._accepted = False
+
+    @property
+    def Accepted(self):
+        return self._accepted
+    @property
+    def Rejected(self):
+        return not self._accepted
+
+    def accept(self):
+        self._accepted = True
+        QDialog.accept(self)
+    def reject(self):
+        self._accepted = False
+        QDialog.reject(self)
 
     def set_config(self, config:dict)->None:
         pass

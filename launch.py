@@ -82,7 +82,9 @@ class main_window(QMainWindow):
         self.generator = None
 
         if self._will_generate:
-            self.new()
+            success = self.new()
+            while not success:
+                self.open_menu()
         
     def update_clock_gui(self,time:Time):
         self.ui.clock.set_time(time)
@@ -160,19 +162,25 @@ class main_window(QMainWindow):
         image.save(temp)
 
     def new(self):
+        """
+        Returns True if this successfully starts making a new map, otherwise returns False
+        """
         if not self._loaded_module:
             self._will_generate = True
+            return True
         else:
             dialog = MapGenConfigDialog(self)
             #dialog.setAttribute(QtCore.Qt.WA_DeleteOnClose)
             dialog.exec_()
-            print("Accepted: {}".format(dialog.Accepted))
-            print("Rejected: {}".format(dialog.Rejected))
             dialog.deleteLater()
 
-            self.generator(self.scene) 
-            self.ui.clock.set_time(self.scene.clock.time)
-            self.ui.events.update()
+            if dialog.Accepted:
+                self.generator(self.scene) 
+                self.ui.clock.set_time(self.scene.clock.time)
+                self.ui.events.update()
+                return True
+            else:
+                return False
 
     def save(self):
         self.scene.reset_save()
