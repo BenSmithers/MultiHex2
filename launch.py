@@ -13,6 +13,7 @@ from MultiHex2.generation.overland import fullsim
 from MultiHex2.guis.savewarn import SaveWarnDialogGui
 from MultiHex2.main_menu import MainMenuDialog
 from MultiHex2.modules import ALL_MODULES
+from MultiHex2.generation.map_gen_config import MapGenConfigDialog
 
 import os
 import sys
@@ -162,6 +163,13 @@ class main_window(QMainWindow):
         if not self._loaded_module:
             self._will_generate = True
         else:
+            dialog = MapGenConfigDialog(self)
+            #dialog.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+            dialog.exec_()
+            print("Accepted: {}".format(dialog.Accepted))
+            print("Rejected: {}".format(dialog.Rejected))
+            dialog.deleteLater()
+
             self.generator(self.scene) 
             self.ui.clock.set_time(self.scene.clock.time)
             self.ui.events.update()
