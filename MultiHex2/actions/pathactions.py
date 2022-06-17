@@ -12,10 +12,11 @@ class Add_Delete_Road(MapAction):
         self.verify(kwargs)
 
         self.pid = kwargs["pid"]
-        self.road = kwargs["path"]
+        self.road = kwargs["road"]
 
     def __call__(self, map: QGraphicsScene) -> 'MapAction':
         if self.pid in map.roadCatalog:
+            print("Making new road")
             old_road = map.roadCataog[self.pid]
             map.remove_road(self.pid)
         else:

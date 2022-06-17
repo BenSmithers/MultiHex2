@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent, QMainWindow, QApplication
 from PyQt5.QtWidgets import QGraphicsItem, QGraphicsView, QGraphicsDropShadowEffect
 
-from MultiHex2.core.core import DRAWSIZE, PathCatalog, Road
+from MultiHex2.core.core import DRAWSIZE, GeneralCatalog, PathCatalog, Road
 from MultiHex2.core import HexCatalog, RegionCatalog, EntityCatalog
 from MultiHex2.core import Hex, HexID, Region, Entity
 from MultiHex2.core import screen_to_hex
@@ -228,16 +228,24 @@ class Clicker(QGraphicsScene, ActionManager):
                     self.removeItem(self._icon_ghost)
                     self._icon_ghost = None   
             if not loc==self._highlighted_id:
+                # idea - ask the tool for the polygon to use for this! 
+                # TODO should be smart about it - if the "new_hex is a Hex do addPolygon", otherwise add it as a path? 
+
                 self._highlighted_id=loc
-                center = hex_to_screen(loc)
                 if self._highlight is not None:
                     self.removeItem(self._highlight)
                     self._highlight=None
-                new_hex = Hex(center)
+                new_hex =  self.tool.get_polygon() # Hex(center)
+
                 self._brush.setStyle(0)
-                self._pen.setColor(QtGui.QColor(110,228,230))
+                self._pen.setColor(QtGui.QColor(110,228,230)) # how did I choose this color? It should ask the tool for this color 
                 self._pen.setStyle(1)
-                self._highlight = self.addPolygon(new_hex, self._pen, self._brush)
+                if isinstance(new_hex, Hex):
+                    self._highlight = self.addPolygon(new_hex, self._pen, self._brush)
+                elif isinstance(new_hex, QtGui.QPainterPath):
+                    self._highlight = self.addPath(new_hex, self._pen, self._brush)
+                else:
+                    raise NotImplementedError("Polygon is of type {}".format(type(new_hex)))
 
         else:
             if self._highlight is not None:
@@ -311,7 +319,7 @@ class Clicker(QGraphicsScene, ActionManager):
     def _get_heuristic(self, start:HexID, end:HexID)->float:
         return self._hexCatalog[start].get_heuristic(self._hexCatalog[end])
     
-    def get_route_a_star(self, start_id:HexID, end_id:HexID, ignore_water:bool):
+    def get_route_a_star(self, start_id:HexID, end_id:HexID, ignore_water:bool)->'list[HexID]':
         """
         Finds quickest route between two given HexIDs. Both IDs must be on the Hexmap.
         Always steps closer to the target
@@ -328,7 +336,7 @@ class Clicker(QGraphicsScene, ActionManager):
         fScore = {}
         fScore[start_id] = self._get_heuristic(start_id,end_id)
 
-        def reconstruct_path(cameFrom:HexID, current:HexID):
+        def reconstruct_path(cameFrom:HexID, current:HexID)->'list[HexID]':
             total_path = [current]
             while current in cameFrom.keys():
                 current = cameFrom[current]
@@ -444,6 +452,25 @@ class Clicker(QGraphicsScene, ActionManager):
 
     #################################### PATH ACCESS METHODS #####################
 
+    def _get_path_cat(self, layer:ToolLayer)->GeneralCatalog:
+        """
+            shorthand for getting the catalog corresponding to this layer
+        """
+        if layer==ToolLayer.null or layer==ToolLayer.terrain:
+            return NotImplementedError("Nothing for {}. Did you use a relative import? Don't!".format(layer))
+        elif layer==ToolLayer.civilization:
+            return self._roadCatalog
+        else:
+            raise NotImplementedError("Nothing for {}. Did you use a relative import? Don't!".format(layer))
+
+    def get_path(self, id:int)->Road:
+        using = self._get_path_cat(self.tool.tool_layer())
+
+        if id in using:
+            return using[id]
+        else:
+            return None
+
     @property
     def roadCatalog(self):
         return self._roadCatalog
@@ -461,7 +488,24 @@ class Clicker(QGraphicsScene, ActionManager):
         self._roadCatalog.remove(rid)
 
     def draw_road(self, rid):
-        return 
+
+        """
+         self.addPath(new_hex, self._pen, self._brush)
+         path = QtGui.QPainterPath()
+         path.addPolygon( QtGui.QPolygonF( route ))
+        """
+
+        current_sid = self._roadCatalog.get_sid(rid)
+        if (current_sid is not None) and current_sid!=-1:
+            self.removeItem(current_sid)
+        self.update()
+
+        this_path = self.get_path(rid)
+        if this_path is None:
+            self._roadCatalog.remove(rid)
+            return
+        else:
+            pass
 
     #################################### TOOL ACCESS METHODS ################################3
 

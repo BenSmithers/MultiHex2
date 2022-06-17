@@ -3,8 +3,11 @@ from enum import Enum
 
 from PyQt5 import QtGui
 from PyQt5.QtWidgets import QGraphicsScene, QWidget
+from PyQt5.QtCore import QPointF
+from MultiHex2.core.coordinates import hex_to_screen, screen_to_hex
 
 from MultiHex2.tools.widgets import ToolWidget
+from MultiHex2.core.core import Hex
 from MultiHex2.actions import NullAction
 
 art_dir = os.path.join( os.path.dirname(__file__),'..','assets','buttons')
@@ -33,6 +36,16 @@ class Basic_Tool:
         self.highlight_icon = ""
 
         self._widget_instance = None
+        self._polygon = Hex(QPointF(0,0))
+
+    def get_polygon(self):
+        """
+        The clicker control can ask the tools for a polygon to use as the preview when highlighting
+        
+        This highlighted polygon is updated whenever the mouse is moved (and is by default a Hex)
+        Other tools (like the path brush) implment other shapes! 
+        """
+        return self._polygon
 
     @property
     def widget_instance(self):
@@ -116,6 +129,10 @@ class Basic_Tool:
 
         @param place - where the mouse is 
         """
+        if self.highlight:
+            loc = hex_to_screen(screen_to_hex(event.scenePos()))
+            self._polygon = Hex(loc)
+
         return NullAction()
     def drop(self):
         """
