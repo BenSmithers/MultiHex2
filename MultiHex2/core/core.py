@@ -74,41 +74,51 @@ class Hex(QPolygonF):
     
     def get_cost(self, other:'Hex', ignore_water=False):
         """
+        get_heuristic
         Gets the cost of movement between two neighboring hexes. Used for routing
         """
         # xor operator
         # both should be land OR both should be water
-        if (self.is_land ^ other.is_land) and not ignore_water:
-            water_scale = 5.
-        else:
-            water_scale = 1.
-
-
+        
+        water_scale = 1.
+        if not ignore_water:
+            if (self.is_land and (not other.is_land)) or ((not self.is_land) and other.is_land):
+                water_scale = 1e6
+            
         # prefer flat ground!
         lateral_dist=(self.center - other.center)
         lateral_dist = lateral_dist.x()*lateral_dist.x() + lateral_dist.y()*lateral_dist.y()
 
         mtn_scale =1.0
         if other.geography=="peak" or other.geography=="ridge":
-            mtn_scale=50.0
+            mtn_scale=5.0
         elif other.geography=="mountain":
-            mtn_scale=25.0
+            mtn_scale=2.0
         
 
         alt_dif = abs(10*(other.params["altitude_base"] - self.params["altitude_base"])) 
         if (not self.is_land) or (not other.is_land):
             alt_dif = 0.0
 
-        return(mtn_scale*water_scale*(0.1*lateral_dist + DRAWSIZE*RTHREE*alt_dif))
+        return water_scale + mtn_scale*(0.1*lateral_dist + DRAWSIZE*RTHREE*alt_dif)
 
-    def get_heuristic(self, other:'Hex'):
+    def get_heuristic(self, other:'Hex',ignore_water=False):
         """
         Estimates the total cost of going from this hex to the other one
         """
+        water_scale = 1.
+        if not ignore_water:
+            if (self.is_land and not other.is_land) or (not self.is_land and other.is_land):
+                water_scale = 1e6
+
+
+
         lateral_dist = (self.center - other.center)
         lateral_dist= lateral_dist.x()*lateral_dist.x() + lateral_dist.y()*lateral_dist.y()
-        alt_dif = abs(2*(other.params["altitude_base"] - self.params["altitude_base"]))
-        return(0.1*lateral_dist + DRAWSIZE*RTHREE*alt_dif)
+        alt_dif = abs(10*(other.params["altitude_base"] - self.params["altitude_base"]))
+        if (not self.is_land) or (not other.is_land):
+            alt_dif = 0.0
+        return water_scale + (0.1*lateral_dist + DRAWSIZE*RTHREE*alt_dif)
 
     def pack(self)->dict:
         """
@@ -271,10 +281,13 @@ class Path:
         if not isinstance(other, self._dtype):
             raise ValueError("Expected object of dtype {}, got {}".format(self._dtype, type(other)))
 
-        step = other - self._vertices[-1]
-        if step!=self._step:
-            raise ValueError("Inconsistent step sizes! {} vs {}".format(self._step, step)) 
-        
+        if self._step is None:
+            self._step = other - self._vertices[-1]
+        else:
+            step = other - self._vertices[-1]
+            if step!=self._step:
+                raise ValueError("Inconsistent step sizes! {} vs {}".format(self._step, step)) 
+            
         self._vertices.append(other)
 
     def add_to_start(self, other):
@@ -302,7 +315,7 @@ class Path:
 
     @property
     def vertices(self):
-        return self._vertieces
+        return self._vertices
 
     def pop_from_end(self):
         """

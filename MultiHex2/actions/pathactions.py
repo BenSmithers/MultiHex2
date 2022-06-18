@@ -17,7 +17,7 @@ class Add_Delete_Road(MapAction):
     def __call__(self, map: QGraphicsScene) -> 'MapAction':
         if self.pid in map.roadCatalog:
             print("Making new road")
-            old_road = map.roadCataog[self.pid]
+            old_road = map.roadCatalog[self.pid]
             map.remove_road(self.pid)
         else:
             old_road = None
@@ -36,15 +36,16 @@ class Add_To_Road_End(MapAction):
         self.hexID = kwargs["hexID"]
 
     def __call__(self, map:QGraphicsScene)->MapAction:
-        this_road =  map.roadCataog[self.pid]
+        this_road =  map.roadCatalog[self.pid]
 
         this_road.add_to_end(self.hexID)
+        map.draw_road(self.pid)
 
         return Pop_From_Road_End(pid=self.pid)
 
 class Add_To_Road_Start(Add_To_Road_End):
     def __call__(self, map: QGraphicsScene) -> MapAction:
-        this_road =  map.roadCataog[self.pid]
+        this_road =  map.roadCatalog[self.pid]
         this_road.add_to_start(self.hexID)
 
         return Pop_From_Road_Start(pid=self.pid)
@@ -58,7 +59,7 @@ class Pop_From_Road_End(MapAction):
 
     def __call__(self, map: QGraphicsScene) -> 'MapAction':
         # if road is length one, then the opposite of this will be a "new road action"
-        this_road =  map.roadCataog[self.pid]
+        this_road =  map.roadCatalog[self.pid]
 
         if len(this_road)==1:
             # delete road action!
@@ -70,7 +71,7 @@ class Pop_From_Road_End(MapAction):
 
 class Pop_From_Road_Start(Pop_From_Road_End):
     def __call__(self, map: QGraphicsScene) -> 'MapAction':
-        this_road =  map.roadCataog[self.pid]
+        this_road =  map.roadCatalog[self.pid]
         if len(this_road)==1:
             # delete road action!
             return Add_Delete_Road(pid = self.pid, road = None)

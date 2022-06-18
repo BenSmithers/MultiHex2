@@ -185,12 +185,11 @@ class NewRoadTool(RoadSelector):
             return Add_Delete_Road(pid = pid, road=new_road)
 
         elif self.state==4: #add to end of road
-            route = self.get_next_steps(event)
+            route = self.get_next_steps(event)[1:]
+            # skip the first step! 
 
-            combo = MetaAction()
-            for entry in route:
-                new_action = Add_To_Road_End(pid= self.select_road, hexID = entry)
-                combo.add_to(new_action)
+            all_actions = [Add_To_Road_End(pid= self.selected_road, hexID = entry) for entry in route]
+            combo = MetaAction(*all_actions)
             return combo
         
         elif self.state==3: # add to start of road

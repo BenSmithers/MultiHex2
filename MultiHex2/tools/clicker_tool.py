@@ -25,7 +25,7 @@ from time import time
 
 import gzip
 
-DEBUG = False
+DEBUG = True
 
 class Clicker(QGraphicsScene, ActionManager):
     """
@@ -316,8 +316,8 @@ class Clicker(QGraphicsScene, ActionManager):
         start_hex = self.hexCatalog[start_id]
         return(start_hex.get_cost( self._hexCatalog[end_id], ignore_water))
 
-    def _get_heuristic(self, start:HexID, end:HexID)->float:
-        return self._hexCatalog[start].get_heuristic(self._hexCatalog[end])
+    def _get_heuristic(self, start:HexID, end:HexID,ignore_water=False)->float:
+        return self._hexCatalog[start].get_heuristic(self._hexCatalog[end],ignore_water)
     
     def get_route_a_star(self, start_id:HexID, end_id:HexID, ignore_water:bool)->'list[HexID]':
         """
@@ -505,7 +505,15 @@ class Clicker(QGraphicsScene, ActionManager):
             self._roadCatalog.remove(rid)
             return
         else:
-            pass
+            verts = [hex_to_screen(vert) for vert in this_path.vertices]
+            path = QtGui.QPainterPath()
+            path.addPolygon(QtGui.QPolygonF(verts))
+            self._pen.setStyle(1)
+            self._pen.setWidth(3)
+            self._pen.setColor(QtGui.QColor(245,245,245))
+            self._brush.setStyle(0)
+            self.addPath(path, self._pen, self._brush)
+
 
     #################################### TOOL ACCESS METHODS ################################3
 

@@ -67,9 +67,9 @@ class HexID:
         """
             returns the distance between this and another HexID
         """
-        inter_id = HexID(self.xid - other.xid, self.yid - other.yid, self.zid - other.zid)
+        inter_id = HexID(self.xid - other.xid, self.yid - other.yid)
 
-        return int((abs(inter_id.xid) + abs(inter_id.yid) + abs(inter_id).zid)/2)
+        return int((abs(inter_id.xid) + abs(inter_id.yid) + abs(inter_id.zid))/2)
 
         # -30 degrees, increment by 60 with each
 
