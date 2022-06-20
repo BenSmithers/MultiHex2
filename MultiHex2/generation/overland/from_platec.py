@@ -75,10 +75,12 @@ def gen_land(map:Clicker, seed=None, **kwargs):
             if loc not in map.hexCatalog:
                 new_hex = Hex(hex_to_screen(loc))
 
-                new_hex.set_param("is_land", 10*int(heightmap[i][j]>sea_level))
-                new_hex.is_land=heightmap[i][j]>sea_level  
+                
 
                 new_hex.set_param("altitude_base",  2*sigmoid(heightmap[i][j]-sea_level)-1.0 )
+                
+                new_hex.set_param("is_land", 10*int( new_hex.params["altitude_base"]>0.0  ))
+                new_hex.is_land= new_hex.params["altitude_base"]>0.0
                 new_hex.set_param("rainfall_base",0.0)
                 fract = 0.00 - heightmap[i][j]/(2*peak) # will range from -0.5 to 0.00, use it to make high places colder
                 new_hex.set_param("temperature_base",pnoise[i][j]*0.3 + fract + sin(pi*j/len(heightmap[i])) )

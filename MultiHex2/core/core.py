@@ -74,16 +74,19 @@ class Hex(QPolygonF):
     
     def get_cost(self, other:'Hex', ignore_water=False):
         """
-        get_heuristic
         Gets the cost of movement between two neighboring hexes. Used for routing
         """
         # xor operator
         # both should be land OR both should be water
         
-        water_scale = 1.
-        if not ignore_water:
+        
+        if ignore_water:
+            water_scale = 1.
+        else:
             if (self.is_land and (not other.is_land)) or ((not self.is_land) and other.is_land):
-                water_scale = 1e6
+                water_scale = 20
+            else:
+                water_scale = 1.0
             
         # prefer flat ground!
         lateral_dist=(self.center - other.center)
@@ -96,29 +99,32 @@ class Hex(QPolygonF):
             mtn_scale=2.0
         
 
-        alt_dif = abs(10*(other.params["altitude_base"] - self.params["altitude_base"])) 
+        alt_dif = abs(10*(other.params["altitude_base"] - self.params["altitude_base"]))
         if (not self.is_land) or (not other.is_land):
             alt_dif = 0.0
 
-        return water_scale + mtn_scale*(0.1*lateral_dist + DRAWSIZE*RTHREE*alt_dif)
+        return water_scale*mtn_scale*(0.1*lateral_dist + DRAWSIZE*RTHREE*alt_dif)
 
     def get_heuristic(self, other:'Hex',ignore_water=False):
         """
         Estimates the total cost of going from this hex to the other one
         """
-        water_scale = 1.
-        if not ignore_water:
-            if (self.is_land and not other.is_land) or (not self.is_land and other.is_land):
-                water_scale = 1e6
-
-
+        if ignore_water:
+            water_scale = 1.
+        else:
+            if (self.is_land and (not other.is_land)) or ((not self.is_land) and other.is_land):
+                water_scale = 20
+            else:
+                water_scale = 1.0
 
         lateral_dist = (self.center - other.center)
         lateral_dist= lateral_dist.x()*lateral_dist.x() + lateral_dist.y()*lateral_dist.y()
+
         alt_dif = abs(10*(other.params["altitude_base"] - self.params["altitude_base"]))
         if (not self.is_land) or (not other.is_land):
             alt_dif = 0.0
-        return water_scale + (0.1*lateral_dist + DRAWSIZE*RTHREE*alt_dif)
+
+        return water_scale*(0.1*lateral_dist  + DRAWSIZE*RTHREE*alt_dif)
 
     def pack(self)->dict:
         """

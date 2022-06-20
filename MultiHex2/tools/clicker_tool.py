@@ -334,7 +334,7 @@ class Clicker(QGraphicsScene, ActionManager):
         gScore[start_id] = 0.
 
         fScore = {}
-        fScore[start_id] = self._get_heuristic(start_id,end_id)
+        fScore[start_id] = self._get_heuristic(start_id,end_id, ignore_water)
 
         def reconstruct_path(cameFrom:HexID, current:HexID)->'list[HexID]':
             total_path = [current]
@@ -368,7 +368,7 @@ class Clicker(QGraphicsScene, ActionManager):
                 if tentative_gScore < neigh:
                     cameFrom[neighbor] = current
                     gScore[neighbor] = tentative_gScore
-                    fScore[neighbor] = gScore[neighbor] + self._get_heuristic(neighbor,end_id)
+                    fScore[neighbor] = gScore[neighbor] + self._get_heuristic(neighbor,end_id, ignore_water)
                     if neighbor not in openSet:
 
                         if len(openSet)==0:
