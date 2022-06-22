@@ -576,7 +576,7 @@ class Clicker(QGraphicsScene, ActionManager):
         self._brush.setStyle(Qt.BrushStyle.SolidPattern)
         self._brush.setColor(hexobj.fill)
         self._pen.setWidth(1)
-        self._pen.setStyle(1)
+        self._pen.setStyle(0)
         self._pen.setColor(QtGui.QColor(170,170,170))
         sid = self.addPolygon(hexobj, self._pen, self._brush)
         sid.setZValue(0)

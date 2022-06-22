@@ -53,12 +53,13 @@ class Hex(QPolygonF):
         return self._params
     @property
     def fill(self)->QColor:
+        alt_scale = 0.4
         if self._flat:
             return self._fill
         else:
-            return QColor(min( 255, max( 0, self._fill.red()*( 1.0 + 0.2*self.params[self._color_scale_param]-0.1))),
-                        min( 255, max( 0, self._fill.green()*( 1.0 + 0.2*self.params[self._color_scale_param]-0.1))),
-                        min( 255, max( 0, self._fill.blue()*( 1.0 + 0.2*self.params[self._color_scale_param]-0.1))))
+            return QColor(min( 255, max( 0, self._fill.red()*( 1.0 + alt_scale*self.params[self._color_scale_param]-alt_scale*0.5))),
+                        min( 255, max( 0, self._fill.green()*( 1.0 + alt_scale*self.params[self._color_scale_param]-alt_scale*0.5))),
+                        min( 255, max( 0, self._fill.blue()*( 1.0 + alt_scale*self.params[self._color_scale_param]-alt_scale*0.5))))
 
 
     def set_fill(self, fill:QColor):
@@ -90,7 +91,7 @@ class Hex(QPolygonF):
             
         # prefer flat ground!
         lateral_dist=(self.center - other.center)
-        lateral_dist = lateral_dist.x()*lateral_dist.x() + lateral_dist.y()*lateral_dist.y()
+        lateral_dist = sqrt(lateral_dist.x()*lateral_dist.x() + lateral_dist.y()*lateral_dist.y())
 
         mtn_scale =1.0
         if other.geography=="peak" or other.geography=="ridge":
@@ -118,7 +119,7 @@ class Hex(QPolygonF):
                 water_scale = 1.0
 
         lateral_dist = (self.center - other.center)
-        lateral_dist= lateral_dist.x()*lateral_dist.x() + lateral_dist.y()*lateral_dist.y()
+        lateral_dist= sqrt(lateral_dist.x()*lateral_dist.x() + lateral_dist.y()*lateral_dist.y())
 
         alt_dif = abs(10*(other.params["altitude_base"] - self.params["altitude_base"]))
         if (not self.is_land) or (not other.is_land):
