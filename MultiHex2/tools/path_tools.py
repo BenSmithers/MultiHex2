@@ -10,6 +10,7 @@ from MultiHex2.actions.baseactions import MetaAction, NullAction
 from MultiHex2.actions.pathactions import Add_Delete_Road, Add_To_Road_End
 from MultiHex2.core.coordinates import screen_to_hex, hex_to_screen, HexID, get_adjacent_vertices
 from MultiHex2.core.core import Path, Road
+from MultiHex2.tools.widgets import PathWidget
 
 from PyQt5 import QtGui
 from PyQt5.QtWidgets import QGraphicsSceneEvent
@@ -32,6 +33,10 @@ class PathSelector(Basic_Tool):
         self._selected_road = -1 #-1 means None
         self.highlight=True
         self._vertex_mode = False
+
+    @classmethod
+    def widget(self):
+        return PathWidget
 
     def get_next_steps(self, event:QGraphicsSceneEvent)->list:
         """
