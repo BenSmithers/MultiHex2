@@ -73,25 +73,26 @@ class Hex(QPolygonF):
     def set_param(self, param:str, value:float):
         self._params[param] = value
     
-    def get_cost(self, other:'Hex', ignore_water=False):
+    def get_cost(self, other:'Hex', ignore_water:bool):
         """
         Gets the cost of movement between two neighboring hexes. Used for routing
         """
         # xor operator
         # both should be land OR both should be water
-        
+        if not isinstance(ignore_water, bool):
+            raise TypeError("can't get cost for a {}".format(type(ignore_water)))
         
         if ignore_water:
             water_scale = 1.
         else:
-            if (self.is_land and (not other.is_land)) or ((not self.is_land) and other.is_land):
-                water_scale = 20
+            if (self.is_land ^ other.is_land):
+                water_scale = 30
             else:
                 water_scale = 1.0
             
         # prefer flat ground!
-        lateral_dist=(self.center - other.center)
-        lateral_dist = sqrt(lateral_dist.x()*lateral_dist.x() + lateral_dist.y()*lateral_dist.y())
+        #lateral_dist=(self.center - other.center)
+        lateral_dist = 2*DRAWSIZE #sqrt(lateral_dist.x()*lateral_dist.x() + lateral_dist.y()*lateral_dist.y())
 
         mtn_scale =1.0
         if other.geography=="peak" or other.geography=="ridge":
@@ -100,32 +101,40 @@ class Hex(QPolygonF):
             mtn_scale=2.0
         
 
-        alt_dif = abs(10*(other.params["altitude_base"] - self.params["altitude_base"]))
+        if ignore_water:
+            alt_dif = 0.0
+        else:
+            alt_dif = abs(0.01*(other.params["altitude_base"] - self.params["altitude_base"]))
+
         if (not self.is_land) or (not other.is_land):
             alt_dif = 0.0
 
-        return water_scale*mtn_scale*(0.1*lateral_dist + DRAWSIZE*RTHREE*alt_dif)
+        return water_scale*mtn_scale*(lateral_dist + 0.01*alt_dif)
 
-    def get_heuristic(self, other:'Hex',ignore_water=False):
+    def get_heuristic(self, other:'Hex',ignore_water:bool):
         """
         Estimates the total cost of going from this hex to the other one
         """
         if ignore_water:
-            water_scale = 1.
+            water_scale = 1.0
         else:
-            if (self.is_land and (not other.is_land)) or ((not self.is_land) and other.is_land):
-                water_scale = 20
+            if (self.is_land ^ other.is_land):
+                water_scale = 1.0
             else:
                 water_scale = 1.0
 
         lateral_dist = (self.center - other.center)
         lateral_dist= sqrt(lateral_dist.x()*lateral_dist.x() + lateral_dist.y()*lateral_dist.y())
 
-        alt_dif = abs(10*(other.params["altitude_base"] - self.params["altitude_base"]))
+        if ignore_water:
+            alt_dif = 0.0
+        else:
+            alt_dif = abs(0.01*(other.params["altitude_base"] - self.params["altitude_base"]))
+            
         if (not self.is_land) or (not other.is_land):
             alt_dif = 0.0
 
-        return water_scale*(0.1*lateral_dist  + DRAWSIZE*RTHREE*alt_dif)
+        return water_scale*(lateral_dist  + 0.01*alt_dif)
 
     def pack(self)->dict:
         """

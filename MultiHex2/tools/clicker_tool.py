@@ -313,10 +313,10 @@ class Clicker(QGraphicsScene, ActionManager):
         # So the Hexes themselves will be responsible for calculating the cost.
         # Subtypes of Hexes will implement unique cost functions 
 
-        start_hex = self.hexCatalog[start_id]
+        start_hex = self.hexCatalog.get(start_id)
         return(start_hex.get_cost( self._hexCatalog[end_id], ignore_water))
 
-    def _get_heuristic(self, start:HexID, end:HexID,ignore_water=False)->float:
+    def _get_heuristic(self, start:HexID, end:HexID,ignore_water:bool)->float:
         return self._hexCatalog[start].get_heuristic(self._hexCatalog[end],ignore_water)
     
     def get_route_a_star(self, start_id:HexID, end_id:HexID, ignore_water:bool)->'list[HexID]':
