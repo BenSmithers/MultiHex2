@@ -238,7 +238,7 @@ class Clicker(QGraphicsScene, ActionManager):
                 new_hex =  self.tool.get_polygon() # Hex(center)
 
                 self._brush.setStyle(0)
-                self._pen.setColor(QtGui.QColor(110,228,230)) # how did I choose this color? It should ask the tool for this color 
+                self._pen.setColor(self.tool.get_highlight_color()) # how did I choose this color? It should ask the tool for this color 
                 self._pen.setStyle(1)
                 if isinstance(new_hex, Hex):
                     self._highlight = self.addPolygon(new_hex, self._pen, self._brush)
@@ -457,14 +457,14 @@ class Clicker(QGraphicsScene, ActionManager):
             shorthand for getting the catalog corresponding to this layer
         """
         if layer==ToolLayer.null or layer==ToolLayer.terrain:
-            return NotImplementedError("Nothing for {}. Did you use a relative import? Don't!".format(layer))
+            raise NotImplementedError("Nothing for {}. Did you use a relative import? Don't!".format(layer))
         elif layer==ToolLayer.civilization:
             return self._roadCatalog
         else:
             raise NotImplementedError("Nothing for {}. Did you use a relative import? Don't!".format(layer))
 
-    def get_path(self, id:int)->Road:
-        using = self._get_path_cat(self.tool.tool_layer())
+    def get_path(self, id:int, layer:ToolLayer)->Road:
+        using = self._get_path_cat(layer)
 
         if id in using:
             return using[id]
@@ -500,10 +500,9 @@ class Clicker(QGraphicsScene, ActionManager):
             self.removeItem(current_sid)
         self.update()
 
-        this_path = self.get_path(rid)
+        this_path = self.get_path(rid, ToolLayer.civilization)
         if this_path is None:
             self._roadCatalog.remove(rid)
-            return
         else:
             verts = [hex_to_screen(vert) for vert in this_path.vertices]
             path = QtGui.QPainterPath()
@@ -512,7 +511,9 @@ class Clicker(QGraphicsScene, ActionManager):
             self._pen.setWidth(3)
             self._pen.setColor(QtGui.QColor(245,245,245))
             self._brush.setStyle(0)
-            self.addPath(path, self._pen, self._brush)
+            sid = self.addPath(path, self._pen, self._brush)
+
+            self.roadCatalog.update_sid(rid, sid)
 
 
     #################################### TOOL ACCESS METHODS ################################3

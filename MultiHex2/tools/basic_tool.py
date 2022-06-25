@@ -38,6 +38,12 @@ class Basic_Tool:
         self._widget_instance = None
         self._polygon = Hex(QPointF(0,0))
 
+    def get_highlight_color(self):
+        """
+        See below, but now it's the highlight color! 
+        """
+        return QtGui.QColor(110,228,230)
+
     def get_polygon(self):
         """
         The clicker control can ask the tools for a polygon to use as the preview when highlighting

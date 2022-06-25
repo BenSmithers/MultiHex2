@@ -32,6 +32,10 @@ class ToolWidget(QtWidgets.QWidget):
         self.setMaximumWidth(250)
         self.setMinimumWidth(250)
         self.new_color = QtGui.QColor(0,0,0)
+    
+    @property
+    def tool(self):
+        return self._tool
 
 class PathWidget(ToolWidget):
     def __init__(self, parent, tool, tileset, text_source):
@@ -41,12 +45,17 @@ class PathWidget(ToolWidget):
 
         self.ui.add_to_end.clicked.connect(self.add_to_end)
         self.ui.add_to_start.clicked.connect(self.add_to_start)
+        self.ui.name_shuffle.clicked.connect(self.shuffle_name)
+
+    def shuffle_name(self):
+        pass
 
     def add_to_start(self):
-        pass
+        self.tool.set_state(3)
+
 
     def add_to_end(self):
-        pass
+        self.tool.set_state(4)
 
 class RegionWidget(ToolWidget):
     def __init__(self, parent, tool,tileset, text_source):

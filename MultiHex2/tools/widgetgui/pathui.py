@@ -39,10 +39,10 @@ class Ui_Form(object):
 
         self.add_to_end = QtWidgets.QPushButton(Form)
         self.add_to_end.setObjectName("add_to_end")
-        self.formLayout.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.add_to_end)
+        self.formLayout.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.add_to_end)
         self.add_to_start = QtWidgets.QPushButton(Form)
         self.add_to_start.setObjectName("add_to_start")
-        self.formLayout.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.add_to_start)
+        self.formLayout.setWidget(5, QtWidgets.QFormLayout.FieldRole, self.add_to_start)
 
 
         self.retranslateUi(Form)
@@ -54,6 +54,7 @@ class Ui_Form(object):
         self.name_lbl.setText(_translate("Form", "Path Name:"))
         self.name_edit.setText(_translate("Form", "New Path"))
         self.name_shuffle.setText(_translate("Form", "Shuffle Name"))
+        self.state_lbl.setText(_translate("Form", "Selected: "))
         self.state_display.setText(_translate("Form", "Selecting"))
         self.add_to_start.setText(_translate("Form", "Add To Start"))
         self.add_to_end.setText(_translate("Form", "Add To End"))

@@ -329,6 +329,9 @@ class Path:
 
         return thing in self._vertices
 
+    def __len__(self):
+        return len(self._vertices)
+
     @property
     def vertices(self):
         return self._vertices
@@ -436,17 +439,64 @@ class PathCatalog(GeneralCatalog):
         GeneralCatalog.__init__(self)
         self._hexint = {} # hexID -> pids 
 
+    def get(self, id: int)->Path:
+        return super().get(id)
+
+    def _assoc(self, path_id:int, what):
+        """
+        Associates 'whatever' with that path id. 
+
+        """
+        if what in self._hexint:
+            self._hexint[what] += [path_id]
+        else:
+            self._hexint[what] = [path_id]
+    def _de_assoc(self, path_id:int, what):
+        """
+            Removes the above association
+        """
+
+        if what in self._hexint:
+            self._hexint[what].remove(path_id)
+        else:
+            raise ValueError("Asked to de-associate {} with the path_id {}, but they were never associated".format(what, path_id))
+
+    def remove(self, pid):
+        """
+        We load the road and check all the entries 
+        """
+        this_path = self.get(pid)
+        for vert in this_path.vertices:
+            self._de_assoc(pid,vert)
+
+        return super().remove(pid)
+
+    def add_to(self, pid:int, what, end:bool):
+        this_path = self.get(pid)
+        if end:
+            this_path.add_to_end(what)
+        else:
+            this_path.add_to_start(what)
+        self._assoc(pid, what)
+
+
+    def pop_from(self, pid:int, end:bool)->HexID: #probably hexID, could be QPointF
+        this_path = self.get(pid)
+        if end:
+            return this_path.pop_from_end()
+        else:
+            return this_path.pop_from_start()
+
+    def paths_here(self, hID:HexID)->'list[int]':
+        if hID in self._hexint:
+            return self._hexint[hID]
+        else:
+            return []
+
     def register_path(self, path:Path)->int:
         pid = self.register(path)
-
         for vertex in path:
-            if isinstance(vertex, HexID):
-                if vertex in self._hexint:
-                    self._hexint[vertex] += [path]
-                else:
-                    self._hexint[vertex] = [path]
-            else:
-                raise NotImplementedError()
+            self._assoc(pid, vertex)
 
         return pid
 
