@@ -4,15 +4,6 @@ from math import sqrt
 RTHREE = sqrt(3)
 DRAWSIZE = 20.
 
-class Primitive:
-    """
-    Will implement simple versions of the raw classes for saving them efficiently 
-    """
-    def __init__(self)->None:
-        raise NotImplementedError("Use derived class")
-
-    def construct(self):
-        raise NotImplementedError("Use derived method")
     
 class HexID:
     """
