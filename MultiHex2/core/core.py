@@ -270,6 +270,7 @@ class Path:
         self._viable_dtypes = (QPointF, HexID)
         self._dtype = int
         self._step = None #QPointF or integer
+        self._name = "New Path"
 
         for entry in positions:
             if self._dtype == int:
@@ -292,6 +293,32 @@ class Path:
             else:
                 if this_step != self._step:
                     raise ValueError("Inconsistent step sizes! {} vs {}".format(self._step, this_step)) 
+
+    def pack(self)->dict:
+        me = {}
+        me["dtype"]="HexID" if self._dtype==HexID else "QPointF"
+        me["name"]=self._name
+        this_verts = []
+        for entry in self.vertices:
+            
+            if self._dtype==HexID:
+                what = [entry.xid(), entry.yid()]
+            else:
+                what = [entry.x(), entry.y()]
+            this_verts.append(what)
+        me["verts"] = this_verts
+        return me
+
+    @classmethod
+    def unpack(cls, this_dict:dict)->'Path':
+        datatype = HexID if  this_dict["dtype"]=="HexID" else QPointF
+        all_verts = []
+        for entry in this_dict["verts"]:
+            all_verts.append(datatype(entry[0], entry[1]))
+
+        new_path = Path(*all_verts)
+        new_path._name = this_dict["name"]
+        return new_path
 
     def add_to_end(self, other):
         if not isinstance(other, self._dtype):
