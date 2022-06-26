@@ -302,7 +302,7 @@ class Path:
         for entry in self.vertices:
             
             if self._dtype==HexID:
-                what = [entry.xid(), entry.yid()]
+                what = [entry.xid, entry.yid]
             else:
                 what = [entry.x(), entry.y()]
             this_verts.append(what)
@@ -382,6 +382,74 @@ class Path:
     def get_start(self):
         return self._vertices[0]
 
+class River(Path):
+    def __init__(self, *positions):
+        super().__init__(*positions)
+
+        self._tributaries = []
+
+    @property
+    def vertices(self)->'list[QPointF]':
+        return self._vertices
+    
+    @property 
+    def tributaries(self)->'list[River]':
+        return self._tributaries
+
+    def check_contains(self, other:QPointF)->bool:
+        """
+        Returns whether or not the QPointF "other" is contained in the vertices of this river 
+        """
+        if len(self.tributaries)==0:
+            return other in self.vertices
+        else:
+            trib1 = self.tributaries[0].check_contains(other)
+            if trib1:
+                return trib1
+            else:
+                trib2 = self.tributaries[1].check_contains(other)
+                return trib2
+
+    def merge_into(self, other:'River')->bool:
+        """
+        Merges this river with another one; requires the end of this river be on the target river 
+
+        `merge_with` should be the prefered way to merge rivers since it maintains the same main body of the river (and its names and stuff)
+        """
+        
+        this_end = self.get_end()
+        if this_end in other.vertices:
+            intersect_index = other.vertices.index(self.get_end())
+
+            new_verts = other.vertices[intersect_index:]
+            trib1_verts = other.vertices[:intersect_index+1]
+            trib1 = River(*trib1_verts)
+            trib2 = River(*self.vertices)
+
+            self._vertices = new_verts
+            self._tributaries = [trib1, trib2]
+
+            return True
+        else:
+            # check tributaries of other River
+            these_tribs = other.tributaries
+            if len(these_tribs)!=0:
+                retval = self.merge_into(these_tribs[0])
+                if retval:
+                    return retval #merged with a tributary 
+                
+                retval = self.merge_into(these_tribs[1])
+                if retval:
+                    return retval
+                
+            return False
+
+    def merge_with(self, other:'River'):
+        """
+        Requires river "other" to be a vertex on this River 
+        """
+        return
+
 class Road(Path):
     def __init__(self, *positions):
         super().__init__(*positions)
@@ -391,6 +459,10 @@ class Road(Path):
     @property
     def quality(self):
         return self._quality
+
+    @property
+    def vertices(self)->'list[HexID]':
+        return super().vertices
 
 class GeneralCatalog:
     def __init__(self):
