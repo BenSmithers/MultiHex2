@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent, QMainWindow, QApplication
 from PyQt5.QtWidgets import QGraphicsItem, QGraphicsView, QGraphicsDropShadowEffect
 
-from MultiHex2.core.core import DRAWSIZE, GeneralCatalog, PathCatalog, Road
+from MultiHex2.core.core import DRAWSIZE, GeneralCatalog, Path, PathCatalog, Road
 from MultiHex2.core import HexCatalog, RegionCatalog, EntityCatalog
 from MultiHex2.core import Hex, HexID, Region, Entity
 from MultiHex2.core import screen_to_hex
@@ -102,6 +102,7 @@ class Clicker(QGraphicsScene, ActionManager):
             "bregions":{},
             "cregions":{},
             "entities":{},
+            "roads":{},
             "drawsize":DRAWSIZE,
             "dimensions":[self.dimensions[0], self.dimensions[1]],
             "module":self.module,
@@ -124,6 +125,10 @@ class Clicker(QGraphicsScene, ActionManager):
         for rID in self._countyCatalog:
             region = self._countyCatalog[rID]
             out_dict["cregions"]["{}".format(rID)]=region.pack()
+        for pID in self._roadCatalog:
+            road = self._roadCatalog.get(pID)
+            out_dict["roads"]["{}".format(pID)]=road.pack()
+
         if False:
             for eID in self._entityCatalog:
                 entity = self._entityCatalog.access_entity(eID)
@@ -164,6 +169,9 @@ class Clicker(QGraphicsScene, ActionManager):
         for str_rid in in_dict["cregions"].keys():
             reg = Region.unpack(in_dict["cregions"][str_rid])
             self.addRegion(reg, ToolLayer.civilization)
+        for str_pid in in_dict["roads"].keys():
+            this_path = Path.unpack(in_dict["roads"][str_pid])
+            self.register_road(this_path)
 
         _time_dict= in_dict["time"]
         time = Time(minute=_time_dict["minute"], hour=_time_dict["hour"], 
