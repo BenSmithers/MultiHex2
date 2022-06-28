@@ -7,4 +7,7 @@ import unittest
 
 class TestPathInits(unittest.TestCase):
     def test_build_with_HexIDs(self):
-        self.assertEqual(1==1)
+        self.assertEqual(1,1)
+
+if __name__=="__main__":
+    unittest.main()
