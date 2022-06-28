@@ -389,6 +389,22 @@ class River(Path):
         self._tributaries = []
 
     @property
+    def width(self):
+        """
+        Calculates a "width" for the river depending on the number of tributaries it has (And how many tributaries those tributaries have)
+        """
+        base_width = 1.0
+        TRIB_SCALE = 0.5
+
+        if len(self.tributaries)!=0:
+            t1_width = self.tributaries[0].width
+            t2_width = self.tributaries[1].width
+
+            base_width += t1_width*TRIB_SCALE + t2_width*TRIB_SCALE
+
+        return base_width
+
+    @property
     def vertices(self)->'list[QPointF]':
         return self._vertices
     
@@ -419,10 +435,10 @@ class River(Path):
         
         this_end = self.get_end()
         if this_end in other.vertices:
-            intersect_index = other.vertices.index(self.get_end())
+            intersect_index = other.vertices.index(this_end)
 
-            new_verts = other.vertices[intersect_index:]
-            trib1_verts = other.vertices[:intersect_index+1]
+            trib1_verts = other.vertices[intersect_index:]
+            new_verts = other.vertices[:intersect_index+1]
             trib1 = River(*trib1_verts)
             trib2 = River(*self.vertices)
 
@@ -446,9 +462,35 @@ class River(Path):
 
     def merge_with(self, other:'River'):
         """
-        Requires river "other" to be a vertex on this River 
+        Requires river "other" to end on a vertex on this River 
         """
-        return
+        other_end = other.get_end()
+
+        if other_end in self.vertices:
+            intersect_index = self.vertices.index(other_end)
+
+            upper_half = self.vertices[intersect_index:]
+            lower_half = self.vertices[:intersect_index+1]
+
+            self._vertices = lower_half
+            trib1 = River(*upper_half)
+            trib1._tributaries=self._tributaries
+
+            trib2 = other
+            self._tributaries = [trib1, trib2]
+
+            return True
+
+        else:
+            these_tribs = self.tributaries()
+            if len(these_tribs)!=0:
+                retval = self.tributaries[0].merge_with(other)
+                if retval:
+                    return retval
+                retval = self.tributaries[1].merge_with(other)
+                
+                return retval
+                
 
 class Road(Path):
     def __init__(self, *positions):
