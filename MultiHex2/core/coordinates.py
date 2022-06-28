@@ -119,3 +119,29 @@ def get_adjacent_vertices(point:QPointF):
         return QPointF(-DRAWSIZE, 0.0),QPointF(0.5*DRAWSIZE, 0.5*RTHREE*DRAWSIZE), QPointF(0.5*DRAWSIZE, -0.5*RTHREE*DRAWSIZE) 
     else:
         return QPointF(DRAWSIZE, 0.0),QPointF(-0.5*DRAWSIZE, 0.5*RTHREE*DRAWSIZE), QPointF(-0.5*DRAWSIZE, -0.5*RTHREE*DRAWSIZE) 
+
+def get_IDs_from_step(start:QPointF, end:QPointF)->'tuple[HexID]':
+    """
+    These QPointF's must be DRAWSIZE away from each other and are interpreted as neiboring vertices of an edge between hexes. 
+
+    This returns the two HexIDs corresponding to the hexes that share that edge 
+    """
+    diff = end - start
+    # sanity!
+    diff_mag = sqrt(diff.x()**2 + diff.y()**2)
+    if not abs(diff_mag-DRAWSIZE)<1e-6:
+        raise ValueError("Points {} and {} are {} apart; an incorrect distance".format(start, end, diff_mag))
+
+    # want vector normal to the difference vector 
+    # define that normal vector be 0.5*drawsize long
+
+    norm_y_sq = (0.25*(diff.x()*DRAWSIZE)**2)/(diff.y()**2 + diff.x**2)
+    norm_x = sqrt(0.25*DRAWSIZE**2 - norm_y_sq)
+    norm_y = sqrt(norm_y_sq)
+
+    # from the start point, step half way along the difference vector, then go off at the normal 
+    p1 = start + QPointF(diff.x()*0.5+norm_x, diff.y()*0.5+norm_y)
+    p2 = start + QPointF(diff.x()*0.5-norm_x, diff.y()*0.5-norm_y)
+
+    return screen_to_hex(p1), screen_to_hex(p2)
+

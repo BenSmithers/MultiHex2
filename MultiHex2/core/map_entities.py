@@ -8,7 +8,7 @@ We also define the widgets used to configure those primitive properties in here
 """
 from PyQt5 import QtWidgets, QtGui, QtCore
 
-from MultiHex2.core.coordinates import DRAWSIZE
+from MultiHex2.core.coordinates import DRAWSIZE, HexID
 
 from glob import glob
 import os
@@ -68,12 +68,41 @@ class Entity:
         self._location = location
     
     @property 
-    def location( self ):
+    def location( self )->HexID:
         return self._location
 
     @staticmethod
     def widget(self):
         return [EntityWidget]
+
+    @classmethod
+    def type_name_converter(cls, type_name:str)->'Entity':
+        if type_name=="Entity":
+            return Entity
+        elif type_name=="Government":
+            return Government
+        elif type_name=="Settlement":
+            return Settlement
+        else:
+            return ValueError("Not sure how to convert type name {}".format(type_name))
+
+    def pack(self)->dict:
+        this_dict = {}
+        this_dict["name"] = self.name
+        this_dict["description"] = self.description
+        this_dict["icon"] = self.icon
+        this_dict["type"] = "Entity"
+        this_dict["location"]=(self.location.xid, self.location.yid)
+        return this_dict
+
+    def unpack(self, this_dict)->'Entity':
+        assert(this_dict["type"]=="Entity")
+        new_one = Entity(this_dict['name'],
+                        location=HexID(this_dict['location'][0], this_dict['location'][1]),)
+        new_one.icon = this_dict["icon"]
+        new_one.description = this_dict["description"]
+        return new_one
+
 
 class GenericTab(QtWidgets.QWidget):
     def __init__(self, parent=None, config_entity=None):
