@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QGraphicsItem
 from MultiHex2.core.map_entities import Government
 from MultiHex2.core.map_entities import Entity
 
-from .coordinates import HexID, hex_to_screen, DRAWSIZE, screen_to_hex
+from .coordinates import HexID, get_IDs_from_step, hex_to_screen, DRAWSIZE, screen_to_hex
 
 import numpy as np
 from numpy.random import randint
@@ -589,7 +589,6 @@ class PathCatalog(GeneralCatalog):
     def _assoc(self, path_id:int, what):
         """
         Associates 'whatever' with that path id. 
-
         """
         if what in self._hexint:
             self._hexint[what] += [path_id]
@@ -627,9 +626,11 @@ class PathCatalog(GeneralCatalog):
     def pop_from(self, pid:int, end:bool)->HexID: #probably hexID, could be QPointF
         this_path = self.get(pid)
         if end:
-            return this_path.pop_from_end()
+            popped = this_path.pop_from_end()
         else:
-            return this_path.pop_from_start()
+            popped = this_path.pop_from_start()
+        self._de_assoc(pid, popped)
+        return popped
 
     def paths_here(self, hID:HexID)->'list[int]':
         if hID in self._hexint:
@@ -643,6 +644,52 @@ class PathCatalog(GeneralCatalog):
             self._assoc(pid, vertex)
         return pid
 
+class RiverCatalog(PathCatalog):
+    """
+    Specific case of the path catalog; we need special rules here for associations/de-associations 
+
+    ## TODO the _assoc function needs to recognize tributaries... _somehow_ 
+    """
+
+    def _assoc(self, path_id: int, *what):
+        """
+        Handy utility for associating multiple HexIDs with this Path ID
+        """
+        for which in what:
+            PathCatalog._assoc(path_id, which)
+
+    def register(self, river: River) -> int:
+        """
+        Similar to the default Path register thing, but now we look at the HexIDs on the side of these steps 
+        """
+        pid = GeneralCatalog.register(river)
+
+        if len(river.vertices)==1:
+            return pid
+
+        for i_v in range(len(river)-1):
+            start = river.vertices[i_v]
+            end = river.vertices[i_v+1]
+            hid1, hid2 = get_IDs_from_step(start, end)
+            self._assoc(pid, hid1, hid2)
+
+    def add_to(self, pid, what, end:bool):
+        """
+        Same changes as present in the "register" function
+        """
+        this_path = self.get(pid)
+        start_vertex = this_path.get_end() if end else this_path.get_start()
+        if end:
+            this_path.add_to_end(what)
+        else:
+            this_path.add_to_start(what)
+        
+        hid1, hid2 = get_IDs_from_step(start_vertex, what)
+        self._assoc(pid, hid1, hid2)
+
+
+    def get(self, id: int) -> River:
+        return super().get(id)
 
 class RegionCatalog(GeneralCatalog):
     """

@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent, QMainWindow, QApplication
 from PyQt5.QtWidgets import QGraphicsItem, QGraphicsView, QGraphicsDropShadowEffect
 
-from MultiHex2.core.core import DRAWSIZE, GeneralCatalog, Path, PathCatalog, Road
+from MultiHex2.core.core import DRAWSIZE, GeneralCatalog, Path, PathCatalog, Road, River
 from MultiHex2.core import HexCatalog, RegionCatalog, EntityCatalog
 from MultiHex2.core import Hex, HexID, Region, Entity
 from MultiHex2.core import screen_to_hex
@@ -22,8 +22,8 @@ from collections import deque
 from math import inf
 import numpy as np
 from time import time
+from typing import Union
 
-import gzip
 
 DEBUG = True
 
@@ -76,6 +76,9 @@ class Clicker(QGraphicsScene, ActionManager):
         self.tileset = ""
 
     def set_primary_mouse(self, left_button=True):
+        """
+        Can be used for swapping between left/right handed mice. This is just toggled by the left_button bool
+        """
         if left_button:
             self._primary = Qt.LeftButton
             self._secondary = Qt.RightButton
@@ -461,7 +464,7 @@ class Clicker(QGraphicsScene, ActionManager):
 
     #################################### PATH ACCESS METHODS #####################
 
-    def _get_path_cat(self, layer:ToolLayer)->GeneralCatalog:
+    def get_path_cat(self, layer:ToolLayer)->GeneralCatalog:
         """
             shorthand for getting the catalog corresponding to this layer
         """
@@ -472,8 +475,8 @@ class Clicker(QGraphicsScene, ActionManager):
         else:
             raise NotImplementedError("Nothing for {}. Did you use a relative import? Don't!".format(layer))
 
-    def get_path(self, id:int, layer:ToolLayer)->Road:
-        using = self._get_path_cat(layer)
+    def get_path(self, id:int, layer:ToolLayer)->'Union[Road, River]':
+        using = self.get_path_cat(layer)
 
         if id in using:
             return using[id]
@@ -485,16 +488,16 @@ class Clicker(QGraphicsScene, ActionManager):
         return self._roadCatalog
 
     def next_free_rid(self, layer:ToolLayer):
-        using = self._get_path_cat(layer)
+        using = self.get_path_cat(layer)
         return using.get_next_id()
 
     def register_path(self, road:Road, layer:ToolLayer):
-        using = self._get_path_cat(layer)
+        using = self.get_path_cat(layer)
         rid = using.register(road)
         self.draw_road(rid, layer)
 
     def remove_road(self, rid:int, layer:ToolLayer):
-        using = self._get_path_cat(layer)
+        using = self.get_path_cat(layer)
         sid = using.get_sid(rid)
         self.removeItem(sid)
         using.remove(rid)
@@ -506,7 +509,7 @@ class Clicker(QGraphicsScene, ActionManager):
          path = QtGui.QPainterPath()
          path.addPolygon( QtGui.QPolygonF( route ))
         """
-        using = self._get_path_cat(layer)
+        using = self.get_path_cat(layer)
 
         current_sid = using.get_sid(rid)
         if (current_sid is not None) and current_sid!=-1:
@@ -521,8 +524,17 @@ class Clicker(QGraphicsScene, ActionManager):
             path = QtGui.QPainterPath()
             path.addPolygon(QtGui.QPolygonF(verts))
             self._pen.setStyle(1)
-            self._pen.setWidth(3)
-            self._pen.setColor(QtGui.QColor(245,245,245))
+            
+
+            if layer==ToolLayer.civilization:
+                self._pen.setWidth(3)
+                self._pen.setColor(QtGui.QColor(245,245,245))
+            elif layer==ToolLayer.terrain:
+                self._pen.setWidth(this_path.width)
+                self._pen.setColor(QtGui.QColor(66, 135, 245))
+            else:
+                raise NotImplementedError("What")
+
             self._brush.setStyle(0)
             sid = self.addPath(path, self._pen, self._brush)
 

@@ -4,12 +4,11 @@ Here, we define the various path tools. These include (or will include)
     - the new road tool 
 
 """
-
 from MultiHex2.tools.basic_tool import Basic_Tool, ToolLayer
 from MultiHex2.actions.baseactions import MetaAction, NullAction
 from MultiHex2.actions.pathactions import Add_Delete_Road, Add_To_Road_End, Add_To_Road_Start
 from MultiHex2.core.coordinates import screen_to_hex, hex_to_screen, HexID, get_adjacent_vertices
-from MultiHex2.core.core import Path, Road
+from MultiHex2.core.core import Path, Road, River
 from MultiHex2.tools.widgets import PathWidget
 
 from PyQt5 import QtGui
@@ -37,16 +36,29 @@ class PathSelector(Basic_Tool):
     """
     def __init__(self, parent=None):
         Basic_Tool.__init__(self, parent)
-        self._selected_road = -1 #-1 means None
+        self._selected_path = -1 #-1 means None
         self.highlight=True
         self._vertex_mode = False
+        self._pathtype = Path
+
+        # when implemented, should go
+        #       NEW, ADD END, ADD START
+        self._actiontypes = [NotImplementedError]
+
+    @property 
+    def actiontypes(self)->'list[NullAction]':
+        return self._actiontypes
+
+    @property
+    def pathtype(self)->Path:
+        return self._pathtype
 
     @classmethod
     def widget(self):
         return PathWidget
 
     def get_highlight_color(self):
-        if self.state==0 and self._selected_road!=-1:
+        if self.state==0 and self._selected_path!=-1:
             return QtGui.QColor(235, 0, 0)
         else:
             return super().get_highlight_color()
@@ -61,9 +73,9 @@ class PathSelector(Basic_Tool):
                 In vertex mode it just gets the next step to the mouse (greedy)
         """
         if from_end:
-            start = self.get_selected_road.get_end()
+            start = self.get_selected_path.get_end()
         else:
-            start = self.get_selected_road.get_start()
+            start = self.get_selected_path.get_start()
         loc = event.scenePos()
         if self._vertex_mode:
             adjacent = get_adjacent_vertices(loc)
@@ -88,12 +100,12 @@ class PathSelector(Basic_Tool):
 
     def mouse_moved(self, event):
         if self.state==4 or self.state==3:
-            if self.get_selected_road is None:
+            if self.get_selected_path is None:
                 self.set_state(0)
 
             next_step = self.get_next_steps(event, self.state==4)
             if self.vertex_mode:
-                route = [self.get_selected_road.get_end()] + next_step
+                route = [self.get_selected_path.get_end()] + next_step
             else:
                 route = [hex_to_screen(entry) for entry in next_step]
 
@@ -102,8 +114,8 @@ class PathSelector(Basic_Tool):
             #self._step_object = self.parent.scene.addPath( path, pen=self.QPen, brush=self.QBrush )
 
             self._polygon = path
-        elif self.state==0 and self.selected_road!=-1:
-            this_road = self.get_selected_road
+        elif self.state==0 and self.selected_path!=-1:
+            this_road = self.get_selected_path
             path = QtGui.QPainterPath()
             path.addPolygon( QtGui.QPolygonF( [hex_to_screen(entry) for entry in this_road.vertices]))
             self._polygon=path
@@ -113,20 +125,54 @@ class PathSelector(Basic_Tool):
             self._polygon = path
         return NullAction()
 
+    def primary_mouse_released(self, event):
+        if self.state==0: # selecting mode! 
+            loc = screen_to_hex(event.scenePos())
+
+            using = self.parent.get_path_cat(self.tool_layer())
+            pids = using.paths_here(loc)
+
+            # just... select the first one?
+            if len(pids)!=0:
+                self.select_path(pids[0])
+        if self.state==5: #new road
+            
+            loc = event.scenePos()
+            coords = screen_to_hex(loc)
+            new_road = self.pathtype(coords)
+            pid = self.parent.next_free_rid(self.tool_layer())
+            self.set_state(4)
+            self.select_path(pid)
+            return self.actiontypes[0](pid = pid, road=new_road)
+
+        elif self.state==4 or self.state==3: #add to end of road
+            route = self.get_next_steps(event, self.state==4)[1:]
+            # skip the first step! 
+            action_type = self.actiontypes[1] if self.state==4 else self.actiontypes[2]
+
+            all_actions = [action_type(pid= self.selected_path, hexID = entry) for entry in route]
+            combo = MetaAction(*all_actions)
+            return combo
+
+        return super().primary_mouse_released(event)
+
     @property
-    def get_selected_road(self)->Path:
-        raise NotImplementedError("Implementation will depend on what kind of path this is")
+    def get_selected_path(self)->Path:
+        if self.selected_path==-1:
+            return None
+        else:
+            return self.parent.get_path(self.selected_path, self.tool_layer())
 
     @property
     def vertex_mode(self)->bool:
         return self._vertex_mode
 
     @property
-    def selected_road(self)->int:
-        return self._selected_road
+    def selected_path(self)->int:
+        return self._selected_path
     
-    def select_road(self, road_id:int)->None:
-        self._selected_road = road_id
+    def select_path(self, road_id:int)->None:
+        self._selected_path = road_id
 
         self.widget_instance.ui.name_edit.setText("Road {}".format(road_id))
 
@@ -148,6 +194,12 @@ class RiverSelector(PathSelector):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._vertext_mode = True
+        self._pathtype = River
+        self._actiontypes = []
+
+    @property
+    def get_selected_path(self) -> River:
+        return super().get_selected_path
 
     @classmethod
     def altText(cls):
@@ -165,13 +217,8 @@ class RiverSelector(PathSelector):
 class RoadSelector(PathSelector):
     def __init__(self, parent=None):
         super().__init__(parent)
-
-    @property
-    def get_selected_road(self)->Road:
-        if self.selected_road==-1:
-            return None
-        else:
-            return self.parent.get_path(self.selected_road, self.tool_layer())
+        self._pathtype = Road
+        self._actiontypes = [Add_Delete_Road,Add_To_Road_End,Add_To_Road_Start]
 
     @classmethod
     def altText(cls):
@@ -180,37 +227,6 @@ class RoadSelector(PathSelector):
     @classmethod
     def tool_layer(cls):
         return ToolLayer.civilization
-
-    def primary_mouse_released(self, event):
-        if self.state==0: # selecting mode! 
-            loc = screen_to_hex(event.scenePos())
-            pids = self.parent.roadCatalog.paths_here(loc)
-
-            # just... select the first one?
-            if len(pids)!=0:
-                self.select_road(pids[0])
-
-        elif self.state==5: #new road
-            
-            loc = event.scenePos()
-            coords = screen_to_hex(loc)
-            new_road = Road(coords)
-            pid = self.parent.next_free_rid(self.tool_layer())
-            self.set_state(4)
-            self.select_road(pid)
-            return Add_Delete_Road(pid = pid, road=new_road)
-
-        elif self.state==4 or self.state==3: #add to end of road
-            route = self.get_next_steps(event, self.state==4)[1:]
-            # skip the first step! 
-            action_type = Add_To_Road_End if self.state==4 else Add_To_Road_Start
-
-            all_actions = [action_type(pid= self.selected_road, hexID = entry) for entry in route]
-            combo = MetaAction(*all_actions)
-            return combo
-        
-        return super().primary_mouse_released(event)
-    
 
 class NewRoadTool(RoadSelector):
     def __init__(self, parent=None):
