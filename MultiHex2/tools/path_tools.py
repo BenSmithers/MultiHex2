@@ -195,7 +195,7 @@ class RoadSelector(PathSelector):
             loc = event.scenePos()
             coords = screen_to_hex(loc)
             new_road = Road(coords)
-            pid = self.parent.next_free_rid()
+            pid = self.parent.next_free_rid(self.tool_layer())
             self.set_state(4)
             self.select_road(pid)
             return Add_Delete_Road(pid = pid, road=new_road)
@@ -232,7 +232,7 @@ class NewRiverTool(RiverSelector):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.auto_state = 1
+        self.auto_state = 5
         self.highlight_icon="river_icon"
 
 

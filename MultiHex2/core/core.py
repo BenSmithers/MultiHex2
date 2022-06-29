@@ -266,6 +266,9 @@ class County(Region, Government):
         super().__init__(origin, *hexIDs)
 
 class Path:
+    """
+    A series of points that form a path of some kind. Can be made of either QPointF's or HexIDs
+    """
     def __init__(self, *positions):
         self._viable_dtypes = (QPointF, HexID)
         self._dtype = int
@@ -345,7 +348,7 @@ class Path:
 
 
     def __iter__(self):
-        return self.vertices.__iter__
+        return self.vertices.__iter__()
 
     def __contains__(self, thing):
         """
@@ -634,11 +637,10 @@ class PathCatalog(GeneralCatalog):
         else:
             return []
 
-    def register_path(self, path:Path)->int:
-        pid = self.register(path)
+    def register(self, path:Path)->int:
+        pid = GeneralCatalog.register(self, path)
         for vertex in path:
             self._assoc(pid, vertex)
-
         return pid
 
 

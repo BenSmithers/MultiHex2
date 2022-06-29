@@ -58,6 +58,7 @@ class Clicker(QGraphicsScene, ActionManager):
         self._countyCatalog = RegionCatalog()
         self._entityCatalog = EntityCatalog()
         self._roadCatalog = PathCatalog()
+        self._riverCatalog = PathCatalog()
 
         self._pen = QtGui.QPen() # STROKE EFFECTS
         self._pen.setColor(QtGui.QColor(240,240,240))
@@ -171,7 +172,7 @@ class Clicker(QGraphicsScene, ActionManager):
             self.addRegion(reg, ToolLayer.civilization)
         for str_pid in in_dict["roads"].keys():
             this_path = Path.unpack(in_dict["roads"][str_pid])
-            self.register_road(this_path)
+            self.register_path(this_path, ToolLayer.civilization)
 
         _time_dict= in_dict["time"]
         time = Time(minute=_time_dict["minute"], hour=_time_dict["hour"], 
@@ -465,7 +466,7 @@ class Clicker(QGraphicsScene, ActionManager):
             shorthand for getting the catalog corresponding to this layer
         """
         if layer==ToolLayer.null or layer==ToolLayer.terrain:
-            raise NotImplementedError("Nothing for {}. Did you use a relative import? Don't!".format(layer))
+            return self._riverCatalog
         elif layer==ToolLayer.civilization:
             return self._roadCatalog
         else:
@@ -483,34 +484,38 @@ class Clicker(QGraphicsScene, ActionManager):
     def roadCatalog(self):
         return self._roadCatalog
 
-    def next_free_rid(self):
-        return self._roadCatalog.get_next_id()
+    def next_free_rid(self, layer:ToolLayer):
+        using = self._get_path_cat(layer)
+        return using.get_next_id()
 
-    def register_road(self, road:Road):
-        rid = self._roadCatalog.register(road)
-        self.draw_road(rid)
+    def register_path(self, road:Road, layer:ToolLayer):
+        using = self._get_path_cat(layer)
+        rid = using.register(road)
+        self.draw_road(rid, layer)
 
-    def remove_road(self, rid:int):
-        sid = self._roadCatalog.get_sid(rid)
+    def remove_road(self, rid:int, layer:ToolLayer):
+        using = self._get_path_cat(layer)
+        sid = using.get_sid(rid)
         self.removeItem(sid)
-        self._roadCatalog.remove(rid)
+        using.remove(rid)
 
-    def draw_road(self, rid):
+    def draw_road(self, rid, layer:ToolLayer):
 
         """
          self.addPath(new_hex, self._pen, self._brush)
          path = QtGui.QPainterPath()
          path.addPolygon( QtGui.QPolygonF( route ))
         """
+        using = self._get_path_cat(layer)
 
-        current_sid = self._roadCatalog.get_sid(rid)
+        current_sid = using.get_sid(rid)
         if (current_sid is not None) and current_sid!=-1:
             self.removeItem(current_sid)
         self.update()
 
-        this_path = self.get_path(rid, ToolLayer.civilization)
+        this_path = self.get_path(rid, layer)
         if this_path is None:
-            self._roadCatalog.remove(rid)
+            using.remove(rid)
         else:
             verts = [hex_to_screen(vert) for vert in this_path.vertices]
             path = QtGui.QPainterPath()
@@ -521,7 +526,7 @@ class Clicker(QGraphicsScene, ActionManager):
             self._brush.setStyle(0)
             sid = self.addPath(path, self._pen, self._brush)
 
-            self.roadCatalog.update_sid(rid, sid)
+            using.update_sid(rid, sid)
 
 
     #################################### TOOL ACCESS METHODS ################################3
