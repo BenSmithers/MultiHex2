@@ -34,7 +34,7 @@ class Add_Delete_Path(MapAction):
         else:
             old_road = None
 
-        if isinstance(self.road, Road):
+        if self.road is not None:
             map.register_path(self.road,self._layer)
 
         return self._retaction(road=old_road, pid=self.pid)
@@ -101,7 +101,7 @@ class Add_Delete_Road(Add_Delete_Path):
 class Add_Delete_River(Add_Delete_Path):
     def __init__(self, recurring=None, **kwargs):
         super().__init__(recurring, **kwargs)
-        self._layer = ToolLayer.civilization
+        self._layer = ToolLayer.terrain
         self._retaction = Add_Delete_River
 
 

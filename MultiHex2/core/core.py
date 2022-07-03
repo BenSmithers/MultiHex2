@@ -165,6 +165,31 @@ class Hex(QPolygonF):
         new_hx._flat = obj["flat"]
         return new_hx
 
+def get_nearest_vertex(point:QPointF):
+    """
+    Returns the verex nearest the given QPointF
+
+    Neartest vertex should be on the hex that contains this point
+    """
+    hid_contained = screen_to_hex(point)
+    center = hex_to_screen(hid_contained)
+    trial_pts = Hex(center)
+
+    min_dist = 10*DRAWSIZE
+    min_index = -1
+    if len(trial_pts)!=6:
+        raise ValueError("WTF? {}".format(trial_pts))
+    for i_vertex in range(len(trial_pts)):
+        disp = point - trial_pts[i_vertex]
+        dist = sqrt(disp.x()**2 + disp.y()**2)
+        if min_index==-1:
+            min_index = i_vertex
+            min_dist = dist
+        elif dist<min_dist:
+            min_dist = dist
+            min_index=i_vertex
+    return trial_pts[min_index] 
+
 
 class Region(QPolygonF):
     """
@@ -290,12 +315,18 @@ class Path:
         # verify the step size is acurate 
         
         for i in range(len(self._vertices)-1):
-            this_step =  self._vertices[i+1] - self._vertices[i]
+            this_step =  self.get_diff( self._vertices[i+1], self._vertices[i] )
             if self._step is None:
                 self._step = this_step
             else:
-                if this_step != self._step:
+                if abs(this_step -self._step)>1e-6:
                     raise ValueError("Inconsistent step sizes! {} vs {}".format(self._step, this_step)) 
+
+    def get_diff(self, one, other):
+        if self._dtype==HexID:
+            return one-other
+        else:
+            return sqrt((one.x()-other.x())**2  + (one.y()-other.y())**2)
 
     def pack(self)->dict:
         me = {}
@@ -327,12 +358,12 @@ class Path:
         if not isinstance(other, self._dtype):
             raise ValueError("Expected object of dtype {}, got {}".format(self._dtype, type(other)))
 
+        this_step = self.get_diff( other , self._vertices[-1])
         if self._step is None:
-            self._step = other - self._vertices[-1]
+            self._step = this_step
         else:
-            step = other - self._vertices[-1]
-            if step!=self._step:
-                raise ValueError("Inconsistent step sizes! {} vs {}".format(self._step, step)) 
+            if abs(this_step - self._step)>1e-6:
+                raise ValueError("Inconsistent step sizes! {} vs {}".format(self._step, this_step)) 
             
         self._vertices.append(other)
 
@@ -340,8 +371,9 @@ class Path:
         if not isinstance(other, self._dtype):
             raise ValueError("Expected object of dtype {}, got {}".format(self._dtype, type(other)))
 
-        step = other - self._vertices[0]
-        if step!=self._step:
+        # add
+        this_step = self.get_diff( other , self._vertices[0])
+        if abs(this_step- self._step)>1e-6:
             raise ValueError("Inconsistent step sizes! {} vs {}".format(self._step, step)) 
         
         self._vertices.appendleft(other)
@@ -409,7 +441,7 @@ class River(Path):
 
     @property
     def vertices(self)->'list[QPointF]':
-        return self._vertices
+        return super().vertices
     
     @property 
     def tributaries(self)->'list[River]':
@@ -640,6 +672,7 @@ class PathCatalog(GeneralCatalog):
 
     def register(self, path:Path)->int:
         pid = GeneralCatalog.register(self, path)
+
         for vertex in path:
             self._assoc(pid, vertex)
         return pid
@@ -656,22 +689,23 @@ class RiverCatalog(PathCatalog):
         Handy utility for associating multiple HexIDs with this Path ID
         """
         for which in what:
-            PathCatalog._assoc(path_id, which)
+            PathCatalog._assoc(self, path_id, which)
 
     def register(self, river: River) -> int:
         """
         Similar to the default Path register thing, but now we look at the HexIDs on the side of these steps 
         """
-        pid = GeneralCatalog.register(river)
+        pid = GeneralCatalog.register(self, river)
 
         if len(river.vertices)==1:
             return pid
 
         for i_v in range(len(river)-1):
-            start = river.vertices[i_v]
-            end = river.vertices[i_v+1]
-            hid1, hid2 = get_IDs_from_step(start, end)
+            _start = river.vertices[i_v]
+            _end = river.vertices[i_v+1]
+            hid1, hid2 = get_IDs_from_step(_start, _end)
             self._assoc(pid, hid1, hid2)
+        return pid
 
     def add_to(self, pid, what, end:bool):
         """

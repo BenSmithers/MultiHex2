@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent, QMainWindow, QApplication
 from PyQt5.QtWidgets import QGraphicsItem, QGraphicsView, QGraphicsDropShadowEffect
 
-from MultiHex2.core.core import DRAWSIZE, GeneralCatalog, Path, PathCatalog, Road, River
+from MultiHex2.core.core import DRAWSIZE, GeneralCatalog, Path, PathCatalog, RiverCatalog, Road, River
 from MultiHex2.core import HexCatalog, RegionCatalog, EntityCatalog
 from MultiHex2.core import Hex, HexID, Region, Entity
 from MultiHex2.core import screen_to_hex
@@ -58,7 +58,7 @@ class Clicker(QGraphicsScene, ActionManager):
         self._countyCatalog = RegionCatalog()
         self._entityCatalog = EntityCatalog()
         self._roadCatalog = PathCatalog()
-        self._riverCatalog = PathCatalog()
+        self._riverCatalog = RiverCatalog()
 
         self._pen = QtGui.QPen() # STROKE EFFECTS
         self._pen.setColor(QtGui.QColor(240,240,240))
@@ -479,8 +479,9 @@ class Clicker(QGraphicsScene, ActionManager):
         using = self.get_path_cat(layer)
 
         if id in using:
-            return using[id]
+            return using.get(id)
         else:
+            print("Didn't find id {}".format(id))
             return None
 
     @property
@@ -492,6 +493,7 @@ class Clicker(QGraphicsScene, ActionManager):
         return using.get_next_id()
 
     def register_path(self, road:Road, layer:ToolLayer):
+        
         using = self.get_path_cat(layer)
         rid = using.register(road)
         self.draw_road(rid, layer)
@@ -520,7 +522,10 @@ class Clicker(QGraphicsScene, ActionManager):
         if this_path is None:
             using.remove(rid)
         else:
-            verts = [hex_to_screen(vert) for vert in this_path.vertices]
+            if layer==ToolLayer.civilization:
+                verts = [hex_to_screen(vert) for vert in this_path.vertices]
+            else:
+                verts = this_path.vertices
             path = QtGui.QPainterPath()
             path.addPolygon(QtGui.QPolygonF(verts))
             self._pen.setStyle(1)
@@ -530,7 +535,7 @@ class Clicker(QGraphicsScene, ActionManager):
                 self._pen.setWidth(3)
                 self._pen.setColor(QtGui.QColor(245,245,245))
             elif layer==ToolLayer.terrain:
-                self._pen.setWidth(this_path.width)
+                self._pen.setWidth(3) #TODO make bigger!
                 self._pen.setColor(QtGui.QColor(66, 135, 245))
             else:
                 raise NotImplementedError("What")
