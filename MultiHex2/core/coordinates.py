@@ -97,8 +97,7 @@ def hex_to_screen(id:HexID)->QPointF:
     y_loc = DRAWSIZE*(M[2]*id.xid + M[3]*id.yid)
     return QPointF(x_loc, y_loc)
 
-
-def get_adjacent_vertices(point:QPointF):
+def get_adjacent_vertices(_point:QPointF):
     """
     Returns the vertices adjacent to a given vertex. **this assumes that the point given lies on a vertex of a Hex**
 
@@ -111,21 +110,25 @@ def get_adjacent_vertices(point:QPointF):
     We don't know which this is. So, we look to the left of the vertex (step of DRAWSIZE), and up/down from it some small step. 
     We access the IDs for each of those perturbed points; if they're the same it's type 2, otherwise type 1
     """
+    point = _point
     x_step = -0.5*DRAWSIZE
     y_step = 0.1*DRAWSIZE
     type_1 = screen_to_hex(point + QPointF(x_step, y_step)) != screen_to_hex(point + QPointF(x_step, -y_step))
 
     if type_1:
-        return QPointF(-DRAWSIZE, 0.0),QPointF(0.5*DRAWSIZE, 0.5*RTHREE*DRAWSIZE), QPointF(0.5*DRAWSIZE, -0.5*RTHREE*DRAWSIZE) 
+        return point+QPointF(-DRAWSIZE, 0.0),point+QPointF(0.5*DRAWSIZE, 0.5*RTHREE*DRAWSIZE), point+QPointF(0.5*DRAWSIZE, -0.5*RTHREE*DRAWSIZE) 
     else:
-        return QPointF(DRAWSIZE, 0.0),QPointF(-0.5*DRAWSIZE, 0.5*RTHREE*DRAWSIZE), QPointF(-0.5*DRAWSIZE, -0.5*RTHREE*DRAWSIZE) 
+        return point+QPointF(DRAWSIZE, 0.0),point+QPointF(-0.5*DRAWSIZE, 0.5*RTHREE*DRAWSIZE), point+QPointF(-0.5*DRAWSIZE, -0.5*RTHREE*DRAWSIZE) 
 
-def get_IDs_from_step(start:QPointF, end:QPointF)->'tuple[HexID]':
+def get_IDs_from_step(_start:QPointF, _end:QPointF)->'tuple[HexID]':
     """
     These QPointF's must be DRAWSIZE away from each other and are interpreted as neiboring vertices of an edge between hexes. 
 
     This returns the two HexIDs corresponding to the hexes that share that edge 
     """
+    start =_start
+    end = _end
+
     diff = end - start
     # sanity!
     diff_mag = sqrt(diff.x()**2 + diff.y()**2)
@@ -135,7 +138,7 @@ def get_IDs_from_step(start:QPointF, end:QPointF)->'tuple[HexID]':
     # want vector normal to the difference vector 
     # define that normal vector be 0.5*drawsize long
 
-    norm_y_sq = (0.25*(diff.x()*DRAWSIZE)**2)/(diff.y()**2 + diff.x**2)
+    norm_y_sq = (0.25*(diff.x()*DRAWSIZE)**2)/(diff.y()**2 + diff.x()**2)
     norm_x = sqrt(0.25*DRAWSIZE**2 - norm_y_sq)
     norm_y = sqrt(norm_y_sq)
 

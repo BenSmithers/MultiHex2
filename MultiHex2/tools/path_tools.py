@@ -7,14 +7,17 @@ Here, we define the various path tools. These include (or will include)
 from MultiHex2.tools.basic_tool import Basic_Tool, ToolLayer
 from MultiHex2.actions.baseactions import MetaAction, NullAction
 from MultiHex2.actions.pathactions import Add_Delete_Road, Add_To_Road_End, Add_To_Road_Start
+from MultiHex2.actions.pathactions import Add_Delete_River, Add_To_River_End, Add_To_River_Start
 from MultiHex2.core.coordinates import screen_to_hex, hex_to_screen, HexID, get_adjacent_vertices
-from MultiHex2.core.core import Path, Road, River
+from MultiHex2.core.core import Path, Road, River, get_nearest_vertex
 from MultiHex2.tools.widgets import PathWidget
 
 from PyQt5 import QtGui
 from PyQt5.QtWidgets import QGraphicsSceneEvent
 
 import os
+from math import sqrt
+from copy import copy
 
 art_dir = os.path.join( os.path.dirname(__file__),'..','assets','buttons')
 
@@ -63,7 +66,6 @@ class PathSelector(Basic_Tool):
         else:
             return super().get_highlight_color()
 
-
     def get_next_steps(self, event:QGraphicsSceneEvent, from_end:bool)->list:
         """
         Utility function for when drawing a path. 
@@ -76,23 +78,25 @@ class PathSelector(Basic_Tool):
             start = self.get_selected_path.get_end()
         else:
             start = self.get_selected_path.get_start()
+
         loc = event.scenePos()
         if self._vertex_mode:
-            adjacent = get_adjacent_vertices(loc)
-            id_closest = None
+            adjacent = get_adjacent_vertices(start)
+            closest_pt = None
             dist_closest = 0.0
-            
+
             # find which of these QPointF's is closest to the mouse 
             for each in adjacent:
-                this_dist = (each.x()-loc.x())**2 + (each.y() - loc.y())**2
-                if id_closest is None:
-                    id_closest = each
+                this_dist = sqrt((each.x()-loc.x())**2 + (each.y() - loc.y())**2)
+                if closest_pt is None:
+                    closest_pt = each
                     dist_closest = this_dist
                 else:
                     if this_dist < dist_closest:
                         dist_closest = this_dist
-                        id_closest = each
-            return [id_closest,]
+                        closest_pt = each
+        
+            return [start, closest_pt]
                 
         else:
             end_id = screen_to_hex(loc)
@@ -102,10 +106,10 @@ class PathSelector(Basic_Tool):
         if self.state==4 or self.state==3:
             if self.get_selected_path is None:
                 self.set_state(0)
-
+                return NullAction()
             next_step = self.get_next_steps(event, self.state==4)
             if self.vertex_mode:
-                route = [self.get_selected_path.get_end()] + next_step
+                route = next_step
             else:
                 route = [hex_to_screen(entry) for entry in next_step]
 
@@ -117,7 +121,10 @@ class PathSelector(Basic_Tool):
         elif self.state==0 and self.selected_path!=-1:
             this_road = self.get_selected_path
             path = QtGui.QPainterPath()
-            path.addPolygon( QtGui.QPolygonF( [hex_to_screen(entry) for entry in this_road.vertices]))
+            if self._vertex_mode:
+                path.addPolygon( QtGui.QPolygonF( [entry for entry in this_road.vertices]))
+            else:
+                path.addPolygon( QtGui.QPolygonF( [hex_to_screen(entry) for entry in this_road.vertices]))
             self._polygon=path
         else:
             path = QtGui.QPainterPath()
@@ -138,7 +145,12 @@ class PathSelector(Basic_Tool):
         if self.state==5: #new road
             
             loc = event.scenePos()
-            coords = screen_to_hex(loc)
+            if self.vertex_mode:
+                # NO CLUE WHY... but if we don't copy this, python garbage-collects it and the end of the river becomes an empty QPointF
+                #   super weird!!
+                coords = copy(get_nearest_vertex(loc))
+            else:
+                coords = screen_to_hex(loc)
             new_road = self.pathtype(coords)
             pid = self.parent.next_free_rid(self.tool_layer())
             self.set_state(4)
@@ -146,11 +158,11 @@ class PathSelector(Basic_Tool):
             return self.actiontypes[0](pid = pid, road=new_road)
 
         elif self.state==4 or self.state==3: #add to end of road
-            route = self.get_next_steps(event, self.state==4)[1:]
+            route = self.get_next_steps(event, self.state==4)
             # skip the first step! 
             action_type = self.actiontypes[1] if self.state==4 else self.actiontypes[2]
 
-            all_actions = [action_type(pid= self.selected_path, hexID = entry) for entry in route]
+            all_actions = [action_type(pid= self.selected_path, hexID = entry) for entry in route[1:]]
             combo = MetaAction(*all_actions)
             return combo
 
@@ -193,9 +205,9 @@ class PathSelector(Basic_Tool):
 class RiverSelector(PathSelector):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._vertext_mode = True
+        self._vertex_mode = True
         self._pathtype = River
-        self._actiontypes = []
+        self._actiontypes = [Add_Delete_River, Add_To_River_End, Add_To_River_Start]
 
     @property
     def get_selected_path(self) -> River:
@@ -250,7 +262,7 @@ class NewRiverTool(RiverSelector):
 
         self.auto_state = 5
         self.highlight_icon="river_icon"
-
+        self._vertex_mode = True
 
     @classmethod
     def buttonIcon(cls):

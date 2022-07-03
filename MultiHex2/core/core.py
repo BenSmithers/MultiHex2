@@ -374,7 +374,7 @@ class Path:
         # add
         this_step = self.get_diff( other , self._vertices[0])
         if abs(this_step- self._step)>1e-6:
-            raise ValueError("Inconsistent step sizes! {} vs {}".format(self._step, step)) 
+            raise ValueError("Inconsistent step sizes! {} vs {}".format(self._step, this_step)) 
         
         self._vertices.appendleft(other)
 
