@@ -12,7 +12,7 @@ from MultiHex2.generation.name_gen import create_name
 
 
 def add_biomes(map:Clicker, seed=None, **kwargs):
-    print("Adding Biomes")
+    print("---> Adding Biomes")
     if seed is not None:
         rnd.seed(seed)
 
@@ -41,7 +41,6 @@ def add_biomes(map:Clicker, seed=None, **kwargs):
         new_region = Region(this_hex, locid)
         new_region.set_name( create_name(this_hex.geography))
         new_region.set_geography(this_hex.geography)
-        print("    spreading {}".format(new_region.name))
 
         rid = map.addRegion(new_region, ToolLayer.terrain)
 

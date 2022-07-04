@@ -59,9 +59,9 @@
         "avg_range": 10.0,
         "dimx": 4000,
         "dimy": 3000,
-        "n_peaks": 7,
+        "n_peaks": 6,
         "sigma": 35,
-        "zones": 3
+        "zones": 6
       },
       "desc": {
         "avg_range": "Average length of generated ridgelines",

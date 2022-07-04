@@ -44,6 +44,12 @@ class Hex(QPolygonF):
         self._color_scale_param = "altitude_base"
         self.wind = np.zeros(2)
 
+    def __getitem__(self, key):
+        return self._params[key]
+
+    def __setitem__(self,key, value):
+        self._params[key] = value
+
     @property 
     def center(self):
         return QPointF(self.x, self.y)
@@ -53,7 +59,7 @@ class Hex(QPolygonF):
         return self._params
     @property
     def fill(self)->QColor:
-        alt_scale = 0.4
+        alt_scale = 0.2
         if self._flat:
             return self._fill
         else:
@@ -101,13 +107,13 @@ class Hex(QPolygonF):
             mtn_scale=2.0
         
 
-        if ignore_water:
-            alt_dif = 0.0
-        else:
-            alt_dif = abs(0.01*(other.params["altitude_base"] - self.params["altitude_base"]))
-
         if (not self.is_land) or (not other.is_land):
             alt_dif = 0.0
+        else:
+            if ignore_water:
+                alt_dif = 0.0
+            else:
+                alt_dif = abs(0.01*(other["altitude_base"] - self["altitude_base"]))
 
         return water_scale*mtn_scale*(lateral_dist + 0.01*alt_dif)
 
@@ -115,26 +121,18 @@ class Hex(QPolygonF):
         """
         Estimates the total cost of going from this hex to the other one
         """
-        if ignore_water:
-            water_scale = 1.0
-        else:
-            if (self.is_land ^ other.is_land):
-                water_scale = 1.0
-            else:
-                water_scale = 1.0
+        lateral_dist_v = (self.center - other.center)
+        lateral_dist= sqrt(QPointF.dotProduct(lateral_dist_v,lateral_dist_v))
 
-        lateral_dist = (self.center - other.center)
-        lateral_dist= sqrt(lateral_dist.x()*lateral_dist.x() + lateral_dist.y()*lateral_dist.y())
-
-        if ignore_water:
-            alt_dif = 0.0
-        else:
-            alt_dif = abs(0.01*(other.params["altitude_base"] - self.params["altitude_base"]))
-            
         if (not self.is_land) or (not other.is_land):
             alt_dif = 0.0
+        else:
+            if ignore_water:
+                alt_dif = 0.0
+            else:
+                alt_dif = abs(0.01*(other["altitude_base"] - self["altitude_base"]))
 
-        return water_scale*(lateral_dist  + 0.01*alt_dif)
+        return (lateral_dist  + 0.01*alt_dif)
 
     def pack(self)->dict:
         """

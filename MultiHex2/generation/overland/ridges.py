@@ -39,8 +39,8 @@ def generate_ridges(map:Clicker, seed=None, **kwargs):
     def make_continent():
         print("making continent")
         ids_to_propagate = []
-        x_center = 0.80*rnd.random()*dimensions[0] + 0.10*dimensions[0]
-        y_cos  = 1.6*rnd.random() - 0.8
+        x_center = 0.95*rnd.random()*dimensions[0] + 0.05*dimensions[0]
+        y_cos  = 1.9*rnd.random() - 1.05
         y_center = acos( y_cos )*dimensions[1]/( pi )
         for j in range(n_peaks):
             while True:
@@ -57,6 +57,8 @@ def generate_ridges(map:Clicker, seed=None, **kwargs):
                 new_hex._fill = QColor(99,88,60)
                 new_hex.set_param("altitude_base",1.0)
                 new_hex.set_param("rainfall_base",0.0)
+                new_hex.set_param("temperature_base",0.0)
+                new_hex.set_param("is_land", 10 )
                 new_hex.geography="peak"
                 new_hex.is_land = True
                 if map.accessHex(loc_id) is None:
@@ -79,7 +81,6 @@ def generate_ridges(map:Clicker, seed=None, **kwargs):
             else:
                 neighbor_cdf[index] = neighbor_cdf[index - 1] + neighbor_weights[index]
 
-        print("spreading sturff now")
         while len(ids_to_propagate)!=0:
             if rnd.random()>(1.-(1./avg_range)):
                 #terminate this ridgeline
@@ -97,7 +98,6 @@ def generate_ridges(map:Clicker, seed=None, **kwargs):
 
                 place = hex_to_screen( target_id )
                 if not point_is_in(place, dimensions):
-                    print("not here!")
                     ids_to_propagate.pop(0)
                     continue
             
@@ -106,7 +106,9 @@ def generate_ridges(map:Clicker, seed=None, **kwargs):
                 new_hex._fill = QColor(99,88,60)
                 new_hex.is_land=True
                 new_hex.set_param("altitude_base",0.98)
+                new_hex.set_param("is_land", 10)
                 new_hex.set_param("rainfall_base",0.0)
+                new_hex.set_param("temperature_base",0.0)
                 new_hex.geography="ridgeline"
             
 

@@ -7,7 +7,7 @@ from PyQt5.QtCore import QPointF
 from PyQt5.QtGui import QColor
 
 
-from math import exp
+from math import exp, sqrt
 import numpy as np
 import numpy.random as rnd
 
@@ -35,7 +35,7 @@ class Climatizer:
                 temp = np.array([which[param] for param in self.params])
 
                 # get the spatial distance between the tested set of parameters, and all the available tiles  
-                dist_between = np.sqrt(np.sum((temp - testing)**2))
+                dist_between = sqrt(np.sum((temp - testing)**2))
                 if dist_between<distance:
                     super = super_type
                     subt = sub_type

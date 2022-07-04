@@ -1,5 +1,5 @@
 from numpy import random as rnd
-from math import floor
+from math import floor, sin, pi
 import numpy as np
 
 from ..utils import point_is_in, gauss
@@ -12,6 +12,8 @@ from PyQt5.QtGui import QColor
 def generate_land(map:Clicker, seed=None, **kwargs):
     if seed is not None:
         rnd.seed(seed)
+    else:
+        seed = rnd.randint(1,10000000)
 
     requried_args = ["land_spread","land_width","mnt_thicc","water_spread","water_width"]
     for arg in requried_args:
@@ -74,8 +76,10 @@ def generate_land(map:Clicker, seed=None, **kwargs):
 
                 new_hex = Hex(center)
                 new_hex.genkey = '01000000'
-                new_hex.set_param("altitude_base", 1.0)
+                new_hex.set_param("altitude_base", 0.95)
                 new_hex.set_param("rainfall_base",0.0)
+                new_hex.set_param("temperature_base", 0.0)
+                new_hex.set_param("is_land", 10 )
                 new_hex.is_land=True
                 new_hex.geography="mountain"
                 new_hex.set_fill(QColor(97, 78, 46))
@@ -145,6 +149,8 @@ def generate_land(map:Clicker, seed=None, **kwargs):
 
                     new_hex.set_param("altitude_base", new_alt)
                     new_hex.set_param("rainfall_base",0.0)
+                    new_hex.set_param("temperature_base", 0.0)
+                    new_hex.set_param("is_land", 10*int( new_hex.params["altitude_base"]>0.0  ))
                     map.addHex( new_hex, neighbor )
                     ids_to_propagate.append( neighbor )
                 ids_to_propagate.pop(0)
@@ -154,24 +160,31 @@ def generate_land(map:Clicker, seed=None, **kwargs):
             hex = map.hexCatalog[hid]
             if hex.geography=="ridge" or hex.geography=="peak" or hex.geography=="mountain":
                 continue
-            cu = hex.params["altitude_base"]
+            cu = hex["altitude_base"]
             total = 1
             for neigh in hid.neighbors:
                 if neigh in map.hexCatalog:
                     total+=1
-                    cu += map.hexCatalog[neigh].params["altitude_base"]
+                    cu += map.hexCatalog[neigh]["altitude_base"]
             
 
-            hex.set_param("altitude_base", cu/total)
+            hex["altitude_base"]= cu/total
 
     smooth()
     smooth()
 
-    noise = perlin(1000,seed)
-    
-    max_dim = max(map.dimensions)
-    noise_coords = np.linspace(0,max_dim, 1000)
     print("perlin time")
+    noise = perlin(dimensions[0],octave=5, seed=seed)
+    noise += perlin(dimensions[0],octave=10, seed=seed)
+    noise += perlin(dimensions[0],octave=2, seed=seed) 
+
+    tnoise = perlin(dimensions[0],octave=5, seed=seed+1)
+    tnoise += perlin(dimensions[0],octave=10, seed=seed+1)
+    tnoise += perlin(dimensions[0],octave=2, seed=seed+1) 
+    
+    print("Applying perlin")
+    max_dim = max(map.dimensions)
+    
     total = len(map.hexCatalog.get_all_hids())
     count = 0
     for hid in map.hexCatalog.get_all_hids():
@@ -183,14 +196,19 @@ def generate_land(map:Clicker, seed=None, **kwargs):
                 continue
         pos = hex_to_screen(hid)
 
-        x_noise = 1000*int(pos.x()/max_dim)
-        y_noise = 1000*int(pos.y()/max_dim)
+        x_noise = dimensions[0]*int(pos.x()/dimensions[0])
+        y_noise = dimensions[0]*int(pos.y()/dimensions[0])
 
         value = noise[x_noise][y_noise]*0.1
 
         new_alt = hex.params["altitude_base"]*(1+value)
         new_alt = max(min(new_alt, 1), -10)
         hex.set_param("altitude_base", hex.params["altitude_base"]*(1+value))
+        hex.set_param("rainfall_base",0.0)
+        hex.set_param("is_land", 10*int( hex.params["altitude_base"]>0.0  ))
+        fract = 0.00 - hex.params["altitude_base"]/8 # will range from -0.5 to 0.00, use it to make high places colder
+        hex.set_param("temperature_base",tnoise[x_noise][y_noise]*0.3 + fract + sin(pi*pos.y()/dimensions[1]) )
+
         alt = hex.params["altitude_base"]
         if (alt)>0:
             hex.is_land=True

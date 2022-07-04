@@ -10,6 +10,8 @@ from MultiHex2.core import DRAWSIZE
 from PyQt5.QtGui import QColor
 from PyQt5.QtCore import QPointF
 
+from tqdm import tqdm
+
 from math import sqrt, pi
 
 RTHREE = sqrt(3)
@@ -32,14 +34,13 @@ def simulate_wind(map:Clicker, seed=None, **kwargs):
         rnd.seed(seed)
 
     dimx, dimy = map.dimensions
-    print("{} vs {}".format(dimx, dimy))
+    print("---> Simulating Wind")
 
     stepsize = RTHREE*DRAWSIZE
     corner = 0.5*stepsize
 
     horiz_points = np.arange(corner, dimy, stepsize)
-    print("Doing {} streamers".format(len(horiz_points)))
-    for latitude in horiz_points:
+    for latitude in tqdm(horiz_points):
         left = screen_to_hex(QPointF(DRAWSIZE, latitude))
         if not left in map.hexCatalog:
             raise KeyError("Something's wrong with the config, {} not in catalog".format(left))
@@ -65,7 +66,7 @@ def simulate_wind(map:Clicker, seed=None, **kwargs):
             
             hexobj = map.accessHex(route[i])
             hexobj.wind = hexobj.wind + wind
-            map.addHex(hexobj, route[i])
+            #map.addHex(hexobj, route[i])
 
         horiz_points = np.arange(corner, dimy*0.5, stepsize)
 
@@ -89,23 +90,22 @@ def simulate_clouds(map:Clicker, seed=None, **kwargs):
     if seed is not None:
         rnd.seed(seed)
 
-    dimx, dimy = map.dimensions
-    print("{} vs {}".format(dimx, dimy))
+    print("---> Simulating clouds")
 
+    dimx, dimy = map.dimensions
     stepsize = RTHREE*DRAWSIZE
     corner = 0.5*stepsize
     
     c2c = 1.7320*DRAWSIZE
 
     horiz_points = np.arange(corner, dimy, stepsize)
-    print("Doing {} streamers".format(len(horiz_points)))
-    for latitude in horiz_points:
+    for latitude in tqdm(horiz_points):
         if latitude<0.5*dimy:
             start = screen_to_hex(QPointF(0.1*DRAWSIZE, latitude))
         else:
             start = screen_to_hex(QPointF(dimx - 0.6*DRAWSIZE, latitude))
         
-        regen_rate = 1.0
+        regen_rate = 0.7
 
         while True:
             # get shadow
@@ -116,11 +116,11 @@ def simulate_clouds(map:Clicker, seed=None, **kwargs):
             mag = np.sqrt(np.sum(under.wind**2))
 
             factor = mag/c2c
-            reservoir = 9*factor
+            reservoir = 15*factor
 
-            if reservoir>=7*factor:
+            if reservoir>=8*factor:
                 shadow = start.in_range(2)
-            elif reservoir>4*factor:
+            elif reservoir>5*factor:
                 shadow = start.neighbors
             else:
                 shadow = [start]
@@ -170,13 +170,29 @@ def simulate_clouds(map:Clicker, seed=None, **kwargs):
             
             if not under.is_land:
                 reservoir+=regen_rate
-                if reservoir<20*factor:
+                if reservoir<10*factor:
                     reservoir+=regen_rate
 
             
             start = nextone
     
+    return
+    print("---> Smoothing")
+    total = 0
+    for hexID in tqdm(map.hexCatalog):
+        total += 1
+        if total%100 == 0:
+            print("doing something...")
+        rain_sum = map.hexCatalog.get(hexID).params["rainfall_base"]
+        n_count = 1
+        for neighbor in hexID.neighbors:
+            if neighbor in map.hexCatalog:
+                n_count += 1
+                rain_sum += map.hexCatalog.get(neighbor).params["rainfall_base"]
+        map.hexCatalog.get(hexID).set_param("rainfall_base", rain_sum/n_count)
             
+                
+        
 
 def erode_land(map:Clicker, seed=None, **kwargs):
     """
