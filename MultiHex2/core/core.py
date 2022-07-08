@@ -445,6 +445,18 @@ class River(Path):
     def tributaries(self)->'list[River]':
         return self._tributaries
 
+    def get_footprint(self)->'list[HexID]':
+        """
+        Gets a list of all the hexIDs underneath/beside this river
+        """
+        all_hids = []
+
+        for i_v in range(len(self._vertices)-1):
+            besides = list(get_IDs_from_step(self._vertices[i_v], self._vertices[i_v+1]))
+            all_hids += besides
+        
+        return list(set(all_hids))
+
     def check_contains(self, other:QPointF)->bool:
         """
         Returns whether or not the QPointF "other" is contained in the vertices of this river 
@@ -882,6 +894,9 @@ class HexCatalog(GeneralCatalog):
 
     def get_all_hids(self):
         return self._idCatalog.keys()
+
+    def get(self, id: int)->Hex:
+        return super().get(id)
 
     def remove(self, hid:HexID):
         """

@@ -97,7 +97,7 @@ def hex_to_screen(id:HexID)->QPointF:
     y_loc = DRAWSIZE*(M[2]*id.xid + M[3]*id.yid)
     return QPointF(x_loc, y_loc)
 
-def get_adjacent_vertices(_point:QPointF):
+def get_adjacent_vertices(_point:QPointF, flip=False)->'list[QPointF]':
     """
     Returns the vertices adjacent to a given vertex. **this assumes that the point given lies on a vertex of a Hex**
 
@@ -109,16 +109,30 @@ def get_adjacent_vertices(_point:QPointF):
 
     We don't know which this is. So, we look to the left of the vertex (step of DRAWSIZE), and up/down from it some small step. 
     We access the IDs for each of those perturbed points; if they're the same it's type 2, otherwise type 1
+
+        @flip - if this is true, this intentionally inverts the vertex type and returns points inside the three hexes neighboring this given vertex
     """
     point = _point
     x_step = -0.5*DRAWSIZE
     y_step = 0.1*DRAWSIZE
     type_1 = screen_to_hex(point + QPointF(x_step, y_step)) != screen_to_hex(point + QPointF(x_step, -y_step))
 
-    if type_1:
+
+
+    if type_1!=flip:
         return point+QPointF(-DRAWSIZE, 0.0),point+QPointF(0.5*DRAWSIZE, 0.5*RTHREE*DRAWSIZE), point+QPointF(0.5*DRAWSIZE, -0.5*RTHREE*DRAWSIZE) 
     else:
         return point+QPointF(DRAWSIZE, 0.0),point+QPointF(-0.5*DRAWSIZE, 0.5*RTHREE*DRAWSIZE), point+QPointF(-0.5*DRAWSIZE, -0.5*RTHREE*DRAWSIZE) 
+
+def get_adjacent_hexIDs(_point:QPointF)->'list[HexID]':
+    """
+    Here we return the IDs of the Hexes around the given point. This assumes the given point is on a hex! 
+    """
+    these_points = get_adjacent_vertices(_point, True)
+
+    return [screen_to_hex(point) for point in these_points]
+
+
 
 def get_IDs_from_step(_start:QPointF, _end:QPointF)->'tuple[HexID]':
     """
