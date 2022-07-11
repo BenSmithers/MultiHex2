@@ -39,9 +39,5 @@
 <polygon fill="#098C44" points="201.533,103.713 183.696,103.665 198.919,69.433 "/>
 <polygon fill="#087F3B" points="201.533,103.713 203.674,137.993 217.787,101.032 "/>
 <polygon fill="#0B843C" points="201.533,103.713 183.696,103.665 203.674,137.993 "/>
-<g id="layer3" inkscape:label="cursor" sodipodi:insensitive="true" inkscape:groupmode="layer">
-	
-		<path id="path841" inkscape:connector-curvature="0" sodipodi:nodetypes="cccccccc" fill="#FFFFFF" stroke="#000000" stroke-width="10" stroke-linejoin="round" d="
-		M359.514,240.715l-74.352,21.016l25.75,36.992l-23.518,15.914l-24.768-37.656l-47.15,61.211l-48.836-227.321L359.514,240.715z"/>
-</g>
+<path id="path841"   fill="#FFFFFF" stroke="#000000" stroke-width="10" stroke-linejoin="round" d="M359.514,240.715l-74.352,21.016l25.75,36.992l-23.518,15.914l-24.768-37.656l-47.15,61.211l-48.836-227.321L359.514,240.715z"/>
 </svg>

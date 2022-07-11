@@ -524,6 +524,7 @@ class Clicker(QGraphicsScene, ActionManager):
 
         self._brush.setStyle(0)
         sid0= self.addPath(path, self._pen, self._brush)
+        sid0.setZValue(7)
         if len(river_obj.tributaries)!=0:
             sid1=self.draw_river_object(river_obj.tributaries[0])
             sid2=self.draw_river_object(river_obj.tributaries[1])

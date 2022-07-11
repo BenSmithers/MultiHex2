@@ -234,8 +234,8 @@ class RiverSelector(PathSelector):
 
     @classmethod
     def buttonIcon(cls):
-        assert(os.path.exists(os.path.join(art_dir, "river_icon.svg")))
-        return QtGui.QPixmap(os.path.join(art_dir, "river_icon.svg")).scaled(48,48)
+        assert(os.path.exists(os.path.join(art_dir, "select_river.svg")))
+        return QtGui.QPixmap(os.path.join(art_dir, "select_river.svg")).scaled(48,48)
     
     @classmethod
     def tool_layer(cls):

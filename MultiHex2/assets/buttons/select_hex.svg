@@ -5,6 +5,6 @@
 	 width="400px" height="400px" viewBox="0 0 400 400" enable-background="new 0 0 400 400" xml:space="preserve">
 <polygon fill="#FFFFFF" stroke="#000000" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" points="
 	89.842,278.476 22.019,161.001 89.842,43.526 225.491,43.526 293.314,161.001 225.49,278.476 "/>
-<path id="path841" inkscape:connector-curvature="0" sodipodi:nodetypes="cccccccc" fill="#FFFFFF" stroke="#000000" stroke-width="8" stroke-linejoin="round" d="
+<path id="path841"  fill="#FFFFFF" stroke="#000000" stroke-width="8" stroke-linejoin="round" d="
 	M370.873,269.931l-74.352,21.016l25.748,36.992l-23.516,15.914l-24.77-37.656l-47.15,61.211L178,140.086L370.873,269.931z"/>
 </svg>

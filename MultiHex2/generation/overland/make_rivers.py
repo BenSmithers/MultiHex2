@@ -199,7 +199,7 @@ def _pour_river(map, where=None):
 
 def pour_rivers(map:Clicker, seed=None, **kwargs):
 
-    n_rivers = 20
+    n_rivers = 50
     if seed is not None:
         rnd.seed(seed)
 
