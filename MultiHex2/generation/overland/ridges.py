@@ -39,8 +39,8 @@ def generate_ridges(map:Clicker, seed=None, **kwargs):
     def make_continent():
         print("making continent")
         ids_to_propagate = []
-        x_center = 0.95*rnd.random()*dimensions[0] + 0.05*dimensions[0]
-        y_cos  = 1.9*rnd.random() - 1.05
+        x_center = 0.92*rnd.random()*dimensions[0] + 0.05*dimensions[0]
+        y_cos  = 1.9*rnd.random() - 0.85
         y_center = acos( y_cos )*dimensions[1]/( pi )
         for j in range(n_peaks):
             while True:
