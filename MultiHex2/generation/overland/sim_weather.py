@@ -10,8 +10,6 @@ from MultiHex2.core import DRAWSIZE
 from PyQt5.QtGui import QColor
 from PyQt5.QtCore import QPointF
 
-from tqdm import tqdm
-
 from math import sqrt, pi
 
 RTHREE = sqrt(3)
@@ -40,7 +38,7 @@ def simulate_wind(map:Clicker, seed=None, **kwargs):
     corner = 0.5*stepsize
 
     horiz_points = np.arange(corner, dimy, stepsize)
-    for latitude in tqdm(horiz_points):
+    for latitude in horiz_points:
         left = screen_to_hex(QPointF(DRAWSIZE, latitude))
         if not left in map.hexCatalog:
             raise KeyError("Something's wrong with the config, {} not in catalog".format(left))
@@ -99,7 +97,7 @@ def simulate_clouds(map:Clicker, seed=None, **kwargs):
     c2c = 1.7320*DRAWSIZE
 
     horiz_points = np.arange(corner, dimy, stepsize)
-    for latitude in tqdm(horiz_points):
+    for latitude in horiz_points:
         if latitude<0.5*dimy:
             start = screen_to_hex(QPointF(0.1*DRAWSIZE, latitude))
         else:

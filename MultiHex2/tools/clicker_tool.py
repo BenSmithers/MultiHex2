@@ -25,7 +25,7 @@ from time import time
 from typing import Union
 
 
-DEBUG = True
+DEBUG = False
 
 class Clicker(QGraphicsScene, ActionManager):
     """
@@ -520,7 +520,7 @@ class Clicker(QGraphicsScene, ActionManager):
         self._pen.setStyle(1)
         
         self._pen.setWidth( river_obj.width ) #TODO make bigger!
-        self._pen.setColor(QtGui.QColor(66, 135, 245))
+        self._pen.setColor(QtGui.QColor(122, 177, 204))
 
         self._brush.setStyle(0)
         sid0= self.addPath(path, self._pen, self._brush)

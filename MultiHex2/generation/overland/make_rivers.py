@@ -63,7 +63,7 @@ def _pour_river(map, where=None):
         map.hexCatalog.get(id).set_param("altitude_base", net_alt/3.0)
         map.hexCatalog.get(id).set_param("is_land", 0.0)
         map.hexCatalog.get(id).is_land = False
-        map.hexCatalog.get(id).set_fill(QtGui.QColor( 66, 135, 245 ))
+        map.hexCatalog.get(id).set_fill(QtGui.QColor( 122, 177, 204 ))
         map.drawHex(id)
 
     if where is not None:
@@ -199,7 +199,7 @@ def _pour_river(map, where=None):
 
 def pour_rivers(map:Clicker, seed=None, **kwargs):
 
-    n_rivers = 5
+    n_rivers = 20
     if seed is not None:
         rnd.seed(seed)
 

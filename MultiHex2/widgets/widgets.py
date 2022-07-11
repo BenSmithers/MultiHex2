@@ -46,9 +46,9 @@ class RiverWidget(PathWidget):
     def __init__(self, parent, tool, tileset, text_source):
         super().__init__(parent, tool, tileset, text_source)
 
-        self.ui.river_add_button = QtWidgets.QPushButton(self)
-        self.ui.river_add_button.setObjectName("river_add_button")
-        self.ui.river_add_button.setText("Create River!")
+        #self.ui.river_add_button = QtWidgets.QPushButton(self)
+        #self.ui.river_add_button.setObjectName("river_add_button")
+        #self.ui.river_add_button.setText("Create River!")
         #self.ui.formLayout.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.ui.river_add_button)
         #self.ui.river_add_button.clicked.connect(self.new_river_auto)
 
