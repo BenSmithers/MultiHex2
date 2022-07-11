@@ -1,5 +1,5 @@
 from MultiHex2.tools.basic_tool import Basic_Tool, ToolLayer
-from MultiHex2.tools.widgets import RegionWidget
+from MultiHex2.widgets.widgets import RegionWidget
 from MultiHex2.core import Region, screen_to_hex, Hex, HexID
 from MultiHex2.core.core import County
 from MultiHex2.actions.baseactions import NullAction

@@ -1,10 +1,11 @@
-from .baseactions import MapAction, MetaAction, NullAction
+from MultiHex2.actions.baseactions import MapAction, MetaAction, NullAction
 from MultiHex2.core.core import Path, Road
 from MultiHex2.core.coordinates import HexID
 from MultiHex2.tools.basic_tool import ToolLayer
 
 from PyQt5.QtWidgets import QGraphicsScene
 
+from copy import deepcopy
 
 
 class Add_Delete_Path(MapAction):
@@ -30,7 +31,7 @@ class Add_Delete_Path(MapAction):
 
         if self.pid in map.get_path_cat(self._layer):
             old_road = map.get_path_cat(self._layer)[self.pid]
-            map.remove_road(self.pid,self._layer)
+            map.remove_path(self.pid,self._layer)
         else:
             old_road = None
 
@@ -80,7 +81,7 @@ class Pop_From_Path(MapAction):
 
         if len(this_road)==1:
             # delete road action!
-            map.remove_road(self.pid,self._layer)
+            map.remove_path(self.pid,self._layer)
             map.draw_road(self.pid,self._layer)
             return self._createaction(pid = self.pid, road = this_road)
         else:
@@ -169,3 +170,43 @@ class Add_To_River_Start(Add_To_Path):
         self._layer = ToolLayer.terrain
         self._retaction = Pop_From_River_Start
         self._end = False
+
+class MergeRivers(MapAction):
+    def __init__(self, recurring=None, **kwargs):
+        """
+        Merge river two into river one. River one will be kept and river two will become one of its tributaries 
+        """
+        super().__init__(recurring, **kwargs)
+
+        self.needed = ["first_pid", "second_pid"]
+        self.verify(kwargs)
+
+        self.first_pid = kwargs["first_pid"]
+        self.second_pid = kwargs["second_pid"]
+
+    def __call__(self, map: QGraphicsScene) -> 'MapAction':
+        first_river = deepcopy(map.get_path(self.first_pid, ToolLayer.terrain))
+        second_river = deepcopy(map.get_path(self.second_pid, ToolLayer.terrain))
+
+        map.remove_path(self.first_pid, ToolLayer.terrain)
+        map.remove_path(self.second_pid, ToolLayer.terrain)
+
+        first_backup = deepcopy(first_river)
+        first_river.merge_with(second_river)
+
+        map.register_path(first_river, ToolLayer.terrain)
+
+        #merge_river_into_river
+        
+        map.get_path_cat(ToolLayer.terrain).merge_river_into_river(self.first_pid, second_river)
+
+        """
+            Actually, should be
+            1. make copy of rivers
+            2. delete both rivers from catalog
+            3. take second copy of first river, merge seond river into it
+            4. add merged river to catalog 
+            5. Create reverse action which is to delete merge one and add in backups 
+        """
+
+        return NullAction

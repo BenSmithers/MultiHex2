@@ -12,6 +12,8 @@ import numpy as np
 from numpy.random import randint
 from collections import deque
 
+from copy import deepcopy
+
 RTHREE = sqrt(3)
 
 
@@ -45,7 +47,10 @@ class Hex(QPolygonF):
         self.wind = np.zeros(2)
 
     def __getitem__(self, key):
-        return self._params[key]
+        if key in self._params:
+            return self._params[key]
+        else:
+            return super().__getitem__(key)
 
     def __setitem__(self,key, value):
         self._params[key] = value
@@ -143,6 +148,7 @@ class Hex(QPolygonF):
             "green":self._fill.green(),
             "blue":self._fill.blue(),
             "params":self.params,
+            "is_land":self.is_land,
             "flat":self._flat,
             "x":self.x,
             "Y":self.y,
@@ -160,6 +166,7 @@ class Hex(QPolygonF):
         new_hx._params = obj["params"]
         new_hx.geography=obj["geo"]
         new_hx.wind = np.array(obj["wind"])
+        new_hx.is_land=obj["is_land"]
         new_hx._flat = obj["flat"]
         return new_hx
 
@@ -296,7 +303,7 @@ class Path:
         self._viable_dtypes = (QPointF, HexID)
         self._dtype = int
         self._step = None #QPointF or integer
-        self._name = "New Path"
+        self.name = "New Path"
 
         for entry in positions:
             if self._dtype == int:
@@ -319,7 +326,7 @@ class Path:
             else:
                 if abs(this_step -self._step)>1e-6:
                     raise ValueError("Inconsistent step sizes! {} vs {}".format(self._step, this_step)) 
-
+    
     def get_diff(self, one, other):
         if self._dtype==HexID:
             return one-other
@@ -426,7 +433,7 @@ class River(Path):
         """
         Calculates a "width" for the river depending on the number of tributaries it has (And how many tributaries those tributaries have)
         """
-        base_width = 1.0
+        base_width = 3.0
         TRIB_SCALE = 0.5
 
         if len(self.tributaries)!=0:
@@ -482,12 +489,14 @@ class River(Path):
         if this_end in other.vertices:
             intersect_index = other.vertices.index(this_end)
 
-            trib1_verts = other.vertices[intersect_index:]
-            new_verts = other.vertices[:intersect_index+1]
+            intermediate = list(other._vertices)
+
+            trib1_verts = intermediate[intersect_index:]
+            new_verts = intermediate[:(intersect_index+1)]
             trib1 = River(*trib1_verts)
             trib2 = River(*self.vertices)
 
-            self._vertices = new_verts
+            self._vertices = deque(new_verts)
             self._tributaries = [trib1, trib2]
 
             return True
@@ -512,14 +521,17 @@ class River(Path):
         other_end = other.get_end()
 
         if other_end in self.vertices:
-            intersect_index = self.vertices.index(other_end)
+            intersect_index =self._vertices.index(other_end)
 
-            upper_half = self.vertices[intersect_index:]
-            lower_half = self.vertices[:intersect_index+1]
+            intermediate = list(self._vertices)
 
-            self._vertices = lower_half
+
+            lower_half = intermediate[intersect_index:]
+            upper_half = intermediate[:(intersect_index+1)]
+
+            self._vertices = deque(lower_half)
             trib1 = River(*upper_half)
-            trib1._tributaries=self._tributaries
+            trib1._tributaries=deepcopy(self._tributaries)
 
             trib2 = other
             self._tributaries = [trib1, trib2]
@@ -690,16 +702,43 @@ class PathCatalog(GeneralCatalog):
 class RiverCatalog(PathCatalog):
     """
     Specific case of the path catalog; we need special rules here for associations/de-associations 
-
-    ## TODO the _assoc function needs to recognize tributaries... _somehow_ 
     """
 
-    def _assoc(self, path_id: int, *what):
+    def _de_assoc(self, path_id: int, river:River):
+        for i_v in range(len(river)-1):
+            _start = river.vertices[i_v]
+            _end = river.vertices[i_v+1]
+            hid1, hid2 = get_IDs_from_step(_start, _end)
+            super()._de_assoc(path_id, hid1)
+            super()._de_assoc(path_id, hid2)
+
+        tribs = river.tributaries
+        for trib in tribs:
+            self._de_assoc(path_id, trib)
+
+    def _assoc(self,path_id: int, river:River):
         """
-        Handy utility for associating multiple HexIDs with this Path ID
+        Sepcific associator since rivers can have tributaries. These are other rivers that share a singular path ID number
         """
-        for which in what:
-            PathCatalog._assoc(self, path_id, which)
+        for i_v in range(len(river)-1):
+            _start = river.vertices[i_v]
+            _end = river.vertices[i_v+1]
+            hid1, hid2 = get_IDs_from_step(_start, _end)
+            super()._assoc(path_id, hid1)
+            super()._assoc(path_id, hid2)
+
+        tribs = river.tributaries
+        for trib in tribs:
+            self._assoc(path_id, trib)
+
+    def remove(self, pid):
+        """
+        We load the road and check all the entries 
+        """
+        this_path = self.get(pid)
+        self._de_assoc(pid, this_path)
+
+        return GeneralCatalog.remove(self, pid)
 
     def register(self, river: River) -> int:
         """
@@ -710,11 +749,8 @@ class RiverCatalog(PathCatalog):
         if len(river.vertices)==1:
             return pid
 
-        for i_v in range(len(river)-1):
-            _start = river.vertices[i_v]
-            _end = river.vertices[i_v+1]
-            hid1, hid2 = get_IDs_from_step(_start, _end)
-            self._assoc(pid, hid1, hid2)
+        self._assoc(pid, river)
+        
         return pid
 
     def add_to(self, pid, what, end:bool):
@@ -731,9 +767,11 @@ class RiverCatalog(PathCatalog):
         hid1, hid2 = get_IDs_from_step(start_vertex, what)
         self._assoc(pid, hid1, hid2)
 
-
     def get(self, id: int) -> River:
         return super().get(id)
+
+    def update_sid(self, id: int, *sid):
+        self._interface[id] = sid
 
 class RegionCatalog(GeneralCatalog):
     """

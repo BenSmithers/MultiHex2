@@ -1,5 +1,4 @@
-from .baseactions import MapAction, MetaAction
-from MultiHex2.core import Region
+from MultiHex2.actions.baseactions import MapAction, MetaAction
 
 from PyQt5.QtWidgets import QGraphicsScene
 

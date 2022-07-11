@@ -10,7 +10,7 @@ from MultiHex2.actions.pathactions import Add_Delete_Road, Add_To_Road_End, Add_
 from MultiHex2.actions.pathactions import Add_Delete_River, Add_To_River_End, Add_To_River_Start
 from MultiHex2.core.coordinates import screen_to_hex, hex_to_screen, HexID, get_adjacent_vertices
 from MultiHex2.core.core import Path, Road, River, get_nearest_vertex
-from MultiHex2.tools.widgets import PathWidget
+from MultiHex2.widgets.widgets import PathWidget, RiverWidget
 
 from PyQt5 import QtGui
 from PyQt5.QtWidgets import QGraphicsSceneEvent
@@ -142,6 +142,9 @@ class PathSelector(Basic_Tool):
             # just... select the first one?
             if len(pids)!=0:
                 self.select_path(pids[0])
+            else:
+                self.select_path(-1)
+            
         if self.state==5: #new road
             
             loc = event.scenePos()
@@ -184,9 +187,16 @@ class PathSelector(Basic_Tool):
         return self._selected_path
     
     def select_path(self, road_id:int)->None:
-        self._selected_path = road_id
 
-        self.widget_instance.ui.name_edit.setText("Road {}".format(road_id))
+        self._selected_path = road_id
+        
+        if self.get_selected_path is None:
+            self.widget_instance.ui.name_edit.setText("")
+        else:
+            if self.get_selected_path.name=="":
+                self.widget_instance.ui.name_edit.setText("Path {}".format(self._selected_path))
+            else:
+                self.widget_instance.ui.name_edit.setText(self.get_selected_path.name)
 
 
     @classmethod
@@ -209,6 +219,11 @@ class RiverSelector(PathSelector):
         self._pathtype = River
         self._actiontypes = [Add_Delete_River, Add_To_River_End, Add_To_River_Start]
 
+    def double_click_event(self, event):
+        return super().double_click_event(event)
+        loc = event.scenePos()
+        _pour_river(self.parent, loc)
+
     @property
     def get_selected_path(self) -> River:
         return super().get_selected_path
@@ -225,6 +240,10 @@ class RiverSelector(PathSelector):
     @classmethod
     def tool_layer(cls):
         return ToolLayer.terrain
+
+    @classmethod
+    def widget(self):
+        return RiverWidget
 
 class RoadSelector(PathSelector):
     def __init__(self, parent=None):

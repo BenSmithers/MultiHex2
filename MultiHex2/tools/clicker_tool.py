@@ -8,7 +8,7 @@ from MultiHex2.core.core import DRAWSIZE, GeneralCatalog, Path, PathCatalog, Riv
 from MultiHex2.core import HexCatalog, RegionCatalog, EntityCatalog
 from MultiHex2.core import Hex, HexID, Region, Entity
 from MultiHex2.core import screen_to_hex
-from MultiHex2.actions import ActionManager
+from MultiHex2.actions.baseactions import ActionManager
 from MultiHex2.tools.basic_tool import Basic_Tool, ToolLayer
 from MultiHex2.tools.regiontools import RegionAdd
 from MultiHex2.core.map_entities import Settlement, IconLib
@@ -497,12 +497,40 @@ class Clicker(QGraphicsScene, ActionManager):
         using = self.get_path_cat(layer)
         rid = using.register(road)
         self.draw_road(rid, layer)
+        return rid
 
-    def remove_road(self, rid:int, layer:ToolLayer):
+    def remove_path(self, rid:int, layer:ToolLayer):
         using = self.get_path_cat(layer)
         sid = using.get_sid(rid)
-        self.removeItem(sid)
+        if isinstance(sid, tuple):
+            for item in sid:
+                self.removeItem(item)
+        else:
+            self.removeItem(sid)
+            
         using.remove(rid)
+
+    def draw_river_object(self, river_obj:River):
+        """
+        Draws a river object, and its tributaries 
+        """
+        verts = river_obj.vertices
+        path = QtGui.QPainterPath()
+        path.addPolygon(QtGui.QPolygonF(verts))
+        self._pen.setStyle(1)
+        
+        self._pen.setWidth( river_obj.width ) #TODO make bigger!
+        self._pen.setColor(QtGui.QColor(66, 135, 245))
+
+        self._brush.setStyle(0)
+        sid0= self.addPath(path, self._pen, self._brush)
+        if len(river_obj.tributaries)!=0:
+            sid1=self.draw_river_object(river_obj.tributaries[0])
+            sid2=self.draw_river_object(river_obj.tributaries[1])
+
+            return [sid0] + sid1 + sid2
+        else:
+            return [sid0, ]
 
     def draw_road(self, rid, layer:ToolLayer):
 
@@ -515,7 +543,11 @@ class Clicker(QGraphicsScene, ActionManager):
 
         current_sid = using.get_sid(rid)
         if (current_sid is not None) and current_sid!=-1:
-            self.removeItem(current_sid)
+            if isinstance(current_sid, tuple):
+                for si in current_sid:
+                    self.removeItem(si)
+            else:
+                self.removeItem(current_sid)
         self.update()
 
         this_path = self.get_path(rid, layer)
@@ -524,26 +556,20 @@ class Clicker(QGraphicsScene, ActionManager):
         else:
             if layer==ToolLayer.civilization:
                 verts = [hex_to_screen(vert) for vert in this_path.vertices]
-            else:
-                verts = this_path.vertices
-            path = QtGui.QPainterPath()
-            path.addPolygon(QtGui.QPolygonF(verts))
-            self._pen.setStyle(1)
-            
 
-            if layer==ToolLayer.civilization:
+                path = QtGui.QPainterPath()
+                path.addPolygon(QtGui.QPolygonF(verts))
+                self._pen.setStyle(1)
                 self._pen.setWidth(3)
                 self._pen.setColor(QtGui.QColor(245,245,245))
-            elif layer==ToolLayer.terrain:
-                self._pen.setWidth(3) #TODO make bigger!
-                self._pen.setColor(QtGui.QColor(66, 135, 245))
+
+                self._brush.setStyle(0)
+                sid = self.addPath(path, self._pen, self._brush)
+
+                using.update_sid(rid, sid)
             else:
-                raise NotImplementedError("What")
-
-            self._brush.setStyle(0)
-            sid = self.addPath(path, self._pen, self._brush)
-
-            using.update_sid(rid, sid)
+                sids = tuple(self.draw_river_object(this_path))
+                using.update_sid(rid, *sids)
 
 
     #################################### TOOL ACCESS METHODS ################################3

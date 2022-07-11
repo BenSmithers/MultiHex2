@@ -1,6 +1,6 @@
 from MultiHex2.tools.basic_tool import Basic_Tool
 from MultiHex2.actions import Add_Remove_Hex
-from MultiHex2.tools.widgets import HexBrushWidget, HexSelectWidget
+from MultiHex2.widgets.widgets import HexBrushWidget, HexSelectWidget
 from MultiHex2.core import hex_to_screen, screen_to_hex, Hex
 import os 
 
@@ -35,6 +35,7 @@ class HexSelect(Basic_Tool):
             full_str = ""
             for key in this_hex.params.keys():
                 full_str += "{}: {}\n".format(key, this_hex.params[key])
+            full_str += "{}: {}\n".format("Is land: ", this_hex.is_land)
                 
             self._widget_instance.ui.textBrowser.setText(full_str)                
 

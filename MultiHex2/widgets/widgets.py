@@ -8,6 +8,7 @@ When a widget is instantiated, only that widet's tool can be selected.
 import os
 import json
 
+
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import QColorDialog
 
@@ -17,25 +18,8 @@ from MultiHex2.tools.widgetgui.regionui import Ui_Form as RegionToolWidgetGui
 from MultiHex2.tools.widgetgui.pathui import Ui_Form as PathToolWidgetGui
 from MultiHex2.guis.hex_select_gui import hex_select_gui
 from MultiHex2.actions.regionactions import MetaRegionUpdate
-# from MultiHex2.tools.clicker_tool import Clicker
-from MultiHex2.generation.name_gen import create_name
+from MultiHex2.widgets.basic_widget import ToolWidget
 
-
-class ToolWidget(QtWidgets.QWidget):
-    def __init__(self, parent, tool, tileset, text_source):
-        QtWidgets.QWidget.__init__(self, parent)
-        self._tool = tool
-
-        self._tool.link_to_widget(self)
-        self.tileset = tileset
-        self.text_source = text_source
-        self.setMaximumWidth(250)
-        self.setMinimumWidth(250)
-        self.new_color = QtGui.QColor(0,0,0)
-    
-    @property
-    def tool(self):
-        return self._tool
 
 class PathWidget(ToolWidget):
     def __init__(self, parent, tool, tileset, text_source):
@@ -47,6 +31,7 @@ class PathWidget(ToolWidget):
         self.ui.add_to_start.clicked.connect(self.add_to_start)
         self.ui.name_shuffle.clicked.connect(self.shuffle_name)
 
+
     def shuffle_name(self):
         pass
 
@@ -56,6 +41,24 @@ class PathWidget(ToolWidget):
 
     def add_to_end(self):
         self.tool.set_state(4)
+
+class RiverWidget(PathWidget):
+    def __init__(self, parent, tool, tileset, text_source):
+        super().__init__(parent, tool, tileset, text_source)
+
+        self.ui.river_add_button = QtWidgets.QPushButton(self)
+        self.ui.river_add_button.setObjectName("river_add_button")
+        self.ui.river_add_button.setText("Create River!")
+        #self.ui.formLayout.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.ui.river_add_button)
+        #self.ui.river_add_button.clicked.connect(self.new_river_auto)
+
+    def new_river_auto(self):
+        new_code = 1
+
+        while new_code!=0:
+            new_code = 0 # _pour_river(self.tool.parent)
+            print("Ended with code {}".format(new_code))
+
 
 class RegionWidget(ToolWidget):
     def __init__(self, parent, tool,tileset, text_source):
