@@ -211,3 +211,44 @@ class AddSettlement(EntitySelector):
     @classmethod
     def altText(cls):
         return "Create new settlement"
+
+class MobileSelector(Basic_Tool):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.auto_state = 1
+        self._selected = -1 # none 
+
+    def primary_mouse_released(self, event):
+        """
+            If try selecting a mobile here
+        """
+        return NullAction()
+
+    def secondary_mouse_released(self, event):
+        """
+            If nothing selected, do nothing. 
+            If something is selected, queue a route for it     
+        """
+        if self._selected == -1:
+            return NullAction()
+        else:
+            # route! 
+            pass 
+
+        return NullAction()
+
+    @classmethod
+    def tool_layer(cls):
+        return ToolLayer.mapuse
+    @classmethod
+    def altText(cls):
+        return "Mobile Selector Tool"
+
+class NewMobile(MobileSelector):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.auto_state = 2
+
+    

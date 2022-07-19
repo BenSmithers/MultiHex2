@@ -917,6 +917,19 @@ class EntityCatalog:
     def gethID(self, eID:int)->HexID:
         if eID in self._eIDtoHex:
             return self._eIDtoHex[eID]
+    def change_hID(self, eID:int, new_hid:HexID):
+        old_hid = self.gethID(eID)
+
+        self._hIDtoEnt[old_hid].remove(eID)
+        if len(self._hIDtoEnt[old_hid])==0:
+            del self._hIDtoEnt[old_hid]
+
+        if new_hid in self._hIDtoEnt:
+            self._hIDtoEnt[new_hid].append(eID)
+        else:
+            self._hIDtoEnt[new_hid] = [eID]
+
+
 
 class HexCatalog(GeneralCatalog):
     """
