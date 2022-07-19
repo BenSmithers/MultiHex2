@@ -8,7 +8,7 @@ from MultiHex2.core.core import DRAWSIZE, GeneralCatalog, Path, PathCatalog, Riv
 from MultiHex2.core import HexCatalog, RegionCatalog, EntityCatalog
 from MultiHex2.core import Hex, HexID, Region, Entity
 from MultiHex2.core import screen_to_hex
-from MultiHex2.actions.baseactions import ActionManager
+from MultiHex2.actions.actionmanager import ActionManager
 from MultiHex2.tools.basic_tool import Basic_Tool, ToolLayer
 from MultiHex2.tools.regiontools import RegionAdd
 from MultiHex2.core.map_entities import Settlement, IconLib
@@ -396,7 +396,6 @@ class Clicker(QGraphicsScene, ActionManager):
         return([])
 
     ########################### ENTITY METHODS #################################
-
     def nextFreeEID(self)->int:
         return self._entityCatalog.next_free_eid()
     def registerEntity(self, entity, hID:HexID):
@@ -412,6 +411,12 @@ class Clicker(QGraphicsScene, ActionManager):
         this_sid = self._entityCatalog.getSID(here)
         self.removeItem(this_sid)
         self._entityCatalog.remove(eID)
+
+    def moveEntity(self, eID:int, new_hid:HexID):
+        self._entityCatalog.change_hID(eID, new_hid)
+
+    def get_eid_loc(self, eID)->HexID:
+        return self._entityCatalog.gethID(eID)
 
     def accessEid(self,eID)->Entity:
         return self._entityCatalog.access_entity(eID)
@@ -456,7 +461,8 @@ class Clicker(QGraphicsScene, ActionManager):
         sid.setZValue(20)
         self._entityCatalog.update_sid(coords, sid)
 
-    
+    def draw_route(self, eid:int):
+        pass    
 
     @property
     def hexCatalog(self):
