@@ -87,6 +87,12 @@ class Time:
         while self._hour > hours_in_day:
             self._hour -= hours_in_day
             self._day += 1
+        while self._day > days_in_month:
+            self._day -= days_in_month
+            self._month += 1
+        while self._month > months_in_year:
+            self._month -= months_in_year
+            self._year += 1
 
         self.morning = ( hour < hours_in_day/2  )
 
