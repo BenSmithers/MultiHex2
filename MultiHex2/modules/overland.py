@@ -8,6 +8,7 @@ from MultiHex2.tools.hextools import HexBrush,HexSelect
 from MultiHex2.tools.regiontools import CivAdd, RegionAdd
 from MultiHex2.tools.route_test_tool import RouteTester
 from MultiHex2.tools.entity_tools import EntitySelector, AddEntityTool, AddSettlement
+from MultiHex2.tools.entity_tools import MobileSelector, NewMobile
 from MultiHex2.tools.path_tools import NewRoadTool, RoadSelector, NewRiverTool, RiverSelector
 from MultiHex2.tools.map_use_tool import MapUse
 
@@ -32,6 +33,8 @@ class Overland(Module):
             "road_add":NewRoadTool,
             "settlement_add":AddSettlement,
             "county_add":CivAdd,
+            "mobile_select":MobileSelector,
+            "new_mobile":NewMobile,
             "map_use":MapUse
         }
 

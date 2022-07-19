@@ -244,11 +244,18 @@ class MobileSelector(Basic_Tool):
     @classmethod
     def altText(cls):
         return "Mobile Selector Tool"
+    @classmethod
+    def buttonIcon(cls):
+        assert(os.path.exists(os.path.join(art_dir, "select_mobile.svg")))
+        return QtGui.QPixmap(os.path.join(art_dir, "select_mobile.svg")).scaled(48,48)
 
 class NewMobile(MobileSelector):
     def __init__(self, parent=None):
         super().__init__(parent)
 
         self.auto_state = 2
-
     
+    @classmethod
+    def buttonIcon(cls):
+        assert(os.path.exists(os.path.join(art_dir, "new_mobile.svg")))
+        return QtGui.QPixmap(os.path.join(art_dir, "new_mobile.svg")).scaled(48,48)
