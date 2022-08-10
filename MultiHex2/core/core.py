@@ -1,6 +1,6 @@
 from PyQt5.QtCore import QPointF
 from PyQt5.QtGui import QPolygonF, QColor
-from math import sqrt,sin,cos
+from math import sqrt,sin,cos, pi
 from PyQt5.QtWidgets import QGraphicsItem
 
 from MultiHex2.core.map_entities import Government
@@ -12,11 +12,40 @@ import numpy as np
 from numpy.random import randint
 from collections import deque
 
+from enum import Enum
+
 from copy import deepcopy
 
 RTHREE = sqrt(3)
 
+def get_arrowhead(center:QPointF, _angle)->'list[QPointF]':
+    """
+    Takes a set of points that can trace an arrow atthe origin
+    rotate it to point at the given angle, and shift it to the center point 
 
+    the center point is at the middle-bottom of the arrow
+    """
+    ARROW = np.array([
+        (0,0),
+        (1,0),
+        (1,3),
+        (1.25, 3),
+        (0.5, 5),
+        (-1.25, 3),
+        (-1, 3),
+        (-1, 0)
+    ])
+    angle = _angle - pi/2
+    rot = np.array([[cos(angle), sin(angle)],[-sin(angle), cos(angle)]])
+    
+    new_arrow = np.matmul(ARROW, rot) + np.array(center.x(), center.y())
+    return [QPointF(entry[0], entry[1]) for entry in new_arrow]
+
+class ToolLayer(Enum):
+    null = 0
+    terrain = 1
+    civilization = 2
+    mapuse = 4
 
 class Hex(QPolygonF):
     def __init__(self, center:QPointF):
@@ -595,8 +624,8 @@ class GeneralCatalog:
         else:
             return
 
-    def update_obj(self, id:int, obj):
-        if id not in self._idCatalog:
+    def update_obj(self, id:int, obj, suppress_warning=False):
+        if (id not in self._idCatalog) and (not suppress_warning):
             raise KeyError("Object not here!")
         
         self._idCatalog[id] = obj

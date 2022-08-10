@@ -8,12 +8,12 @@ from PyQt5.QtCore import Qt
 from MultiHex2.guis.main_gui import main_gui
 from MultiHex2.tools import Clicker
 from MultiHex2.clock import Time
-from MultiHex2.tools import Basic_Tool
 from MultiHex2.generation.overland import fullsim
 from MultiHex2.guis.savewarn import SaveWarnDialogGui
 from MultiHex2.main_menu import MainMenuDialog
 from MultiHex2.modules import ALL_MODULES
 from MultiHex2.generation.map_gen_config import MapGenConfigDialog
+from MultiHex2.tools.basic_tool import Basic_Tool
 
 import os
 import sys
@@ -24,7 +24,7 @@ import json
 if sys.platform=="linux":
     SAVEDIR = os.path.join(os.environ["HOME"], ".local", "MultiHex")
 elif sys.platform=="darwin":
-    raise NotImplementedError()
+    raise NotImplementedError("You could probably swap error out for the linux SAVEDIR setting... I think the filesystems is similar?")
 elif sys.platform=="win32":
     SAVEDIR = os.path.join(os.environ["AppData"], "MultiHex")
 else:
@@ -76,6 +76,7 @@ class main_window(QMainWindow):
         self._loaded_module = False
         self._will_generate = False
         self.module = self.load_module(self.config["module"])
+        self.select_tool("basic")
         self.open_menu()
 
         self.tileset = ""
@@ -86,6 +87,8 @@ class main_window(QMainWindow):
             while not success:
                 self.open_menu()
         
+
+
     def update_clock_gui(self,time:Time):
         self.ui.clock.set_time(time)
 
@@ -110,6 +113,15 @@ class main_window(QMainWindow):
             if self.config["module"]!=self.module.name:
                 self.load_module(self.config["module"])
 
+    def clear_tools(self):
+        """
+        clears otu the tools, used when we load new modules in 
+        """
+        self.scene._alltools = {}
+        self.add_tool("basic", Basic_Tool) 
+        if self._loaded_module:
+            self.select_tool("basic")
+
     def load_module(self, module_name:str):
         """
         Clear all the buttons, tell the scene to delete all its tools
@@ -121,7 +133,7 @@ class main_window(QMainWindow):
                 return
 
         self.ui.clear_buttons()
-        self.scene.clear_tools()
+        self.clear_tools()
 
         
         module = ALL_MODULES[module_name]()

@@ -1,7 +1,5 @@
 from MultiHex2.actions.baseactions import MapAction, MetaAction, NullAction
-from MultiHex2.core.core import Path, Road
-from MultiHex2.core.coordinates import HexID
-from MultiHex2.tools.basic_tool import ToolLayer
+from MultiHex2.core.core import ToolLayer
 
 from PyQt5.QtWidgets import QGraphicsScene
 

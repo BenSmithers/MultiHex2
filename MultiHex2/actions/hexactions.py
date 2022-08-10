@@ -2,6 +2,7 @@ from .baseactions import MapAction
 from MultiHex2.core import Hex
 
 from PyQt5.QtWidgets import QGraphicsScene
+from MultiHex2.tools.clicker_tool import Clicker
 
 class Add_Remove_Hex(MapAction):
     def __init__(self, **kwargs):
@@ -22,7 +23,7 @@ class Add_Remove_Hex(MapAction):
         self._drawtype = True
     
 
-    def __call__(self, map:QGraphicsScene):
+    def __call__(self, map:Clicker):
         if (self.hexID not in map.hexCatalog) and (self.newHex is None):
             raise ValueError("Tried removing hex from tile that doesn't exist.")
         

@@ -1,5 +1,4 @@
 from MultiHex2.actions.baseactions import NullAction, MetaAction, MapAction, MapEvent
-from MultiHex2.actions.mobileactions import MobileMoveAction
 from MultiHex2.clock import Time, Clock
 
 from PyQt5.QtWidgets import QWidget
@@ -212,11 +211,32 @@ class ActionManager:
         Check the event queue. If there's a MapAction with the given mobile queue, then remove it. 
         """
 
-    def add_event(self, event, time):
+    def remove_from_event_queue(self, where:int):
+        """
+        finds an event stored at id "id", removes it from the queue 
+        """
+
+        i = 0
+        while id(self._queue[i])!=where:
+            i+=1 
+            if i==len(self._queue):
+                raise ValueError("Event with id {} not in queue".format(where))
+        
+        self._queue.pop(i)
+
+
+    def add_event(self, event:MapEvent, time:Time):
+        """
+        This function enqueues an Event at a certain time. We simply scan across until we find the right time to put our event 
+
+        TODO : why aren't we enqueuing tuples 
+        """
         if not isinstance(event, MapEvent):
             raise TypeError("Can only register {} type events, not {}".format(MapEvent, type(event)))
         if not isinstance(time, Time):
             raise TypeError("Expected {} for time, not {}.".format(Time, type(time)))
+
+        where = id(event)
 
         if len(self.queue)==0:
             self._queue.append( [time, event] )
@@ -229,6 +249,8 @@ class ActionManager:
                     loc +=1 
                     
                 self._queue.insert(loc,[time,event] )
+
+        return where
 
 
     def skip_to_next_event(self):

@@ -3,19 +3,21 @@ In this file we define the tools used to make and edit entities
 
 We also define the widget/gui that is used to do that.
 """
+from MultiHex2.core.coordinates import hex_to_screen
+from MultiHex2.core.core import Hex, ToolLayer
 from MultiHex2.tools.basic_tool import Basic_Tool
 from MultiHex2.core import HexID, screen_to_hex, Entity
 from MultiHex2.actions.baseactions import MetaAction, NullAction
+from MultiHex2.actions.mobileactions import MobileMoveAction, QueueMove
 from MultiHex2.actions.entityactions import *
-from MultiHex2.core.map_entities import Settlement
-from MultiHex2.tools.basic_tool import ToolLayer
+from MultiHex2.core.map_entities import Mobile, Settlement
+from MultiHex2.clock import minutes_in_day
 
 import os
 from copy import copy
 
 from PyQt5 import QtGui, QtWidgets, QtCore
 from PyQt5.QtWidgets import QGraphicsSceneEvent
-
 
 
 art_dir = os.path.join( os.path.dirname(__file__),'..','assets','buttons')
@@ -212,31 +214,88 @@ class AddSettlement(EntitySelector):
     def altText(cls):
         return "Create new settlement"
 
-class MobileSelector(Basic_Tool):
+class MobileSelector(EntitySelector):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.auto_state = 1
+        self.auto_state = 0
         self._selected = -1 # none 
+        self._selection_count = 0
+
+        self.highlight = False
+
+    def get_polygon(self):
+        if self.state==0:
+            if self._selected!=-1:
+                self.highlight=True
+                entity_loc = self.parent.access_entity_hex(self._selected)
+                hex = Hex(hex_to_screen(entity_loc))
+                return hex
+            else:
+                self.highlight=False
 
     def primary_mouse_released(self, event):
         """
             If try selecting a mobile here
         """
-        return NullAction()
+        loc = screen_to_hex(event.scenePos())
+        print("state {}".format(self.state))
+        if self.state==0:
+            eIDs_here = self.parent.eIDs_at_hex(loc)
+            if len(eIDs_here)==0:
+                self._selected = -1
+                self._selection_count=0
+            else:
+                if len(eIDs_here)==1:
+                    self._selected = eIDs_here[0]
+                    self._selection_count = 0
+                else:
+                    # more than 1! 
+                    self._selected = eIDs_here[self._selection_count]
+                    self._selection_count+=1
+                    if self._selection_count==len(eIDs_here):
+                        self._selection_count=0
+            
+        print("selected {}".format(self._selected))
+        #loc = screen_to_hex(event.scenePos())( hexID )
+        return EntitySelector.primary_mouse_released(self, event)
 
     def secondary_mouse_released(self, event):
         """
             If nothing selected, do nothing. 
             If something is selected, queue a route for it     
         """
-        if self._selected == -1:
-            return NullAction()
-        else:
-            # route! 
-            pass 
+        if self.state==1: #placing
+            self.set_state(0)
 
-        return NullAction()
+        else:
+            if self._selected == -1:
+                print("nothing selected")
+                return EntitySelector.secondary_mouse_released(self, event)
+            else:
+                print("routing!")
+                # route!
+                entity_selected = self.parent.accessEid(self._selected) # who
+                if not isinstance(entity_selected, Mobile):
+                    return NullAction
+                entity_loc = self.parent.access_entity_hex(self._selected) # where 
+                
+                if self.state==0:
+                    loc = screen_to_hex(event.scenePos())
+                    
+                    if loc not in self.parent.hexCatalog:
+                        print("no location")
+                        return NullAction()
+                    if loc==entity_loc:
+                        # TODO remove a queued move if it exists
+                        return QueueMove(dest_hid=None, mobile_eid=self._selected)
+
+                    # QueueMove!
+                    return QueueMove(dest_hid=loc, mobile_eid=self._selected)
+                    
+                    # we have the route now, so we need to make 
+
+        return EntitySelector.secondary_mouse_released(self, event)
 
     @classmethod
     def tool_layer(cls):
@@ -253,7 +312,9 @@ class NewMobile(MobileSelector):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.auto_state = 2
+        self.auto_state = 1
+        self._creation_type = Mobile
+        self.highlight_icon = "anchor"
     
     @classmethod
     def buttonIcon(cls):

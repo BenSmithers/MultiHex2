@@ -1,3 +1,4 @@
+from MultiHex2.core.core import ToolLayer
 from MultiHex2.tools.basic_tool import Basic_Tool
 from MultiHex2.actions import Add_Remove_Hex
 from MultiHex2.widgets.widgets import HexBrushWidget, HexSelectWidget
@@ -6,8 +7,6 @@ import os
 
 from PyQt5 import QtGui
 from MultiHex2.actions.baseactions import NullAction
-
-from MultiHex2.tools.basic_tool import ToolLayer
 
 """
 Tools make actions 

@@ -4,13 +4,11 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent, QMainWindow, QApplication
 from PyQt5.QtWidgets import QGraphicsItem, QGraphicsView, QGraphicsDropShadowEffect
 
-from MultiHex2.core.core import DRAWSIZE, GeneralCatalog, Path, PathCatalog, RiverCatalog, Road, River
+from MultiHex2.core.core import DRAWSIZE, GeneralCatalog, Path, PathCatalog, RiverCatalog, Road, River, ToolLayer
 from MultiHex2.core import HexCatalog, RegionCatalog, EntityCatalog
 from MultiHex2.core import Hex, HexID, Region, Entity
 from MultiHex2.core import screen_to_hex
 from MultiHex2.actions.actionmanager import ActionManager
-from MultiHex2.tools.basic_tool import Basic_Tool, ToolLayer
-from MultiHex2.tools.regiontools import RegionAdd
 from MultiHex2.core.map_entities import Settlement, IconLib
 from MultiHex2.clock import Time, Clock
 from MultiHex2.actions.baseactions import NullAction
@@ -23,6 +21,7 @@ from math import inf
 import numpy as np
 from time import time
 from typing import Union
+
 
 
 DEBUG = False
@@ -42,11 +41,9 @@ class Clicker(QGraphicsScene, ActionManager):
         self._highlight = None
         self._highlighted_id = None
         self._icon_ghost = None
-        self._tool = Basic_Tool(self)
+        self._tool = None
 
         self._alltools={}
-        self.add_tool("basic", Basic_Tool) # a purely internal tool, is selected when the user presses escape 
-        self.select_tool("basic")
 
         self._primary = Qt.LeftButton
         self._secondary = Qt.RightButton
@@ -59,6 +56,7 @@ class Clicker(QGraphicsScene, ActionManager):
         self._entityCatalog = EntityCatalog()
         self._roadCatalog = PathCatalog()
         self._riverCatalog = RiverCatalog()
+        self._routeCatalog = GeneralCatalog()
 
         self._pen = QtGui.QPen() # STROKE EFFECTS
         self._pen.setColor(QtGui.QColor(240,240,240))
@@ -421,6 +419,12 @@ class Clicker(QGraphicsScene, ActionManager):
     def accessEid(self,eID)->Entity:
         return self._entityCatalog.access_entity(eID)
 
+    def access_entity_hex(self, eID:int)->HexID:
+        """
+        returns the HexID for the given entity ID
+        """
+        return self._entityCatalog.gethID(eID)
+
     def eIDs_at_hex(self, coords:HexID):
         """
         returns eIDs at this HexID
@@ -461,8 +465,58 @@ class Clicker(QGraphicsScene, ActionManager):
         sid.setZValue(20)
         self._entityCatalog.update_sid(coords, sid)
 
-    def draw_route(self, eid:int):
-        pass    
+    def remove_route(self, eid:int):
+        """
+            remove the eid step event from the route queue 
+        """
+        if eid not in self._routeCatalog:
+            raise ValueError("entity {} not being routed".format(eid))
+        
+        event_id = self._routeCatalog[eid]
+        screen_id = self._routeCatalog.get_sid(eid)
+
+        self.remove_from_event_queue(event_id)
+
+        if screen_id is not None:
+            self.removeItem(screen_id)
+
+        del self._routeCatalog[eid]
+
+    def register_route(self, eid, rout_id):
+        """
+        Rather than registering these normally, we use the eID as the id. That way there's a baked-in correlation between route IDs and entity IDs 
+        """
+        self._routeCatalog.update_obj(eid, rout_id, True)
+
+    def draw_route(self, eid:int, route:'list[HexID]'):
+        """
+
+        """
+        if eid not in self._routeCatalog:
+            return
+        
+        screen_id = self._routeCatalog.get_sid(eid)
+        if screen_id is not None:
+            self.removeItem(screen_id)
+
+        if len(route)<2:
+            print("Asked to draw length {} route - was this in error?".format(len(route)))
+            return
+
+        verts = [hex_to_screen(vert) for vert in route.vertices]
+
+        path = QtGui.QPainterPath()
+        path.addPolygon(QtGui.QPolygonF(verts))
+        self._pen.setStyle(3)
+        self._pen.setWidth(2)
+        self._pen.setColor(QtGui.QColor(219, 206, 138))
+
+        self._brush.setStyle(0)
+        sid = self.addPath(path, self._pen, self._brush)
+
+        self._routeCatalog.update_sid(sid)
+
+
 
     @property
     def hexCatalog(self):
@@ -585,9 +639,13 @@ class Clicker(QGraphicsScene, ActionManager):
     def tool(self):
         return self._tool
     def select_tool(self, tool_name:str):
-        old_layer = self._tool.tool_layer()
-
-        self._tool.deselect()
+        print("selecting tool in scene")
+        if self._tool is None:
+            old_layer =  ToolLayer.null 
+        else:
+            old_layer = self._tool.tool_layer()
+            self._tool.deselect()
+        
         tool = self._alltools[tool_name]
         self._tool = tool
         self._tool.set_state(tool.auto_state)
@@ -596,13 +654,9 @@ class Clicker(QGraphicsScene, ActionManager):
             self.reDrawRegions()
 
         # update the widget part with the tool's config widget 
+        
 
-    def clear_tools(self):
-        self._alltools = {}
-        self.add_tool("basic", Basic_Tool) 
-        self.select_tool("basic")
-
-    def add_tool(self, tool_name:str, tool:Basic_Tool):
+    def add_tool(self, tool_name:str, tool):
         if tool_name in self._alltools:
             raise ValueError("Cannot add tool {}, already exists in tool dict {}".format(tool_name, self._alltools.keys()))
         self._alltools[tool_name]=tool(self)
@@ -728,8 +782,11 @@ class Clicker(QGraphicsScene, ActionManager):
         """
         Just straight up delete the region
         """
-        if isinstance(self.tool, RegionAdd):
-            self.tool.select(-1)
+        #if isinstance(self.tool, RegionAdd):
+        #    self.tool.select(-1)
+        print("ClickerTool::deleteRegion")
+        print("Might've broken something here - bear in mind")
+
 
         using = self._get_region_cat(layer)
         sids = using.get_sid(rid) 

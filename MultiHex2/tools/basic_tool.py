@@ -7,16 +7,11 @@ from PyQt5.QtCore import QPointF
 from MultiHex2.core.coordinates import hex_to_screen, screen_to_hex
 
 from MultiHex2.widgets.basic_widget import ToolWidget
-from MultiHex2.core.core import Hex
+from MultiHex2.core.core import Hex, ToolLayer
+from MultiHex2.tools.clicker_tool import Clicker
 from MultiHex2.actions.baseactions import NullAction
 
 art_dir = os.path.join( os.path.dirname(__file__),'..','assets','buttons')
-
-class ToolLayer(Enum):
-    null = 0
-    terrain = 1
-    civilization = 2
-    mapuse = 4
 
 class Basic_Tool:
     
@@ -25,10 +20,10 @@ class Basic_Tool:
     
     So, you know, like why anyone else would use class inheritance 
     """
-    def __init__(self, parent=None):
-        if not (isinstance(parent, QGraphicsScene) or (parent is None)):
-            raise TypeError("Parent should be of type {}, not {}".format(QGraphicsScene, type(parent)))
-        self.parent = parent
+    def __init__(self, parent:Clicker):
+        if not (isinstance(parent, Clicker) or (parent is None)):
+            raise TypeError("Parent should be of type {}, not {}".format(Clicker, type(parent)))
+        self._parent = parent
         self._state = 0
         self.highlight = False # highlight space under the cursor 
 
@@ -37,6 +32,10 @@ class Basic_Tool:
 
         self._widget_instance = None
         self._polygon = Hex(QPointF(0,0))
+
+    @property 
+    def parent(self)->Clicker:
+        return self._parent
 
     def get_highlight_color(self):
         """

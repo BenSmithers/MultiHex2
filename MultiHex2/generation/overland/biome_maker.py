@@ -1,4 +1,5 @@
 from collections import deque
+from MultiHex2.core.core import ToolLayer
 from MultiHex2.tools import Clicker
 from MultiHex2.core import screen_to_hex, hex_to_screen, HexID
 
@@ -7,9 +8,7 @@ from numpy import random as rnd
 from PyQt5.QtCore import QPointF
 
 from MultiHex2.core import Region
-from MultiHex2.tools.basic_tool import ToolLayer
 from MultiHex2.generation.name_gen import create_name
-
 
 def add_biomes(map:Clicker, seed=None, **kwargs):
     print("---> Adding Biomes")
