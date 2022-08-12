@@ -25,14 +25,25 @@ class IconLib:
     """
     def __init__(self, module_folder=""):
         self._pictures = glob(os.path.join(ARTDIR, "map_icons", "*.svg"))
+        self._module_folder = module_folder
+        
+        self.reload()
+
+    def set_module(self, module_folder):
+        if not os.path.exists(module_folder):
+            raise IOError("Module folder does not exist: {}".format(module_folder))
+        self._module_folder = module_folder
+        self.reload()
+
+    def reload(self):
         self._pixmaps = {}        
         for each in self._pictures:
             name = os.path.split(each)[1].split(".")[0]
 
             self._pixmaps[name] = QtGui.QPixmap(each).scaledToWidth(DRAWSIZE*1.5)
 
-        if module_folder!="":
-            module_overwrite = glob(os.path.join(module_folder, "*"))
+        if self._module_folder!="":
+            module_overwrite = glob(os.path.join(self._module_folder, "*"))
             for each in module_overwrite:
                 name = os.path.split(each)[1].split(".")[0]
                 self._pixmaps[name] = QtGui.QPixmap(each).scaledToWidth(DRAWSIZE*1.5)
@@ -759,6 +770,7 @@ class Mobile( Entity ):
         Entity.__init__(self, name)
         
         self._speed = 1. #hexes/day 
+        self.icon = "walker"
 
     @property 
     def speed(self):

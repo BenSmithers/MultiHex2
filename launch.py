@@ -75,7 +75,7 @@ class main_window(QMainWindow):
 
         self._loaded_module = False
         self._will_generate = False
-        self.module = self.load_module(self.config["module"])
+        self.load_module(self.config["module"])
         self.select_tool("basic")
         self.open_menu()
 
@@ -136,17 +136,17 @@ class main_window(QMainWindow):
         self.clear_tools()
 
         
-        module = ALL_MODULES[module_name]()
+        self.module = ALL_MODULES[module_name]()
         self.scene.module = module_name
-        self.scene.tileset = module.tileset
-        all_tools = module.tools
+        self.scene.update_with_module()
+
+        self.scene.tileset = self.module.tileset
+        all_tools = self.module.tools
         for key in all_tools:
             self.add_tool(key, all_tools[key])
-        self.generator = module.generator_function
-        print("Loaded Module '{}'".format(module.name))
+        self.generator = self.module.generator_function
+        print("Loaded Module '{}'".format(self.module.name))
         self._loaded_module = True
-
-        return module
 
     def open_menu(self):
         accepted = False

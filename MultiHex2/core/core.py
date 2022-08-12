@@ -47,6 +47,18 @@ class ToolLayer(Enum):
     civilization = 2
     mapuse = 4
 
+# TODO put this in the tileset! 
+hex_scale = {
+    "mountain":4.0,
+    "ridge":4.0,
+    "peak":4.0,
+    "ice":3.0,
+    "forest":2.0,
+    "gentle forest":1.5,
+    "wetland":3.0,
+    "desert":1.5,
+}
+
 class Hex(QPolygonF):
     def __init__(self, center:QPointF):
         """
@@ -121,7 +133,7 @@ class Hex(QPolygonF):
         # both should be land OR both should be water
         if not isinstance(ignore_water, bool):
             raise TypeError("can't get cost for a {}".format(type(ignore_water)))
-        
+
         if ignore_water:
             water_scale = 1.
         else:
@@ -133,6 +145,13 @@ class Hex(QPolygonF):
         # prefer flat ground!
         #lateral_dist=(self.center - other.center)
         lateral_dist = 2*DRAWSIZE #sqrt(lateral_dist.x()*lateral_dist.x() + lateral_dist.y()*lateral_dist.y())
+
+        if self.geography in hex_scale:
+            scale = hex_scale[self.geography]
+        else:
+            scale = 1.0
+
+        return scale*water_scale
 
         mtn_scale =1.0
         if other.geography=="peak" or other.geography=="ridge":
@@ -155,6 +174,8 @@ class Hex(QPolygonF):
         """
         Estimates the total cost of going from this hex to the other one
         """
+        return screen_to_hex(self.center) - screen_to_hex(other.center)
+
         lateral_dist_v = (self.center - other.center)
         lateral_dist= sqrt(QPointF.dotProduct(lateral_dist_v,lateral_dist_v))
 
@@ -925,9 +946,7 @@ class EntityCatalog:
         del self._hIDtoScreen[hID]
 
     def update_sid(self, hID:HexID, sID):
-        if hID in self._hIDtoScreen:
-            # good
-            self._hIDtoScreen[hID] = sID
+        self._hIDtoScreen[hID] = sID
 
     def update_entity(self, eID:int, entity:Entity):
         self._eidCatalog[eID] = entity
@@ -949,7 +968,9 @@ class EntityCatalog:
     def change_hID(self, eID:int, new_hid:HexID):
         old_hid = self.gethID(eID)
 
+
         self._hIDtoEnt[old_hid].remove(eID)
+
         if len(self._hIDtoEnt[old_hid])==0:
             del self._hIDtoEnt[old_hid]
 
@@ -957,6 +978,7 @@ class EntityCatalog:
             self._hIDtoEnt[new_hid].append(eID)
         else:
             self._hIDtoEnt[new_hid] = [eID]
+        self._eIDtoHex[eID]= new_hid
 
 
 

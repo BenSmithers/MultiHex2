@@ -25,7 +25,15 @@ class Module:
     
         self._tileset_location = ""
         self._generator = generic
-        self._skip_geo=[] 
+        self._skip_geo=[]
+        self._icon_folder=""
+
+    @property
+    def icon_folder(self)->str:
+        """
+        An extra folder for providing more icons. 
+        """
+        return self._icon_folder
 
     @property
     def text_source(self):

@@ -73,6 +73,12 @@ class Clicker(QGraphicsScene, ActionManager):
         self.module = ""
         self.tileset = ""
 
+    def update_with_module(self):
+        icon_folder = self._parent_window.module.icon_folder
+        if icon_folder!="":
+            self.iconLibrary.set_module(icon_folder)
+
+
     def set_primary_mouse(self, left_button=True):
         """
         Can be used for swapping between left/right handed mice. This is just toggled by the left_button bool
@@ -183,6 +189,7 @@ class Clicker(QGraphicsScene, ActionManager):
         self.configure_with_clock(Clock(time))
 
         self.module=in_dict["module"]
+        self.update_with_module()
 
         self._parent_window.ui.clock.set_time(time)
         self._parent_window.ui.events.update()
@@ -411,7 +418,16 @@ class Clicker(QGraphicsScene, ActionManager):
         self._entityCatalog.remove(eID)
 
     def moveEntity(self, eID:int, new_hid:HexID):
+        """
+        Move the entity to a new Hex. We have to get the screen id for the object, move the location of hte object, remove the screen image, and then re-draw it at the new location
+        """
+        old_hid = self._entityCatalog.gethID(eID)
+        old_sid = self._entityCatalog.getSID(old_hid)
+
         self._entityCatalog.change_hID(eID, new_hid)
+        self.removeItem(old_sid)
+        self.draw_entities_at_hex(new_hid)
+
 
     def get_eid_loc(self, eID)->HexID:
         return self._entityCatalog.gethID(eID)
@@ -444,8 +460,6 @@ class Clicker(QGraphicsScene, ActionManager):
         here = self._entityCatalog.getSID(coords)
         if (here is not None) and here!=-1:
             self.removeItem(here)
-        self.update()
-
 
         these_entities = self.eIDs_at_hex(coords)
         if len(these_entities)==0:
@@ -465,6 +479,9 @@ class Clicker(QGraphicsScene, ActionManager):
         sid.setZValue(20)
         self._entityCatalog.update_sid(coords, sid)
 
+    def has_route(self, eid:int)->bool:
+        return eid in self._routeCatalog
+
     def remove_route(self, eid:int):
         """
             remove the eid step event from the route queue 
@@ -480,19 +497,21 @@ class Clicker(QGraphicsScene, ActionManager):
         if screen_id is not None:
             self.removeItem(screen_id)
 
-        del self._routeCatalog[eid]
+        self._routeCatalog.remove(eid)
 
     def register_route(self, eid, rout_id):
         """
         Rather than registering these normally, we use the eID as the id. That way there's a baked-in correlation between route IDs and entity IDs 
         """
         self._routeCatalog.update_obj(eid, rout_id, True)
+        print("eid {} {} route catalog".format(eid, "in" if (eid in self._routeCatalog) else "not in"))
 
     def draw_route(self, eid:int, route:'list[HexID]'):
         """
 
         """
         if eid not in self._routeCatalog:
+            print("no eid {}".format(eid))
             return
         
         screen_id = self._routeCatalog.get_sid(eid)
@@ -500,21 +519,22 @@ class Clicker(QGraphicsScene, ActionManager):
             self.removeItem(screen_id)
 
         if len(route)<2:
-            print("Asked to draw length {} route - was this in error?".format(len(route)))
-            return
+            raise ValueError("Asked to draw length {} route - was this in error?".format(len(route)))
 
-        verts = [hex_to_screen(vert) for vert in route.vertices]
+        verts = [hex_to_screen(vert) for vert in route]
 
         path = QtGui.QPainterPath()
         path.addPolygon(QtGui.QPolygonF(verts))
         self._pen.setStyle(3)
-        self._pen.setWidth(2)
+        self._pen.setWidth(4)
         self._pen.setColor(QtGui.QColor(219, 206, 138))
 
         self._brush.setStyle(0)
         sid = self.addPath(path, self._pen, self._brush)
+        sid.setZValue(20)
 
-        self._routeCatalog.update_sid(sid)
+        self._routeCatalog.update_sid(eid, sid)
+        self.update()
 
 
 
@@ -663,7 +683,7 @@ class Clicker(QGraphicsScene, ActionManager):
 
     ######################### HEX METHODS #############################
 
-    def accessHex(self, coords:HexID):
+    def accessHex(self, coords:HexID)->Hex:
         """
         returns the hex at the specified hex coordinates, else returns None 
         """

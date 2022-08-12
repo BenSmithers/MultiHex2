@@ -43,3 +43,5 @@ class Overland(Module):
         self._generator = fullsim
 
         self._skip_geo = ["mountain","ridge", "peak"]
+
+        self._icon_folder=""

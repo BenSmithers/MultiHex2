@@ -36,7 +36,17 @@ class MapEvent:
         self._interupt = False
 
         self.needed = []
+
         self.verify(kwargs)
+
+    @property
+    def id(self):
+        """
+        Return some identifier we can apply to these events. Optional, really 
+
+        Base is -1 since most IDs in MultiHex start at zero
+        """
+        return -1
     
     def verify(self,kwargs):
         """

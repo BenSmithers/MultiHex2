@@ -206,21 +206,18 @@ class ActionManager:
     def redo(self):
         return self._generic_do(self.redo_history, self.undo_history)
 
-    def remove_mobile_event(self, mobile_id):
-        """
-        Check the event queue. If there's a MapAction with the given mobile queue, then remove it. 
-        """
-
     def remove_from_event_queue(self, where:int):
         """
         finds an event stored at id "id", removes it from the queue 
         """
 
         i = 0
-        while id(self._queue[i])!=where:
+        while self._queue[i][1].id!=where:
+            print("{} vs {}".format(id(self._queue[i][1]), where))
             i+=1 
             if i==len(self._queue):
-                raise ValueError("Event with id {} not in queue".format(where))
+                print("failed to remove from queue")
+                return
         
         self._queue.pop(i)
 
@@ -236,8 +233,6 @@ class ActionManager:
         if not isinstance(time, Time):
             raise TypeError("Expected {} for time, not {}.".format(Time, type(time)))
 
-        where = id(event)
-
         if len(self.queue)==0:
             self._queue.append( [time, event] )
         else:
@@ -249,8 +244,9 @@ class ActionManager:
                     loc +=1 
                     
                 self._queue.insert(loc,[time,event] )
-
-        return where
+        
+        self._parent_window.ui.events.update()
+        return event.id
 
 
     def skip_to_next_event(self):
@@ -271,11 +267,10 @@ class ActionManager:
             else:
                 if new_action.recurring is not None:
                     self.add_event(new_action, data[0]+new_action.recurring)
-            
-        
-        if data[1].recurring is not None:
-            if re_queue:
-                self.add_event(data[1], data[0]+data[1].recurring)
+        else:
+            if data[1].recurring is not None:
+                if re_queue:
+                    self.add_event(data[1], data[0]+data[1].recurring)
 
         self.clock.skip_to(data[0])
         self._parent_window.ui.clock.set_time(self.clock.time)

@@ -239,7 +239,6 @@ class MobileSelector(EntitySelector):
             If try selecting a mobile here
         """
         loc = screen_to_hex(event.scenePos())
-        print("state {}".format(self.state))
         if self.state==0:
             eIDs_here = self.parent.eIDs_at_hex(loc)
             if len(eIDs_here)==0:
@@ -256,7 +255,6 @@ class MobileSelector(EntitySelector):
                     if self._selection_count==len(eIDs_here):
                         self._selection_count=0
             
-        print("selected {}".format(self._selected))
         #loc = screen_to_hex(event.scenePos())( hexID )
         return EntitySelector.primary_mouse_released(self, event)
 
@@ -270,28 +268,29 @@ class MobileSelector(EntitySelector):
 
         else:
             if self._selected == -1:
-                print("nothing selected")
                 return EntitySelector.secondary_mouse_released(self, event)
             else:
-                print("routing!")
                 # route!
                 entity_selected = self.parent.accessEid(self._selected) # who
                 if not isinstance(entity_selected, Mobile):
                     return NullAction
                 entity_loc = self.parent.access_entity_hex(self._selected) # where 
-                
+
                 if self.state==0:
                     loc = screen_to_hex(event.scenePos())
                     
                     if loc not in self.parent.hexCatalog:
-                        print("no location")
                         return NullAction()
                     if loc==entity_loc:
-                        # TODO remove a queued move if it exists
+                        # TODO remove a queued move if it exist
                         return QueueMove(dest_hid=None, mobile_eid=self._selected)
 
                     # QueueMove!
-                    return QueueMove(dest_hid=loc, mobile_eid=self._selected)
+                    if self.parent.has_route(self._selected):
+                        self.parent.remove_route(self._selected) # TODO - FIX THIS, should be in queue
+                    acty = QueueMove(dest_hid=loc, mobile_eid=self._selected)     
+                    acty.brief_desc = "Moving {}".format(entity_selected.name)                
+                    return acty
                     
                     # we have the route now, so we need to make 
 
@@ -314,7 +313,7 @@ class NewMobile(MobileSelector):
 
         self.auto_state = 1
         self._creation_type = Mobile
-        self.highlight_icon = "anchor"
+        self.highlight_icon = "walker"
     
     @classmethod
     def buttonIcon(cls):
