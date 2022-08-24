@@ -13,6 +13,8 @@ import numpy.random as rnd
 
 from MultiHex2.core.core import Hex
 
+from scipy.interpolate import interp2d
+
 class Climatizer:
     def __init__(self, tileset:dict):
         self.tileset = tileset
@@ -156,8 +158,7 @@ def perlin(granularity,octave=5, seed=0)->np.ndarray:
     returns numpy array with values ranging between -0.5 and 0.5
     """
 
-    
-    lin = np.linspace(0,octave,granularity,endpoint=False)
+    lin = np.linspace(0,octave,200,endpoint=False)
     x,y = np.meshgrid(lin, lin)
 
     # permutation table
@@ -182,7 +183,13 @@ def perlin(granularity,octave=5, seed=0)->np.ndarray:
     # combine noises
     x1 = _lerp(n00,n10,u)
     x2 = _lerp(n01,n11,u) # FIX1: I was using n10 instead of n01
-    return _lerp(x1,x2,v) # FIX2: I also had to reverse x1 and x2 her
+
+    values = np.zeros(shape=(granularity, granularity))
+    xs = np.array(range(200))*granularity/200
+    evals = interp2d(xs,xs,_lerp(x1,x2,v))
+    values = evals(range(granularity),range(granularity))
+
+    return values # FIX2: I also had to reverse x1 and x2 her
 
 def _lerp(a,b,x):
     "linear interpolation"

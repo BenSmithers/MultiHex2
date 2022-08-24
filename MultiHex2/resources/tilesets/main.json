@@ -26,7 +26,7 @@
       "color": [ 235, 235, 235 ],
       "params":{
         "altitude_base": 0.0,
-        "rainfall_base": 1.0,
+        "rainfall_base": 0.5,
         "temperature_base": 0.05,
         "is_land": 0.0
       },
@@ -39,7 +39,7 @@
       "color": [ 50, 87, 48 ],
       "params":{
         "altitude_base": 0.1,
-        "rainfall_base": 2.0,
+        "rainfall_base": 0.8,
         "temperature_base": 0.9,
         "is_land": 10.0
       },
@@ -50,7 +50,7 @@
       "color": [ 65, 115, 62 ],
       "params":{
         "altitude_base": 0.0,
-        "rainfall_base": 1.5,
+        "rainfall_base": 0.5,
         "temperature_base": 0.5,
         "is_land": 10.0
       },
@@ -61,7 +61,7 @@
       "color": [ 76, 133, 94 ],
       "params":{
         "altitude_base": 0.0,
-        "rainfall_base": 4.0,
+        "rainfall_base": 1.0,
         "temperature_base": 1.0,
         "is_land": 10.0
       },
@@ -74,7 +74,7 @@
       "color": [ 155, 181, 114 ],
       "params":{
         "altitude_base": 0.0,
-        "rainfall_base": 0.5,
+        "rainfall_base": 0.25,
         "temperature_base": 0.5,
         "is_land": 10.0
       },
@@ -85,7 +85,7 @@
       "color": [ 175, 181, 114 ],
       "params":{
         "altitude_base": 0.0,
-        "rainfall_base": 0.2,
+        "rainfall_base": 0.1,
         "temperature_base": 0.8,
         "is_land": 10.0
       },
@@ -98,7 +98,7 @@
       "color": [ 156, 213, 214 ],
       "params":{
         "altitude_base": 0.0,
-        "rainfall_base": 0.5,
+        "rainfall_base": 0.0,
         "temperature_base": 0.0,
         "is_land": 10.0
       },

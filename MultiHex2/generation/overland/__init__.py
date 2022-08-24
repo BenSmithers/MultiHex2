@@ -31,8 +31,8 @@ def fullsim(map:Clicker, preset="continental"):
     map.module = "overland"
     #gen_land(map,seed=seed, **config["mountains"]["values"])
     pour_rivers(map, seed=seed, **config)
-    simulate_wind(map,seed=seed, **config)
-    simulate_clouds(map,seed=seed, **config)
+    #simulate_wind(map,seed=seed, **config)
+    #simulate_clouds(map,seed=seed, **config)
     tset_file = open(os.path.join(os.path.dirname(__file__), "..","..","resources","tilesets", "main.json"),'r')
     tset = json.load(tset_file)
     tset_file.close()

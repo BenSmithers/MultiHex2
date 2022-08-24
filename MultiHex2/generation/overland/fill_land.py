@@ -176,12 +176,19 @@ def generate_land(map:Clicker, seed=None, **kwargs):
     print("perlin time")
     noise = perlin(dimensions[0],octave=5, seed=seed)
     noise += perlin(dimensions[0],octave=10, seed=seed)
-    noise += perlin(dimensions[0],octave=2, seed=seed) 
+    #noise += perlin(dimensions[0],octave=2, seed=seed) 
 
-    tnoise = perlin(dimensions[0],octave=5, seed=seed+1)
-    tnoise += perlin(dimensions[0],octave=10, seed=seed+1)
-    tnoise += perlin(dimensions[0],octave=2, seed=seed+1) 
+    #tnoise = perlin(dimensions[0],octave=5, seed=seed+1)
+
+    tnoise = perlin(dimensions[0],octave=10, seed=seed+1)
+    rnoise = perlin(dimensions[0],octave=10, seed=seed+2)+0.5
+    print("Max and min {} {} and std {}".format(np.max(rnoise), np.min(rnoise), np.std(rnoise)))
+
+    angles = 0.5*pi*(rnoise-0.5)
+    cangle = np.cos(angles)
+    sangle= np.sin(angles)
     
+
     print("Applying perlin")
     max_dim = max(map.dimensions)
     
@@ -191,26 +198,31 @@ def generate_land(map:Clicker, seed=None, **kwargs):
         count +=1 
         if count%1000==0:
             print("{} of {} done".format(count, total))
-        hex = map.hexCatalog[hid]
+        hex = map.hexCatalog.get(hid)
         if hex.geography=="ridge" or hex.geography=="peak" or hex.geography=="mountain":
                 continue
         pos = hex_to_screen(hid)
 
-        x_noise = dimensions[0]*int(pos.x()/dimensions[0])
-        y_noise = dimensions[0]*int(pos.y()/dimensions[0])
+        x_noise = int(dimensions[0]*pos.x()/dimensions[0])
+        y_noise = int(dimensions[1]*pos.y()/dimensions[1])
 
         value = noise[x_noise][y_noise]*0.1
+
+
+        _wind = (20*sin(pi*pos.y()/dimensions[1]),5. if (y_noise/dimensions[1])>0.5 else -5.)
+        wind = (_wind[0]*cangle[x_noise][y_noise] + _wind[1]*sangle[x_noise][y_noise], -sangle[x_noise][y_noise]*_wind[0] + _wind[1]*cangle[x_noise][y_noise])
+        hex.wind = wind
 
         new_alt = hex.params["altitude_base"]*(1+value)
         new_alt = max(min(new_alt, 1), -10)
         hex.set_param("altitude_base", hex.params["altitude_base"]*(1+value))
-        hex.set_param("rainfall_base",0.0)
+        hex.set_param("rainfall_base",rnoise[x_noise][y_noise])
         hex.set_param("is_land", 10*int( hex.params["altitude_base"]>0.0  ))
         fract = 0.00 - hex.params["altitude_base"]/8 # will range from -0.5 to 0.00, use it to make high places colder
-        hex.set_param("temperature_base",tnoise[x_noise][y_noise]*0.3 + fract + sin(pi*pos.y()/dimensions[1]) )
+        hex.set_param("temperature_base",tnoise[x_noise][y_noise]*0.15 + fract + sin(pi*pos.y()/dimensions[1]) )
 
         alt = hex.params["altitude_base"]
-        if (alt)>0:
+        if alt>0:
             hex.is_land=True
             hex.geography="land"
             hex.set_fill(QColor(200, 160, 130))
@@ -218,5 +230,6 @@ def generate_land(map:Clicker, seed=None, **kwargs):
             hex.is_land=False
             hex.geography="ocean"
             hex.set_fill(QColor(111, 134, 168))
+        map.hexCatalog.update_obj(hid, hex)
         map.drawHex(hid)
 
