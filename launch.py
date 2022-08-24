@@ -181,13 +181,15 @@ class main_window(QMainWindow):
             self._will_generate = True
             return True
         else:
-            dialog = MapGenConfigDialog(self)
+            dialog = MapGenConfigDialog(self, self.module.generation_config)
             #dialog.setAttribute(QtCore.Qt.WA_DeleteOnClose)
             dialog.exec_()
             dialog.deleteLater()
 
             if dialog.Accepted:
-                self.generator(self.scene) 
+                use_configs = dialog.get_config()
+                seed = dialog.get_seed()
+                self.generator(self.scene, config=use_configs, seed=seed) 
                 self.ui.clock.set_time(self.scene.clock.time)
                 self.ui.events.update()
                 return True

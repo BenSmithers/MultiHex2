@@ -15,6 +15,8 @@ from MultiHex2.tools.map_use_tool import MapUse
 from MultiHex2.modules.modules_core import Module
 from MultiHex2.generation.overland import fullsim
 
+from MultiHex2.generation.overland.widget import OverlandConfigWidget
+
 class Overland(Module):
     def __init__(self):
         super().__init__()
@@ -45,3 +47,5 @@ class Overland(Module):
         self._skip_geo = ["mountain","ridge", "peak"]
 
         self._icon_folder=""
+
+        self._generation_config_widget = OverlandConfigWidget

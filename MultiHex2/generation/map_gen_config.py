@@ -11,6 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import typing
 import numpy as np
 
+from MultiHex2.generation.generation_config_widget import GenConfigWidget
 
 relate = {
     int:QtWidgets.QSpinBox
@@ -64,12 +65,17 @@ class MapMakerDialogGui(object):
 
 
 class MapGenConfigDialog(QDialog):
-    def __init__(self, parent: typing.Optional[QWidget] = ...) -> None:
+    def __init__(self, parent: typing.Optional[QWidget] = ..., sub_widget = GenConfigWidget) -> None:
         super().__init__(parent)
         self.parent = parent
 
         self.ui = MapMakerDialogGui()
         self.ui.setupUi(self)
+
+        self.sub_widget = sub_widget(self.ui.scrollAreaWidgetContents)
+        self.sub_widget.setObjectName("sub_widget")
+        self.ui.formLayout.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.sub_widget)
+
         self._accepted = False
 
     @property
@@ -90,5 +96,7 @@ class MapGenConfigDialog(QDialog):
         pass
 
     def get_config(self)->dict:
-        return {}
+        return self.sub_widget.get_config()
 
+    def get_seed(self)->int:
+        return self.ui.seedEdit.value()

@@ -21,6 +21,7 @@ def generate_land(map:Clicker, seed=None, **kwargs):
             raise Exception("Could not find requied arg {} in kwargs".format(arg))
 
     dimensions = map.dimensions
+    print("dimensions: {}".format(dimensions))
 
     # avearge decrease in altitude from one regular land tile to another
     land_spread     = kwargs['land_spread']
@@ -180,7 +181,7 @@ def generate_land(map:Clicker, seed=None, **kwargs):
 
     #tnoise = perlin(dimensions[0],octave=5, seed=seed+1)
 
-    tnoise = perlin(dimensions[0],octave=10, seed=seed+1)
+    tnoise =(perlin(dimensions[0],octave=10, seed=seed+1)*0.15 +1.0)
     rnoise = perlin(dimensions[0],octave=10, seed=seed+2)+0.5
     print("Max and min {} {} and std {}".format(np.max(rnoise), np.min(rnoise), np.std(rnoise)))
 
@@ -219,7 +220,7 @@ def generate_land(map:Clicker, seed=None, **kwargs):
         hex.set_param("rainfall_base",rnoise[x_noise][y_noise])
         hex.set_param("is_land", 10*int( hex.params["altitude_base"]>0.0  ))
         fract = 0.00 - hex.params["altitude_base"]/8 # will range from -0.5 to 0.00, use it to make high places colder
-        hex.set_param("temperature_base",tnoise[x_noise][y_noise]*0.15 + fract + sin(pi*pos.y()/dimensions[1]) )
+        hex.set_param("temperature_base",fract + sin(pi*pos.y()/dimensions[1])*tnoise[x_noise][y_noise] )
 
         alt = hex.params["altitude_base"]
         if alt>0:
@@ -230,6 +231,5 @@ def generate_land(map:Clicker, seed=None, **kwargs):
             hex.is_land=False
             hex.geography="ocean"
             hex.set_fill(QColor(111, 134, 168))
-        map.hexCatalog.update_obj(hid, hex)
         map.drawHex(hid)
 

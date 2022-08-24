@@ -9,6 +9,7 @@ Modules provide...
 
 import os
 from MultiHex2.tools.clicker_tool import Clicker
+from MultiHex2.generation.generation_config_widget import GenConfigWidget
 
 def generic(map:Clicker, **kwargs):
     return
@@ -27,6 +28,14 @@ class Module:
         self._generator = generic
         self._skip_geo=[]
         self._icon_folder=""
+        self._generation_config_widget = GenConfigWidget
+
+    @property
+    def generation_config(self):
+        """
+        Returns the widget that can be used to configure the world generator this module uses! 
+        """
+        return self._generation_config_widget
 
     @property
     def icon_folder(self)->str:

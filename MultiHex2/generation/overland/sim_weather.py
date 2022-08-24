@@ -177,7 +177,7 @@ def simulate_clouds(map:Clicker, seed=None, **kwargs):
     return
     print("---> Smoothing")
     total = 0
-    for hexID in tqdm(map.hexCatalog):
+    for hexID in map.hexCatalog:
         total += 1
         if total%100 == 0:
             print("doing something...")

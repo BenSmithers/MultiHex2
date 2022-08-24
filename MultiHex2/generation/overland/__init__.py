@@ -11,15 +11,24 @@ import json
 import os
 import numpy as np
 from numpy.random import randint
-_f = open(os.path.join(os.path.dirname(__file__), "config.json"),'r')
-_config = json.load(_f)
-_f.close()
 
 
 
-def fullsim(map:Clicker, preset="continental"):
-    config = _config[preset]
-    seed = np.random.randint(1,100000000)
+
+def fullsim(map:Clicker, **kwargs):
+    if "config" in kwargs:
+        config = kwargs["config"]
+    else:
+        _f = open(os.path.join(os.path.dirname(__file__), "config.json"),'r')
+        config = json.load(_f)
+        _f.close()
+
+    if "seed" in kwargs:
+        seed = np.random.randint(1,100000000)
+    else:
+        seed = kwargs["seed"]
+
+    print("Using seed {}".format(seed))
 
     year = randint(800, 16000)
     month = randint(0,12)
