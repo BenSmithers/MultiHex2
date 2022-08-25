@@ -1,10 +1,11 @@
 from MultiHex2.actions.baseactions import NullAction, MetaAction, MapAction
 from MultiHex2.clock import Time, minutes_in_day
 
-from PyQt5.QtWidgets import QGraphicsScene
 from MultiHex2.tools.clicker_tool import Clicker
 
 from MultiHex2.core.core import hex_scale
+from MultiHex2.core.map_entities import Mobile
+from MultiHex2.core.enums import OverlandRouteType
 
 # TODO change the mobile speed for a "time to cross hex"
 
@@ -34,6 +35,8 @@ class MobileMoveAction(MapAction):
         current_hid = map.get_eid_loc(self._mobile_eid)
 
         this_entity = map.accessEid(self._mobile_eid)
+        if not isinstance(this_entity, Mobile):
+            raise TypeError("Cannot move {}".format(type(this_entity)))
         speed = this_entity.speed # hexes/day 
 
         geo = map.accessHex(current_hid).geography
@@ -45,7 +48,7 @@ class MobileMoveAction(MapAction):
         one_day = minutes_in_day
         tph = int(scale*one_day/speed)
 
-        route = map.get_route_a_star(current_hid, self._dest_hid, False)
+        route = map.get_route_a_star(current_hid, self._dest_hid, this_entity.get_route_type())
         
         #map.register_route(self._mobile_eid, route)
 
@@ -57,7 +60,6 @@ class MobileMoveAction(MapAction):
             map.draw_route(self._mobile_eid, route[1:])
             acty = MobileMoveAction(recurring=Time(minute=tph), dest_hid=self._dest_hid, mobile_eid=self._mobile_eid)
             acty.brief_desc = self.brief_desc
-            print("brief desc = {}".format(acty.brief_desc))
             return acty
         
 
@@ -87,9 +89,11 @@ class QueueMove(MapAction):
             return NullAction() # TODO figure out what the heck an inverse to this would be? This cancels a queued move, so we'd need to get the information for where it _was_ going
         else:
             entity_selected = map.accessEid(self._mobile_eid)
+            if not isinstance(entity_selected, Mobile):
+                raise TypeError("Cannot move {}".format(type(entity_selected)))
             entity_loc = map.access_entity_hex(self._mobile_eid)
 
-            route = map.get_route_a_star(entity_loc, self._dest_hid, False)
+            route = map.get_route_a_star(entity_loc, self._dest_hid, entity_selected.get_route_type())
             
             geo = map.accessHex(entity_loc).geography
             if geo in hex_scale:
@@ -114,6 +118,5 @@ class QueueMove(MapAction):
             # a thing to move it back!
             acty = QueueMove(dest_hid=None, mobile_eid=self._mobile_eid)
             acty.brief_desc = self.brief_desc
-            print("brief desc = {}".format(acty.brief_desc))
             return acty
 

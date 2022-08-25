@@ -140,7 +140,12 @@ class main_window(QMainWindow):
         self.scene.module = module_name
         self.scene.update_with_module()
 
-        self.scene.tileset = self.module.tileset
+        _obj = open(self.module.tileset,'r')
+        tileset = json.load(_obj)
+        _obj.close()
+        self.scene.set_tileset(tileset)
+
+
         all_tools = self.module.tools
         for key in all_tools:
             self.add_tool(key, all_tools[key])

@@ -8,6 +8,7 @@ We also define the widgets used to configure those primitive properties in here
 """
 from PyQt5 import QtWidgets, QtGui, QtCore
 
+from MultiHex2.core.enums import OverlandRouteType
 from MultiHex2.core.coordinates import DRAWSIZE, HexID
 
 from glob import glob
@@ -770,7 +771,28 @@ class Mobile( Entity ):
         Entity.__init__(self, name)
         
         self._speed = 1. #hexes/day 
+        self._walks = True
+        self._swims = False
+        self._flies = False
         self.icon = "walker"
+
+    @property
+    def walks(self):
+        return self._walks
+    
+    @property
+    def swims(self):
+        return self._swims
+
+    @property
+    def flies(self):
+        return self._flies
+
+    def get_route_type(self):
+        if self._flies:
+            return OverlandRouteType.aerial
+        print("making {}".format(OverlandRouteType(int(self._walks) + 2*int(self._swims))))
+        return OverlandRouteType(int(self._walks) + 2*int(self._swims))
 
     @property 
     def speed(self):

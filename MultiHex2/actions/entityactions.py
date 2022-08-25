@@ -20,7 +20,7 @@ class New_Entity_Action(MapAction):
 
     def __call__(self, map: QGraphicsScene):
         
-        # do stuff...
+        # do stuff...        
         map.registerEntity(self.entity, self.coords)
 
         return Delete_Entity_Action(eid=self.eid, entity=self.entity, coords=self.coords)

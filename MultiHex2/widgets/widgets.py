@@ -16,6 +16,7 @@ from MultiHex2.generation.name_gen import create_name
 from MultiHex2.tools.widgetgui.hextoolgui import Ui_Form as HexToolWidgetGui
 from MultiHex2.tools.widgetgui.regionui import Ui_Form as RegionToolWidgetGui
 from MultiHex2.tools.widgetgui.pathui import Ui_Form as PathToolWidgetGui
+from MultiHex2.tools.widgetgui.pathui import road_ui
 from MultiHex2.guis.hex_select_gui import hex_select_gui
 from MultiHex2.actions.regionactions import MetaRegionUpdate
 from MultiHex2.widgets.basic_widget import ToolWidget
@@ -41,6 +42,16 @@ class PathWidget(ToolWidget):
 
     def add_to_end(self):
         self.tool.set_state(4)
+
+class RoadWidget(PathWidget):
+    def __init__(self, parent, tool, tileset, text_source):
+        ToolWidget.__init__(self, parent, tool, tileset, text_source)
+
+        self.ui = road_ui()
+        self.ui.setupUi(self)
+        self.ui.add_to_end.clicked.connect(self.add_to_end)
+        self.ui.add_to_start.clicked.connect(self.add_to_start)
+        self.ui.name_shuffle.clicked.connect(self.shuffle_name)
 
 class RiverWidget(PathWidget):
     def __init__(self, parent, tool, tileset, text_source):

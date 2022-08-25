@@ -1,10 +1,12 @@
 
+from multiprocessing.sharedctypes import Value
+from tracemalloc import start
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent, QMainWindow, QApplication
 from PyQt5.QtWidgets import QGraphicsItem, QGraphicsView, QGraphicsDropShadowEffect
 
-from MultiHex2.core.core import DRAWSIZE, GeneralCatalog, Path, PathCatalog, RiverCatalog, Road, River, ToolLayer
+from MultiHex2.core.core import DRAWSIZE, GeneralCatalog, Path, PathCatalog, RiverCatalog, Road, River
 from MultiHex2.core import HexCatalog, RegionCatalog, EntityCatalog
 from MultiHex2.core import Hex, HexID, Region, Entity
 from MultiHex2.core import screen_to_hex
@@ -14,6 +16,7 @@ from MultiHex2.clock import Time, Clock
 from MultiHex2.actions.baseactions import NullAction
 from MultiHex2.core.coordinates import hex_to_screen
 from MultiHex2.generation.utils import Climatizer
+from MultiHex2.core.enums import ToolLayer, OverlandRouteType
 
 import json
 from collections import deque
@@ -22,9 +25,7 @@ import numpy as np
 from time import time
 from typing import Union
 
-
-
-DEBUG = False
+DEBUG = True
 
 class Clicker(QGraphicsScene, ActionManager):
     """
@@ -71,7 +72,8 @@ class Clicker(QGraphicsScene, ActionManager):
         self.iconLibrary = IconLib()
 
         self.module = ""
-        self.tileset = ""
+        self._tileset = ""
+        self._tileset_costs = {}
 
     def update_with_module(self):
         icon_folder = self._parent_window.module.icon_folder
@@ -90,14 +92,34 @@ class Clicker(QGraphicsScene, ActionManager):
             self._primary = Qt.RightButton
             self._secondary = Qt.LeftButton
 
+    @property
+    def tileset(self):
+        return self._tileset
+
+    def set_tileset(self, tileset:dict)->None:
+        """
+        Sets the internal tileset which is used by the various tools, but does not re-apply all the given hexes.
+        Then it buffers the subtype costs for later
+        """
+        self._tileset = tileset
+        self._tileset_costs ={}
+        for supertype in self.tileset.keys():
+            for subtype in self.tileset[supertype].keys():
+                self._tileset_costs[subtype] = self.tileset[supertype][subtype]["cost"]
+
     def apply_tileset(self, tileset:dict)->None:
+        """
+            This changes the current tileset and re-calculates all the colors for hexes
+        """
+
+        self.set_tileset(tileset)
         climate = Climatizer(tileset)
-        self.tileset = tileset
         for hID in self.hexCatalog:
             if self.hexCatalog[hID].geography in self._parent_window.module.skip_geo:
                 continue
             climate.apply_climate_to_hex(self.hexCatalog[hID])
             self.drawHex(hID)
+
         
     def save(self, filename:str):
         """
@@ -310,33 +332,46 @@ class Clicker(QGraphicsScene, ActionManager):
                 if not isinstance(action, NullAction):
                     self.do_now(action)
 
-    def _get_cost_between(self, start_id:HexID, end_id:HexID, ignore_water:bool):
+    def _get_cost_between(self, start_id:HexID, end_id:HexID, route_type:OverlandRouteType):
         """
         Function for calculating the movement cost between neighboring hexes 
-        Used by the get_route_between_hexes functionm
-
-        -> does not account for locations on map. This is just a raw distance, not including getting closer to the final destination 
+        Used by the get_route_a_star functionm
         """
         if start_id not in self.hexCatalog:
             raise KeyError("start_id {} not in catalog!".format(start_id))
         if end_id not in self.hexCatalog:
             return(inf)
 
-        start_neighs = start_id.neighbors
-        if end_id not in start_neighs:
-            return(inf) #you can't teleport. This is an infiinite cost move...
-
         # We need to be able to have type-specific cost implementations. The Hexmap does not know what kind of map it is
         # So the Hexes themselves will be responsible for calculating the cost.
         # Subtypes of Hexes will implement unique cost functions 
+        if (end_id-start_id)!=1:
+            raise ValueError("Only can use neighboring hexes! diff: {}".format(end_id - start_id))
 
-        start_hex = self.hexCatalog.get(start_id)
-        return(start_hex.get_cost( self._hexCatalog[end_id], ignore_water))
+        paths_here = self._roadCatalog.paths_here(start_id)
+        best_quality = -1
+        for path in [self._roadCatalog.get(pid) for pid in paths_here]:
+            _quality = path.quality
+            if _quality>best_quality:
+                best_quality = _quality
+        # 1 is 20% faster, 2 is 40% faster 
+        
+        scale_factor = 1.0
+        
+        transition = self.hexCatalog.get(start_id).is_land ^ self.hexCatalog.get(end_id).is_land
+        if transition and (route_type==OverlandRouteType.land or route_type==OverlandRouteType.boat):
+            scale_factor = 1000
 
-    def _get_heuristic(self, start:HexID, end:HexID,ignore_water:bool)->float:
-        return self._hexCatalog[start].get_heuristic(self._hexCatalog[end],ignore_water)
+        return scale_factor*self._tileset_costs[self.hexCatalog.get(start_id).geography]/(1.0 + 0.20*best_quality)
+
+    def _get_heuristic(self, start:HexID, end:HexID,route_type:OverlandRouteType)->float:
+        scale_factor = 1.0
+        transition = self.hexCatalog.get(start).is_land ^ self.hexCatalog.get(end).is_land
+        if transition and (route_type==OverlandRouteType.land or route_type==OverlandRouteType.boat):
+            scale_factor = 1000
+        return abs(end - start)*scale_factor
     
-    def get_route_a_star(self, start_id:HexID, end_id:HexID, ignore_water:bool)->'list[HexID]':
+    def get_route_a_star(self, start_id:HexID, end_id:HexID, route_type:OverlandRouteType)->'list[HexID]':
         """
         Finds quickest route between two given HexIDs. Both IDs must be on the Hexmap.
         Always steps closer to the target
@@ -351,7 +386,7 @@ class Clicker(QGraphicsScene, ActionManager):
         gScore[start_id] = 0.
 
         fScore = {}
-        fScore[start_id] = self._get_heuristic(start_id,end_id, ignore_water)
+        fScore[start_id] = self._get_heuristic(start_id,end_id, route_type)
 
         def reconstruct_path(cameFrom:HexID, current:HexID)->'list[HexID]':
             total_path = [current]
@@ -373,7 +408,7 @@ class Clicker(QGraphicsScene, ActionManager):
             openSet.popleft()
             for neighbor in current.neighbors:
                 try:
-                    tentative_gScore = gScore[current] + self._get_cost_between(current, neighbor, ignore_water)
+                    tentative_gScore = gScore[current] + self._get_cost_between(current, neighbor, route_type)
                 except KeyError:
                     tentative_gScore = inf
 
@@ -385,7 +420,7 @@ class Clicker(QGraphicsScene, ActionManager):
                 if tentative_gScore < neigh:
                     cameFrom[neighbor] = current
                     gScore[neighbor] = tentative_gScore
-                    fScore[neighbor] = gScore[neighbor] + self._get_heuristic(neighbor,end_id, ignore_water)
+                    fScore[neighbor] = gScore[neighbor] + self._get_heuristic(neighbor,end_id, route_type)
                     if neighbor not in openSet:
 
                         if len(openSet)==0:
