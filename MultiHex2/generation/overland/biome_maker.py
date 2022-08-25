@@ -1,5 +1,5 @@
 from collections import deque
-from MultiHex2.core.core import ToolLayer
+from MultiHex2.core.enums import ToolLayer
 from MultiHex2.tools import Clicker
 from MultiHex2.core import screen_to_hex, hex_to_screen, HexID
 

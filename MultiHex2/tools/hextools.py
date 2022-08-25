@@ -1,4 +1,4 @@
-from MultiHex2.core.core import ToolLayer
+from MultiHex2.core.enums import ToolLayer
 from MultiHex2.tools.basic_tool import Basic_Tool
 from MultiHex2.actions import Add_Remove_Hex
 from MultiHex2.widgets.widgets import HexBrushWidget, HexSelectWidget

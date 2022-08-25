@@ -1,5 +1,5 @@
 from MultiHex2.actions.baseactions import MapAction, MetaAction, NullAction
-from MultiHex2.core.core import ToolLayer
+from MultiHex2.core.enums import ToolLayer
 
 from PyQt5.QtWidgets import QGraphicsScene
 

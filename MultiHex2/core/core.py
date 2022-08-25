@@ -41,12 +41,6 @@ def get_arrowhead(center:QPointF, _angle)->'list[QPointF]':
     new_arrow = np.matmul(ARROW, rot) + np.array(center.x(), center.y())
     return [QPointF(entry[0], entry[1]) for entry in new_arrow]
 
-class ToolLayer(Enum):
-    null = 0
-    terrain = 1
-    civilization = 2
-    mapuse = 4
-
 # TODO put this in the tileset! 
 hex_scale = {
     "mountain":4.0,

@@ -4,7 +4,8 @@ In this file we define the tools used to make and edit entities
 We also define the widget/gui that is used to do that.
 """
 from MultiHex2.core.coordinates import hex_to_screen
-from MultiHex2.core.core import Hex, ToolLayer
+from MultiHex2.core.core import Hex
+from MultiHex2.core.enums import ToolLayer
 from MultiHex2.tools.basic_tool import Basic_Tool
 from MultiHex2.core import HexID, screen_to_hex, Entity
 from MultiHex2.actions.baseactions import MetaAction, NullAction
@@ -129,7 +130,6 @@ class EntitySelector(Basic_Tool):
             self.set_state(0)
             if self.dialog.accepted:
                 eID = self.parent.nextFreeEID()
-                
                 return New_Entity_Action(eid=eID, entity=new_entity,coords=coords)
 
         return NullAction()
@@ -223,6 +223,14 @@ class MobileSelector(EntitySelector):
         self._selection_count = 0
 
         self.highlight = False
+
+    def set_state(self, state: int) -> None:
+        super().set_state(state)
+
+        if self.state==0 and self._selected!=-1:
+            self.highlight = True
+        else:
+            self.highlight = False
 
     def get_polygon(self):
         if self.state==0:

@@ -1,4 +1,4 @@
-from MultiHex2.core.core import ToolLayer
+from MultiHex2.core.enums import ToolLayer, OverlandRouteType
 from MultiHex2.tools.basic_tool import Basic_Tool
 from MultiHex2.core import HexID
 from MultiHex2.core import screen_to_hex
@@ -34,7 +34,7 @@ class RouteTester(Basic_Tool):
         if self._drawing is not None:
             self.parent.removeItem(self._drawing)
             self._drawing=None
-        route = self.parent.get_route_a_star(start, end, True)
+        route = self.parent.get_route_a_star(start, end, OverlandRouteType.land)
         positions = [hex_to_screen(id) for id in route]
 
         path = QtGui.QPainterPath()

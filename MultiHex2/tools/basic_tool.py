@@ -7,7 +7,8 @@ from PyQt5.QtCore import QPointF
 from MultiHex2.core.coordinates import hex_to_screen, screen_to_hex
 
 from MultiHex2.widgets.basic_widget import ToolWidget
-from MultiHex2.core.core import Hex, ToolLayer
+from MultiHex2.core.core import Hex
+from MultiHex2.core.enums import ToolLayer
 from MultiHex2.tools.clicker_tool import Clicker
 from MultiHex2.actions.baseactions import NullAction
 

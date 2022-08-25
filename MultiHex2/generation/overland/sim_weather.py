@@ -6,6 +6,7 @@ import numpy as np
 from MultiHex2.tools import Clicker
 from MultiHex2.core import screen_to_hex, HexID, hex_to_screen
 from MultiHex2.core import DRAWSIZE
+from MultiHex2.core.enums import OverlandRouteType
 
 from PyQt5.QtGui import QColor
 from PyQt5.QtCore import QPointF
@@ -47,9 +48,9 @@ def simulate_wind(map:Clicker, seed=None, **kwargs):
             raise KeyError("Something's wrong with the config, {} not in catalog".format(right))
 
         if latitude<0.5*dimy:
-            route = map.get_route_a_star(left, right, True)
+            route = map.get_route_a_star(left, right, OverlandRouteType.aerial)
         else:
-            route = map.get_route_a_star(right, left, True)
+            route = map.get_route_a_star(right, left, OverlandRouteType.aerial)
         for i in range(len(route)):
             if i==len(route)-1:
                 wind = get_step(route[i-1], route[i])

@@ -2,9 +2,10 @@ from numpy import random as rnd
 
 from MultiHex2.tools import Clicker
 from MultiHex2.core import screen_to_hex, HexID, hex_to_screen
-from MultiHex2.core.core import Hex, River, ToolLayer
+from MultiHex2.core.core import Hex, River
 from MultiHex2.core.coordinates import get_adjacent_hexIDs, get_adjacent_vertices, get_IDs_from_step
 from MultiHex2.generation.name_gen import create_name
+from MultiHex2.core.enums import ToolLayer
 
 from PyQt5.QtCore import QPointF
 from PyQt5 import QtGui

@@ -1,7 +1,7 @@
 from math import pi
 import os
 
-from MultiHex2.core.core import ToolLayer
+from MultiHex2.core.enums import ToolLayer
 from MultiHex2.tools import Basic_Tool
 from MultiHex2.core.coordinates import screen_to_hex, hex_to_screen
 from MultiHex2.actions import NullAction

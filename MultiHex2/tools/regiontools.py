@@ -1,7 +1,8 @@
 from MultiHex2.tools.basic_tool import Basic_Tool
 from MultiHex2.widgets.widgets import RegionWidget
 from MultiHex2.core import Region, screen_to_hex, Hex
-from MultiHex2.core.core import County, ToolLayer
+from MultiHex2.core.core import County
+from MultiHex2.core.enums import ToolLayer
 from MultiHex2.actions.baseactions import NullAction
 from MultiHex2.generation.name_gen import create_name
 from MultiHex2.actions.regionactions import Merge_Regions_Action, Region_Add_Remove, New_Region_Action
