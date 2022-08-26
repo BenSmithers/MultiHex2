@@ -77,12 +77,6 @@ class Entity:
         self.description = ""
         self.icon        = "location"
 
-        self._location = location
-    
-    @property 
-    def location( self )->HexID:
-        return self._location
-
     @staticmethod
     def widget(self):
         return [EntityWidget]
@@ -104,13 +98,11 @@ class Entity:
         this_dict["description"] = self.description
         this_dict["icon"] = self.icon
         this_dict["type"] = "Entity"
-        this_dict["location"]=(self.location.xid, self.location.yid)
         return this_dict
 
-    def unpack(self, this_dict)->'Entity':
-        assert(this_dict["type"]=="Entity")
-        new_one = Entity(this_dict['name'],
-                        location=HexID(this_dict['location'][0], this_dict['location'][1]),)
+    @classmethod
+    def unpack(cls, this_dict)->'Entity':
+        new_one = cls(this_dict['name'])
         new_one.icon = this_dict["icon"]
         new_one.description = this_dict["description"]
         return new_one
@@ -342,6 +334,19 @@ class Government():
     def widget(cls):
         return [GovernmentWidget]
 
+    def pack(self)->dict:
+        return {
+            "order":self._order,
+            "war":self._war,
+            "spirit":self._spirit,
+            "type": "Entity"
+        }
+
+    @classmethod 
+    def unpack(cls, what)->'Government':
+        return cls(what["order"], what["war"], what["spirit"])
+
+
 class SettlementWidget(GenericTab):
     def __init__(self, parent=None, config_entity=None):
         GenericTab.__init__(self, parent, config_entity)
@@ -487,11 +492,50 @@ class Settlement(Entity, Government):
         self._population = 1
         self._wealth = 1
 
-        self.wards = [ ]
+        self._wards = [ ]
         self._is_ward = is_ward
 
         # this only describes the population directly contained by the _population attribute
         self._demographics = { 'racial': { 'human': 1.00 } }
+
+    def pack(self)->dict:
+        """
+            We get the pack-dicts for Entity, government, and then combine them 
+        """
+        e_dict = Entity.pack(self)
+        g_dict = Government.pack(self)
+
+        for key in g_dict.keys():
+            e_dict[key] = g_dict[key]
+
+        e_dict["population"] = self._population
+        e_dict["wealth"] = self._wealth
+        e_dict["is_ward"] = self._is_ward
+        e_dict["demographics"] = self._demographics
+        e_dict["wards"] = [ward.pack() for ward in self.wards]
+        e_dict["type"] = "Settlement"
+        return e_dict
+    
+    @classmethod
+    def unpack(cls, this_dict) -> 'Settlement':
+        """
+            Multiple inheritance weirdness! Here, it'll call `unpack` on Entity, unpacking those elements but making a Settlement object 
+        """
+        this_obj = super().unpack(this_dict)
+        this_obj._war = this_dict["war"]
+        this_obj._spirit = this_dict["spirit"]
+        this_obj._order = this_dict["order"]
+        this_obj._population = this_dict["population"]
+        this_obj._wealth = this_dict["wealth"]
+        this_obj._is_ward = this_dict["is_ward"]
+        this_obj._demographics = this_dict["demographics"]
+        this_obj._wards = [Settlement.unpack(entry) for entry in this_dict["wards"]]
+
+        return this_obj
+
+    @property
+    def wards(self)->'list[Settlement]':
+        return self._wards
 
     @property
     def tension(self):
@@ -605,7 +649,7 @@ class Settlement(Entity, Government):
             raise TypeError("Arg `new_ward` is type {}, expected {}".format(type(new_ward), Settlement))
 
         new_ward._is_ward = True
-        self.wards.append( new_ward )
+        self._wards.append( new_ward )
 
     def _valid_demo_structure( self, demo ):
         """
@@ -765,7 +809,8 @@ class Settlement(Entity, Government):
 
 class Mobile( Entity ):
     """
-    Defines a mobile map Entity. Fundamentally the same as an Entity, but its location can be moved
+    Defines a mobile map Entity. Fundamentally the same as an Entity, but its location can be moved. 
+    Also carries with it a speed (hexes/day), and how it can move (walks/swims/flies)
     """
     def __init__(self, name:str):
         Entity.__init__(self, name)
@@ -775,6 +820,25 @@ class Mobile( Entity ):
         self._swims = False
         self._flies = False
         self.icon = "walker"
+
+    def pack(self) -> dict:
+        this_dict = super().pack()
+        this_dict["type"]="mobile"
+        this_dict["walks"]=self._walks
+        this_dict["swims"]=self._swims
+        this_dict["flies"]=self._flies
+        this_dict["speed"]=self._speed
+        return this_dict
+
+    @classmethod
+    def unpack(cls, this_dict) -> 'Mobile':
+        obj = super().unpack(this_dict)
+        obj._speed = this_dict["speed"]
+        obj._walks = this_dict["walks"]
+        obj._swims = this_dict["swims"]
+        obj._flies = this_dict["flies"]
+
+        return obj
 
     @property
     def walks(self):

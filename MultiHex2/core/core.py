@@ -205,7 +205,7 @@ class Hex(QPolygonF):
         """
         Alternate of `pack` function. 
         """
-        new_hx = Hex(QPointF(obj["x"], obj["Y"]))
+        new_hx = cls(QPointF(obj["x"], obj["Y"]))
         new_hx._fill = QColor(obj["red"], obj["green"], obj["blue"])
         new_hx._params = obj["params"]
         new_hx.geography=obj["geo"]
@@ -302,7 +302,7 @@ class Region(QPolygonF):
     def unpack(cls, packed:dict)->'Region':
         verts = [QPointF(item[0], item[1]) for item in packed["vertices"]]
         hIDs = [HexID(packed["hIDs"]["xids"][i], packed["hIDs"]["yids"][i]) for i in range(len(packed["hIDs"]["yids"]))]
-        new_reg = Region(QPolygonF(verts), *hIDs)
+        new_reg = cls(QPolygonF(verts), *hIDs)
         new_reg._name = packed["name"]
         new_reg._fill=QColor(packed["red"], packed["green"], packed["blue"])
         return new_reg
@@ -380,7 +380,7 @@ class Path:
     def pack(self)->dict:
         me = {}
         me["dtype"]="HexID" if self._dtype==HexID else "QPointF"
-        me["name"]=self._name
+        me["name"]=self.name
         this_verts = []
         for entry in self.vertices:
             
@@ -399,8 +399,8 @@ class Path:
         for entry in this_dict["verts"]:
             all_verts.append(datatype(entry[0], entry[1]))
 
-        new_path = Path(*all_verts)
-        new_path._name = this_dict["name"]
+        new_path = cls(*all_verts)
+        new_path.name = this_dict["name"]
         return new_path
 
     def add_to_end(self, other):
@@ -897,6 +897,8 @@ class RegionCatalog(GeneralCatalog):
 class EntityCatalog:
     """
     Class for keeping track of Entities, their IDs, their QGraphicsScene hashes, and where they are on the map 
+
+    TODO: incorporate GeneralCatalog stuff with this 
     """
     def __init__(self):
         self._eidCatalog = {} # eID->Entity 
@@ -906,6 +908,11 @@ class EntityCatalog:
 
     def __iter__(self):
         return self._eidCatalog.__iter__()
+
+    def get(self, eID)->Entity:
+        if eID in self._eidCatalog:
+            return self._eidCatalog[eID]
+        
     def __contains__(self, key):
         return key in self._eidCatalog
     def next_free_eid(self)->int:

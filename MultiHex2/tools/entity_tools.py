@@ -281,7 +281,7 @@ class MobileSelector(EntitySelector):
                 # route!
                 entity_selected = self.parent.accessEid(self._selected) # who
                 if not isinstance(entity_selected, Mobile):
-                    return NullAction
+                    return NullAction()
                 entity_loc = self.parent.access_entity_hex(self._selected) # where 
 
                 if self.state==0:

@@ -207,4 +207,4 @@ class MergeRivers(MapAction):
             5. Create reverse action which is to delete merge one and add in backups 
         """
 
-        return NullAction
+        return NullAction()

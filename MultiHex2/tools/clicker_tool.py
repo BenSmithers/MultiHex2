@@ -11,7 +11,7 @@ from MultiHex2.core import HexCatalog, RegionCatalog, EntityCatalog
 from MultiHex2.core import Hex, HexID, Region, Entity
 from MultiHex2.core import screen_to_hex
 from MultiHex2.actions.actionmanager import ActionManager
-from MultiHex2.core.map_entities import Settlement, IconLib
+from MultiHex2.core.map_entities import Mobile, Settlement, IconLib
 from MultiHex2.clock import Time, Clock
 from MultiHex2.actions.baseactions import NullAction
 from MultiHex2.core.coordinates import hex_to_screen
@@ -158,11 +158,10 @@ class Clicker(QGraphicsScene, ActionManager):
         for pID in self._roadCatalog:
             road = self._roadCatalog.get(pID)
             out_dict["roads"]["{}".format(pID)]=road.pack()
-
-        if False:
-            for eID in self._entityCatalog:
-                entity = self._entityCatalog.access_entity(eID)
-                out_dict["entities"]["{}".format(eID)]=entity.pack()
+        for eID in self._entityCatalog:
+            out_dict["entities"]["{}".format(eID)] = self._entityCatalog.get(eID).pack()
+            hid = self._entityCatalog.gethID(eID)
+            out_dict["entities"]["{}".format(eID)]["loc"] = "{}.{}".format(hid.xid, hid.yid)
         
         t2 = time()
 
@@ -199,9 +198,28 @@ class Clicker(QGraphicsScene, ActionManager):
         for str_rid in in_dict["cregions"].keys():
             reg = Region.unpack(in_dict["cregions"][str_rid])
             self.addRegion(reg, ToolLayer.civilization)
-        for str_pid in in_dict["roads"].keys():
-            this_path = Path.unpack(in_dict["roads"][str_pid])
-            self.register_path(this_path, ToolLayer.civilization)
+
+        if "roads" in in_dict:
+            for str_pid in in_dict["roads"].keys():
+                this_path = Road.unpack(in_dict["roads"][str_pid])
+                self.register_path(this_path, ToolLayer.civilization)
+
+        if "entities" in in_dict:
+            for str_eid in in_dict["entities"].keys():
+                print(in_dict["entities"][str_eid]["type"].lower() )
+                if in_dict["entities"][str_eid]["type"].lower() == "entity":
+                    obj = Entity.unpack(in_dict["entities"][str_eid])
+                elif in_dict["entities"][str_eid]["type"].lower()=="mobile":
+                    obj = Mobile.unpack(in_dict["entities"][str_eid])
+                elif in_dict["entities"][str_eid]["type"].lower()=="settlement":
+                    obj = Settlement.unpack(in_dict["entities"][str_eid])
+                else:
+                    raise ValueError("Not sure what to do with {}".format(str_eid["type"]))
+                
+                print("dtype {}".format(type(obj)))
+                split = in_dict["entities"][str_eid]["loc"].split(".")
+                hid = HexID(int(split[0]), int(split[1]))
+                self.registerEntity(obj, hid)
 
         _time_dict= in_dict["time"]
         time = Time(minute=_time_dict["minute"], hour=_time_dict["hour"], 
