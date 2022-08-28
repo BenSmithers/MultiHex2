@@ -17,7 +17,7 @@ class ActionManager:
     def __init__(self):
         self._queue = []
 
-        self.database_dir = os.path.join(os.path.dirname(__file__), "..","resources")
+        self.database_dir = os.path.join(os.path.dirname(__file__),"resources")
         self.database_filename = "example_events.csv"
 
         self._event_widget = None

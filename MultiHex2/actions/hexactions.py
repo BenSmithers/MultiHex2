@@ -2,7 +2,7 @@ from .baseactions import MapAction
 from MultiHex2.core import Hex
 
 from PyQt5.QtWidgets import QGraphicsScene
-from MultiHex2.tools.clicker_tool import Clicker
+from MultiHex2.master_clicker import Clicker
 
 class Add_Remove_Hex(MapAction):
     def __init__(self, **kwargs):

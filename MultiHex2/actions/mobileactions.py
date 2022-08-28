@@ -1,9 +1,8 @@
-from MultiHex2.actions.baseactions import NullAction, MetaAction, MapAction
+from MultiHex2.actions.baseactions import NullAction, MapAction
 from MultiHex2.clock import Time, minutes_in_day
 
-from MultiHex2.tools.clicker_tool import Clicker
+from MultiHex2.master_clicker import Clicker
 
-from MultiHex2.core.core import hex_scale
 from MultiHex2.core.map_entities import Mobile
 from MultiHex2.core.enums import OverlandRouteType
 
@@ -40,8 +39,8 @@ class MobileMoveAction(MapAction):
         speed = this_entity.speed # hexes/day 
 
         geo = map.accessHex(current_hid).geography
-        if geo in hex_scale:
-            scale = hex_scale[geo]
+        if geo in map._tileset_costs:
+            map._tileset_costs[geo]
         else:
             scale = 1.0
 
@@ -96,8 +95,8 @@ class QueueMove(MapAction):
             route = map.get_route_a_star(entity_loc, self._dest_hid, entity_selected.get_route_type())
             
             geo = map.accessHex(entity_loc).geography
-            if geo in hex_scale:
-                scale = hex_scale[geo]
+            if geo in map._tileset_costs:
+                scale = map._tileset_costs[geo]
             else:
                 scale = 1.0
 

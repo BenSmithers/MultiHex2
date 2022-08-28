@@ -8,7 +8,7 @@ Modules provide...
 """
 
 import os
-from MultiHex2.tools.clicker_tool import Clicker
+from MultiHex2.master_clicker import Clicker
 from MultiHex2.generation.generation_config_widget import GenConfigWidget
 
 def generic(map:Clicker, **kwargs):

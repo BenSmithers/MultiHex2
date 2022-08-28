@@ -3,7 +3,7 @@ from numpy import random as rnd
 from math import sqrt, cos, sin
 import numpy as np
 
-from MultiHex2.tools import Clicker
+from MultiHex2.master_clicker import Clicker
 from MultiHex2.core import screen_to_hex, HexID, hex_to_screen
 from MultiHex2.core import DRAWSIZE
 from MultiHex2.core.enums import OverlandRouteType

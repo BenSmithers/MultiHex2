@@ -3,8 +3,8 @@ from math import floor, sin, pi
 import numpy as np
 
 from ..utils import point_is_in, gauss
-from ..utils import perlin, bilinear_interp, get_loc
-from MultiHex2.tools import Clicker
+from ..utils import perlin
+from MultiHex2.master_clicker import Clicker
 from MultiHex2.core import hex_to_screen, Hex
 
 from PyQt5.QtGui import QColor

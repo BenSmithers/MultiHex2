@@ -6,17 +6,19 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent, QMainWindow, QApplication
 from PyQt5.QtWidgets import QGraphicsItem, QGraphicsView, QGraphicsDropShadowEffect
 
-from MultiHex2.core.core import DRAWSIZE, GeneralCatalog, Path, PathCatalog, RiverCatalog, Road, River
+from MultiHex2.core.core import DRAWSIZE, GeneralCatalog, PathCatalog
 from MultiHex2.core import HexCatalog, RegionCatalog, EntityCatalog
 from MultiHex2.core import Hex, HexID, Region, Entity
 from MultiHex2.core import screen_to_hex
-from MultiHex2.actions.actionmanager import ActionManager
+from MultiHex2.actionmanager import ActionManager
 from MultiHex2.core.map_entities import Mobile, Settlement, IconLib
 from MultiHex2.clock import Time, Clock
 from MultiHex2.actions.baseactions import NullAction
 from MultiHex2.core.coordinates import hex_to_screen
 from MultiHex2.generation.utils import Climatizer
 from MultiHex2.core.enums import ToolLayer, OverlandRouteType
+
+from MultiHex2.modules.overland import River, Road, RiverCatalog
 
 import json
 from collections import deque

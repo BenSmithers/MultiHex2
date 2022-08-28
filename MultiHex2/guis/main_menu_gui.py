@@ -2,8 +2,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import os
 
-from MultiHex2.modules import ALL_MODULES
-
 """
 This file defines the UI of the dialog window is displayed when MultiHex first launches 
 """
@@ -74,10 +72,7 @@ class SettingsGui(object):
         self.verticalLayout.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.module_lbl)
 
         self.module_combo = QtWidgets.QComboBox(Dialog)
-        self.module_combo.setObjectName("module_combo")
-
-        for key in ALL_MODULES.keys():
-            self.module_combo.addItem(str(key))
+        self.module_combo.setObjectName("module_combo")            
             
         self.verticalLayout.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.module_combo)
 

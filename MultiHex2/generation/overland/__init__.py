@@ -1,6 +1,4 @@
-from .sim_weather import simulate_wind,simulate_clouds
-from MultiHex2.tools import Clicker
-from .from_platec import gen_land
+from MultiHex2.master_clicker import Clicker
 from .fill_land import generate_land
 from .ridges import generate_ridges
 from .biome_maker import add_biomes

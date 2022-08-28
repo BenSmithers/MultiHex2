@@ -1,0 +1,22 @@
+{
+    "space": {
+      "deep_space": {
+        "color": [ 11, 12, 3 ],
+        "params":{
+          "gas_density":0.01
+        },
+        "is_ray": true,
+        "flattype":true,
+        "cost":1.0
+      },
+      "nebula": {
+        "color": [ 35, 3,  27 ],
+        "params":{
+          "gas_density":0.10
+        },
+        "is_ray": true,
+        "flattype":true,
+        "cost":2.0
+      }
+    }
+}

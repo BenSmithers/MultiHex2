@@ -1,6 +1,6 @@
-from MultiHex2.actions.baseactions import MapAction, MetaAction, NullAction
+from MultiHex2.actions.baseactions import MapAction, NullAction
 from MultiHex2.core.enums import ToolLayer
-from MultiHex2.tools.clicker_tool import Clicker
+from MultiHex2.master_clicker import Clicker
 
 from PyQt5.QtWidgets import QGraphicsScene
 

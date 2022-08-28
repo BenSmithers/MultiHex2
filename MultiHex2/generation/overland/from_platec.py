@@ -1,6 +1,6 @@
 
 from argparse import ArgumentError
-from MultiHex2.tools import Clicker
+from MultiHex2.master_clicker import Clicker
 from MultiHex2.core import hex_to_screen, screen_to_hex, Hex
 from MultiHex2.core import DRAWSIZE
 from ..utils import perlin

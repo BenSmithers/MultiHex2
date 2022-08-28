@@ -1,15 +1,13 @@
 import os
-from enum import Enum
 
 from PyQt5 import QtGui
-from PyQt5.QtWidgets import QGraphicsScene, QWidget
 from PyQt5.QtCore import QPointF
 from MultiHex2.core.coordinates import hex_to_screen, screen_to_hex
 
 from MultiHex2.widgets.basic_widget import ToolWidget
 from MultiHex2.core.core import Hex
 from MultiHex2.core.enums import ToolLayer
-from MultiHex2.tools.clicker_tool import Clicker
+from MultiHex2.master_clicker import Clicker
 from MultiHex2.actions.baseactions import NullAction
 
 art_dir = os.path.join( os.path.dirname(__file__),'..','assets','buttons')

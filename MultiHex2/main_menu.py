@@ -2,7 +2,6 @@
     Implementing the main menu Dialog 
 """
 import sys
-from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QDialog, QWidget
 
 import typing
@@ -11,11 +10,13 @@ import json
 from MultiHex2.guis.main_menu_gui import main_menu_gui, SettingsGui
 
 class MainMenuDialog(QDialog):
-    def __init__(self, parent: typing.Optional[QWidget] = ...) -> None:
+    def __init__(self,  parent:QWidget, module_list) -> None:
         super().__init__(parent)
         self.parent = parent
         self.ui = main_menu_gui()
         self.ui.setupUi(self)
+
+        self._module_list = module_list
 
         self.ui.load_map_button.clicked.connect(self.button_load)
         self.ui.new_map_button.clicked.connect(self.button_new)
@@ -49,7 +50,7 @@ class MainMenuDialog(QDialog):
         if loaded!="":
             self.accept()
     def button_settings(self):
-        dialog = SettingsDialog(self)
+        dialog = SettingsDialog(self, self._module_list)
         dialog.exec_()
 
         dialog.deleteLater()
@@ -65,11 +66,12 @@ class SettingsDialog(QDialog):
         default module
         primary mouse (left/right)
     """
-    def __init__(self, parent)->None:
+    def __init__(self, parent, module_list)->None:
         super().__init__(parent)
         self.ui = SettingsGui()
         self.ui.setupUi(self)
         self.parent = parent
+        self._module_list = module_list
 
         self.accepted.connect(self.on_accept)
         self.path = self.parent.parent.config_filepath
@@ -83,6 +85,9 @@ class SettingsDialog(QDialog):
             self.ui.primary_mouse_combo.setCurrentIndex(1)
 
         count = 0 
+
+        for entry in self._module_list:
+            self.ui.module_combo.addItem(str(entry))
         
         while self.ui.module_combo.currentText()!=self.config["module"]:
             self.ui.module_combo.setCurrentIndex(count)

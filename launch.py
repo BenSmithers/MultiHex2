@@ -6,19 +6,20 @@ from PyQt5.QtCore import Qt
 
 
 from MultiHex2.guis.main_gui import main_gui
-from MultiHex2.tools import Clicker
+from MultiHex2.master_clicker import Clicker
 from MultiHex2.clock import Time
 from MultiHex2.generation.overland import fullsim
 from MultiHex2.guis.savewarn import SaveWarnDialogGui
 from MultiHex2.main_menu import MainMenuDialog
-from MultiHex2.modules import ALL_MODULES
 from MultiHex2.generation.map_gen_config import MapGenConfigDialog
-from MultiHex2.tools.basic_tool import Basic_Tool
+from MultiHex2.tools import Basic_Tool
 
 import os
 import sys
 import shutil
 import json
+
+from MultiHex2 import ALL_MODULES
 
 
 if sys.platform=="linux":
@@ -157,7 +158,7 @@ class main_window(QMainWindow):
         accepted = False
 
         while not accepted:
-            dialog = MainMenuDialog(self)
+            dialog = MainMenuDialog(self , module_list = ALL_MODULES.keys())
             dialog.setAttribute(QtCore.Qt.WA_DeleteOnClose)
             dialog.exec_()
 
@@ -234,8 +235,9 @@ class main_window(QMainWindow):
         if self.module is not None:
             if self.scene.module == self.module.name:
                 return pathto
+                
 
-        self.load_module(self.module.name)
+        self.load_module(self.scene.module)
         return pathto
 
     def keyPressEvent(self, a0: QtGui.QKeyEvent) -> None:
