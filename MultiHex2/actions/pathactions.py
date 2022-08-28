@@ -1,7 +1,9 @@
 from MultiHex2.actions.baseactions import MapAction, MetaAction, NullAction
 from MultiHex2.core.enums import ToolLayer
+from MultiHex2.tools.clicker_tool import Clicker
 
 from PyQt5.QtWidgets import QGraphicsScene
+
 
 from copy import deepcopy
 
@@ -90,6 +92,33 @@ class Pop_From_Path(MapAction):
 """
 Now the various children of the above with the layers and return actions specified 
 """
+
+class ChangeRoadProps(MapAction):
+    def __init__(self, recurring=None, **kwargs):
+        super().__init__(recurring, **kwargs)
+
+        self.needed = ["pid", "quality", "name"]
+        self.verify(kwargs)
+        self.pid = kwargs["pid"]
+        self.quality = kwargs["quality"]
+        self.name = kwargs["name"]
+
+    def __call__(self, map: Clicker) -> 'MapAction':
+        this_road = map.roadCatalog.get(self.pid)
+        if this_road is None:
+            raise ValueError("No road with pid {}".format(self.pid))
+
+        old_name = this_road.name
+        old_quality = this_road.quality
+        
+        this_road._quality = self.quality
+        this_road.name = self.name
+
+        map.roadCatalog.update_obj(self.pid, this_road)
+        map.draw_road(self.pid, ToolLayer.civilization)
+
+        return ChangeRoadProps(pid=self.pid, name=old_name, quality=old_quality)
+        
 
 class Add_Delete_Road(Add_Delete_Path):
     def __init__(self, recurring=None, **kwargs):

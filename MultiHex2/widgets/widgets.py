@@ -11,6 +11,7 @@ import json
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import QColorDialog
+from MultiHex2.actions.pathactions import ChangeRoadProps
 
 from MultiHex2.generation.name_gen import create_name
 from MultiHex2.tools.widgetgui.hextoolgui import Ui_Form as HexToolWidgetGui
@@ -52,6 +53,18 @@ class RoadWidget(PathWidget):
         self.ui.add_to_end.clicked.connect(self.add_to_end)
         self.ui.add_to_start.clicked.connect(self.add_to_start)
         self.ui.name_shuffle.clicked.connect(self.shuffle_name)
+        self.ui.apply_button.clicked.connect(self.apply)
+        #self.ui.quality_spin.valueChanged.connect(self.newquality)
+
+
+    def apply(self):
+        name = self.ui.name_edit.text()
+        pid= self.tool.selected_path
+        quality = self.ui.quality_spin.value()
+
+        action = ChangeRoadProps(pid = pid, name = name, quality=quality)
+        self.tool.parent.do_now(action)
+
 
 class RiverWidget(PathWidget):
     def __init__(self, parent, tool, tileset, text_source):

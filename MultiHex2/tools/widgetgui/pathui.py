@@ -44,6 +44,11 @@ class Ui_Form(object):
         self.add_to_start.setObjectName("add_to_start")
         self.formLayout.setWidget(5, QtWidgets.QFormLayout.FieldRole, self.add_to_start)
 
+        self.apply_button = QtWidgets.QPushButton(Form)
+        self.apply_button.setObjectName("apply_button")
+        self.formLayout.setWidget(7, QtWidgets.QFormLayout.FieldRole, self.apply_button)
+
+
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
@@ -58,6 +63,7 @@ class Ui_Form(object):
         self.add_to_start.setText(_translate("Form", "Add To Start"))
         self.add_to_end.setText(_translate("Form", "Add To End"))
         
+        self.apply_button.setText(_translate("Form", "Apply"))
 
 
 class road_ui(Ui_Form):

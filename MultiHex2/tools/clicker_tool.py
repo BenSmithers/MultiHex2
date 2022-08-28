@@ -669,9 +669,9 @@ class Clicker(QGraphicsScene, ActionManager):
     def draw_road(self, rid, layer:ToolLayer):
 
         """
-         self.addPath(new_hex, self._pen, self._brush)
-         path = QtGui.QPainterPath()
-         path.addPolygon( QtGui.QPolygonF( route ))
+         actually draws a path with the given ID and in the given layer 
+
+         TODO fix the name
         """
         using = self.get_path_cat(layer)
 
