@@ -1,6 +1,6 @@
 {
     "space": {
-      "deep_space": {
+      "deepspace": {
         "color": [ 11, 12, 3 ],
         "params":{
           "gas_density":0.01

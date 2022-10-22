@@ -1,8 +1,11 @@
 from MultiHex2.master_clicker import Clicker
+from MultiHex2.clock import Time,Clock
+
 
 import numpy as np
 import json
 import os 
+import numpy.random as rnd
 
 """
 Should follow the same general procedure as the actual Sector Generation 
@@ -17,6 +20,8 @@ Should follow the same general procedure as the actual Sector Generation
     3. Get hexID here. If hex already has star system here, check neighbors for empty hex (choose random neighbor start point)
 """
 
+from .fill_hexes import generate
+
 def fullsim(map:Clicker, **kwargs):
     if "config" in kwargs:
         config = kwargs["config"]
@@ -30,4 +35,11 @@ def fullsim(map:Clicker, **kwargs):
     else:
         seed = kwargs["seed"]
 
-    
+    rnd.seed(seed)
+
+    year = rnd.randint(3000, 3300)
+    month = rnd.randint(0,12)
+    day  = rnd.randint(0,30)
+    map.configure_with_clock(Clock(Time(hour=12, day=day, month=month, year=year)))
+
+    generate(map, seed, **config)
