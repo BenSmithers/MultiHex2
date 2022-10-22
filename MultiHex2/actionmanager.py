@@ -34,7 +34,7 @@ class ActionManager:
 
         self._meta_event_holder = None
 
-        self._clock = Time()
+        self._clock = Clock(Time())
 
         self._latitude = 0.0
         self._longitude = 0.0
