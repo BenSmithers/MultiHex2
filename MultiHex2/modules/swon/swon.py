@@ -2,7 +2,8 @@
 Module for making and editing Stars Without Number (Swon) maps
 """
 
-import os 
+import os
+from MultiHex2.generation.swon.widget import SwoNConfigWidget 
 
 from MultiHex2.modules.modules_core import Module
 
@@ -14,6 +15,7 @@ from MultiHex2.tools.entity_tools import MobileSelector, NewMobile
 from MultiHex2.modules.overland.tools import NewRoadTool, RoadSelector
 from MultiHex2.tools.map_use_tool import MapUse
 
+from MultiHex2.generation.swon import fullsim
 
 class SwoN(Module):
     def __init__(self):
@@ -37,3 +39,7 @@ class SwoN(Module):
         }
 
         self._tileset_location=os.path.join(os.path.dirname(__file__), "..","..","resources","tilesets","swon.json")
+        self._icon_folder=os.path.join(os.path.dirname(__file__), "..", "..","assets","swon_icons")
+
+        self._generator = fullsim
+        self._generation_config_widget = SwoNConfigWidget

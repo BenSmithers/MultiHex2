@@ -71,6 +71,9 @@ class Clicker(QGraphicsScene, ActionManager):
 
         self._debug_wind = {}
 
+        # this is a function that color-corrects a hex according to the given module
+        self._color_correct = lambda x:x.fill
+
         self.iconLibrary = IconLib()
 
         self.module = ""
@@ -79,6 +82,7 @@ class Clicker(QGraphicsScene, ActionManager):
 
     def update_with_module(self):
         icon_folder = self._parent_window.module.icon_folder
+        self._color_correct = self._parent_window.module.color_correct
         if icon_folder!="":
             self.iconLibrary.set_module(icon_folder)
 
@@ -767,7 +771,7 @@ class Clicker(QGraphicsScene, ActionManager):
         hexobj = self._hexCatalog[coords]
 
         self._brush.setStyle(Qt.BrushStyle.SolidPattern)
-        self._brush.setColor(hexobj.fill)
+        self._brush.setColor( self._color_correct( hexobj ) )
         self._pen.setWidth(1)
         self._pen.setStyle(0)
         self._pen.setColor(QtGui.QColor(170,170,170))

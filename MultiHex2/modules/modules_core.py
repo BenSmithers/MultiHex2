@@ -9,7 +9,9 @@ Modules provide...
 
 import os
 from MultiHex2.master_clicker import Clicker
+from MultiHex2.core import Hex
 from MultiHex2.generation.generation_config_widget import GenConfigWidget
+from PyQt5 import QtGui
 
 def generic(map:Clicker, **kwargs):
     return
@@ -29,6 +31,9 @@ class Module:
         self._skip_geo=[]
         self._icon_folder=""
         self._generation_config_widget = GenConfigWidget
+
+    def color_correct(self, which:Hex)->QtGui.QColor:
+        return which.fill
 
     @property
     def generation_config(self):

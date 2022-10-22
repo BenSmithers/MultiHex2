@@ -10,11 +10,14 @@ from MultiHex2.tools.entity_tools import EntitySelector, AddEntityTool, AddSettl
 from MultiHex2.tools.entity_tools import MobileSelector, NewMobile
 from MultiHex2.modules.overland.tools import NewRoadTool, RoadSelector, NewRiverTool, RiverSelector
 from MultiHex2.tools.map_use_tool import MapUse
+from MultiHex2.core import Hex
 
 from MultiHex2.modules.modules_core import Module
 from MultiHex2.generation.overland import fullsim
 
 from MultiHex2.generation.overland.widget import OverlandConfigWidget
+
+from PyQt5 import QtGui
 
 class Overland(Module):
     def __init__(self):
@@ -48,3 +51,12 @@ class Overland(Module):
         self._icon_folder=""
 
         self._generation_config_widget = OverlandConfigWidget
+
+    def color_correct(self, which:Hex)->QtGui.QColor:
+        alt_scale = 0.2
+        if which._flat:
+            return which.fill
+        else:
+            return QtGui.QColor(min( 255, max( 0, which._fill.red()*( 1.0 + alt_scale*which.params["altitude_base"]-alt_scale*0.5))),
+                        min( 255, max( 0, which._fill.green()*( 1.0 + alt_scale*which.params["altitude_base"]-alt_scale*0.5))),
+                        min( 255, max( 0, which._fill.blue()*( 1.0 + alt_scale*which.params["altitude_base"]-alt_scale*0.5))))

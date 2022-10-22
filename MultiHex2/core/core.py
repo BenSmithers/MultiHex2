@@ -83,6 +83,7 @@ class Hex(QPolygonF):
         return self._params
     @property
     def fill(self)->QColor:
+        return self._fill
         alt_scale = 0.2
         if self._flat:
             return self._fill
