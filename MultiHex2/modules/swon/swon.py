@@ -36,4 +36,4 @@ class SwoN(Module):
             "map_use":MapUse
         }
 
-        self._tileset_location=os.path.join(os.path.dirname(__file__), "..","resources","tilesets","swon.json")
+        self._tileset_location=os.path.join(os.path.dirname(__file__), "..","..","resources","tilesets","swon.json")

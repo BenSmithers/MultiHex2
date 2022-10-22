@@ -130,7 +130,8 @@ def fetch_synonyms(what):
         "ice": ["Glacier","Ice Wastes","Arctic"],
         "savanah":["Savanah"],
         "kingdom":["Kingdom"],
-        "county":["Barony","County", "Nation"]
+        "county":["Barony","County", "Nation"],
+        "nebula":["Nebula", "Expanse"]
     }
 
     return switcher.get(what, ["Land"])

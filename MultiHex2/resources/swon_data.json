@@ -1,0 +1,152 @@
+{
+    "atmosphere":{
+        "corrosive":{
+            "min":2,
+            "text":"damaging to foreign objects"
+        },
+        "inert":{
+            "min":3,
+            "text":"gas, useless for respiration"
+        },
+        "airless or thin":{
+            "min":4,
+            "text":"to the point of suffocation"
+        },
+        "breathable":{
+            "min":6,
+            "text":"mix"
+        },
+        "thick":{
+            "min":9,
+            "text":"but breathable with a pressure mask"
+        },
+        "invasive":{
+            "min":11,
+            "text":"penetrating suit seals"
+        },
+        "both corrosive and invasive":{
+            "min":12,
+            "text":"in its effects"
+        }
+    },
+    "temperature":{
+        "frozen":{
+            "min":2,
+            "text":"locked in perpetual ice"
+        },
+        "cold":{
+            "min":3,
+            "text":"dominated by claciers and tundra"
+        },
+        "variable cold":{
+            "min":4,
+            "text":"with temperate places"
+        },
+        "temperate":{
+            "min":6,
+            "text":"Earth-like in its ranges"
+        },
+        "variable warm":{
+            "min":9,
+            "text":"with temperate places"
+        },
+        "warm":{
+            "min":11,
+            "text":"tropical and hotter in places"
+        },
+        "burning":{
+            "min":12,
+            "text":"intolerably hot on its surface"
+        }
+    },
+    "biosphere":{
+        "remnant":{
+            "min":2,
+            "text":"biosphere"
+        },
+        "microbial":{
+            "min":3,
+            "text":"life forms exist"
+        },
+        "no":{
+            "min":4,
+            "text":"native biosphere"
+        },
+        "human-miscible":{
+            "min":6,
+            "text":"biosphere"
+        },
+        "immiscible":{
+            "min":9,
+            "text":"biosphere"
+        },
+        "hybrid":{
+            "min":11,
+            "text":"biosphere"
+        },
+        "engineered":{
+            "min":12,
+            "text":"biosphere"
+        }
+    },
+    "population":{
+        "failed colony":{
+            "min":2,
+            "text":0
+        },
+        "outpost":{
+            "min":3,
+            "text":1000
+        },
+        "fewer":{
+            "min":4,
+            "text":50000
+        },
+        "millions":{
+            "min":6,
+            "text":2000000
+        },
+        "hundreds of millions":{
+            "min":9,
+            "text":100000000
+        },
+        "billions":{
+            "min":11,
+            "text":1000000000
+        },
+        "alien":{
+            "min":12,
+            "text":-1
+        }
+    },
+    "tech level":{
+        "0":{
+            "min":2,
+            "text":"neolithic-level technology"
+        },
+        "1":{
+            "min":3,
+            "text":"medieval technology"
+        },
+        "2":{
+            "min":4,
+            "text":"early Industrial age tech"
+        },
+        "4":{
+            "min":6,
+            "text":"modern postech"
+        },
+        "3":{
+            "min":9,
+            "text":"tech like that of present-day Earth"
+        },
+        "4+":{
+            "min":11,
+            "text":"posttech with specialities"
+        },
+        "5":{
+            "min":12,
+            "text":"pretech with surviving infrastructure"
+        }
+    }
+}
