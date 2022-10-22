@@ -24,7 +24,7 @@ def generate_ridges(map:Clicker, seed=None, **kwargs):
     requried_args = ["dimx","dimy","n_peaks","zones","sigma","avg_range"]
     for arg in requried_args:
         if arg not in kwargs:
-            raise ArgumentError("Could not find requied arg {} in kwargs".format(arg))
+            raise Exception("Could not find requied arg {} in kwargs".format(arg))
 
     dimensions = [kwargs['dimx'],kwargs['dimy']]
     n_peaks = kwargs['n_peaks']

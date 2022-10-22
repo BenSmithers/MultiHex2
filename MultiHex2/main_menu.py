@@ -91,12 +91,13 @@ class SettingsDialog(QDialog):
         
         while self.ui.module_combo.currentText()!=self.config["module"]:
             self.ui.module_combo.setCurrentIndex(count)
-            count+=1
-        
             if self.ui.module_combo.count()==count:
                 self.ui.module_combo.setCurrentIndex(0)
                 print("WARNING! Incorrect configuration loaded!")
+                print(self.config["module"])
                 break
+            count+=1
+        
 
 
     def on_accept(self):

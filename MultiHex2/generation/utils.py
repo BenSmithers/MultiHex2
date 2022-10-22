@@ -15,6 +15,31 @@ from MultiHex2.core.core import Hex
 
 from scipy.interpolate import interp2d
 
+class Table:
+    """
+    This class is used for the rollable tables where we have something like 
+        2d6     Type
+         2      One
+         3      another
+        4-7     a third
+
+    and if we give it, say, 5, we want "a third"
+
+    So here, you make the Table, and enter in values (one at a time) for each entry in the table. Then it can be accessed 
+    """
+    def __init__(self):
+        self._mins = []
+        self._entry = []
+
+
+    def add_entry(self, min:int, entry:str):
+        self._mins.append(int(min))
+        self._entry.append(entry)
+    def access(self, value:int)->str:
+        what = get_loc(value, self._mins)[0]
+        return self._entry[what]
+
+
 class Climatizer:
     def __init__(self, tileset:dict):
         self.tileset = tileset
