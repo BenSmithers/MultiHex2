@@ -40,17 +40,29 @@ def add_systems(map:Clicker,seed=None, **kwargs):
     def make_systemname()->str:
         name = ""
         name+=choice(letters)+choice(letters)
-        name+=choice(numbers)+choice(numbers)
         name+="-"
+        name+=choice(numbers)+choice(numbers)
         return name
 
     n_systems = 0
-    while n_systems < 10:
-        x_pos = (0.8*rnd.random() + 0.05)*dimensions[0]
-        y_pos = (0.8*rnd.random() + 0.05)*dimensions[1]
+    while n_systems < kwargs["n_systems"]:
+        # half of the time, let's just make a neighbor! 
+        n_used= map._entityCatalog.next_free_eid()
+        if  n_used!=0 and rnd.randint(0,4)<2:
+            which_choice = rnd.randint(0, n_used)
 
-        hid = screen_to_hex(QPointF(x_pos, y_pos))
+            from_hid = map._entityCatalog.gethID(which_choice)
+            hid = choice(from_hid.neighbors)
+        else:
+            x_pos = (0.8*rnd.random() + 0.05)*dimensions[0]
+            y_pos = (0.8*rnd.random() + 0.05)*dimensions[1]
+
+            hid = screen_to_hex(QPointF(x_pos, y_pos))
+
         if not hid in map.hexCatalog:
+            continue
+
+        if map.access_entity_hex(hid) is not None:
             continue
 
         new_sys = System(make_systemname(), rng=rnd)

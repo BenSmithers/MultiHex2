@@ -15,6 +15,7 @@ from MultiHex2.tools.entity_tools import MobileSelector, NewMobile
 from MultiHex2.modules.overland.tools import NewRoadTool, RoadSelector
 from MultiHex2.tools.map_use_tool import MapUse
 
+from .tools import AddSystem
 from MultiHex2.generation.swon import fullsim
 
 class SwoN(Module):
@@ -28,10 +29,9 @@ class SwoN(Module):
             "hex_brush":HexBrush,
             "region_add":RegionAdd,
             "entity_select":EntitySelector,
-            "entity_add":AddEntityTool,
             "road_select":RoadSelector,
             "road_add":NewRoadTool,
-            "settlement_add":AddSettlement,
+            "settlement_add":AddSystem,
             "county_add":CivAdd,
             "mobile_select":MobileSelector,
             "new_mobile":NewMobile,

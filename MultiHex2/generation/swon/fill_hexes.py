@@ -89,6 +89,7 @@ def generate(map:Clicker,seed=None, **kwargs):
         this_hex.set_fill(QColor(neb_fill[0], neb_fill[1], neb_fill[2]))
         this_hex.set_params(superset["nebula"]["params"])
         this_hex.geography = "nebula"
+        map.drawHex(what)
 
     while i_nebula < 10:
         x_pos = (0.8*rnd.random() + 0.05)*dimensions[0]

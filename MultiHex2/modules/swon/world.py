@@ -91,6 +91,7 @@ class World(Settlement):
         super().__init__(name, None, True)
 
         self._fuel=False
+        self.title = ""
     
         if "seed" in kwargs.keys():
             np.random.seed(kwargs["seed"])
@@ -111,7 +112,7 @@ class World(Settlement):
         self._population_raw = roll(rng) if population==-1 else population
         self._tech_level = roll(rng) if tl==-1 else tl
 
-        self._population = pop.access(self._population_raw)*np.random.randint(1,10)
+        self._population = int(pop.access(self._population_raw))*np.random.randint(1,10)
 
     @property 
     def atmosphere(self):
@@ -170,74 +171,75 @@ class UnhabWorld(World):
         if size<61:
             self._bio = 4
             if extra<22:
-                self._atm = 4
-                self._tmp = 12
-                self._title="geomorteus"
+                self._atmosphere = 4
+                self._temperature = 12
+                self.title="geomorteus"
             elif extra<40:
-                self._atm = 4
-                self._tmp = 9
-                self._title="geoinactive"
+                self._atmosphere = 4
+                self._temperature = 9
+                self.title="geoinactive"
             elif extra<66:
-                self._atm = 4
-                self._tmp = 10
-                self._title = "dwarf"
+                self._atmosphere = 4
+                self._temperature = 10
+                self.title = "dwarf"
             elif extra<91:
-                self._atm = 2
-                self._tmp = 12
-                self._title="reducing"
+                self._atmosphere = 2
+                self._temperature = 12
+                self.title="reducing"
             elif extra<96:
-                self._atm = 4
-                self._tmp = 12
-                self._title = "chthonian"
+                self._atmosphere = 4
+                self._temperature = 12
+                self.title = "chthonian"
             else:
-                self._atm = 2
-                self._tmp = 12
-                self._title = "demon"
+                self._atmosphere = 2
+                self._temperature = 12
+                self.title = "demon"
         elif size<71:
             # temp 4-10, 6-8 temperate
             # atm 5-10 probably
             if extra<21:
-                self._tmp = 10
-                self._atm = 7
-                self._title="desert"
+                self._temperature = 10
+                self._atmosphere = 7
+                self.title="desert"
             if extra<41:
-                self._tmp=4
-                self._atm = 10
-                self._title="adaptable"
+                self._temperature=4
+                self._atmosphere = 10
+                self.title="adaptable"
             elif extra<51:
                 self._temp = 7
-                self._atm = 9
-                self._title="marginal"
+                self._atmosphere = 9
+                self.title="marginal"
             elif extra<59:
-                self._tmp=7
-                self._atm=7
+                self._temperature=7
+                self._atmosphere=7
                 self._bio=7
-                self._title="terrestrial"
+                self.title="terrestrial"
             elif extra<79:
-                self._tmp=7
-                self._tmp=7
-                self._title="pelagic"
+                self._temperature=7
+                self._temperature=7
+                self.title="pelagic"
             else:
-                self._tmp=4
-                self._atm = 7
-                self._title="glaciated"
+                self._temperature=4
+                self._atmosphere = 7
+                self.title="glaciated"
 
         else:
             self._fuel=True
-            self._tmp = 2
+            self._temperature = 3
             if self._pop>5:
                 self._pop = 5
 
             if extra<21:
-                self._title="ice giant"
+                self.title="ice giant"
+                self._temperature = 2
             elif extra<86:
-                self._title="gas giant"
+                self.title="gas giant"
             elif extra<96:
-                self._title="super giant"
+                self.title="super giant"
             elif extra<97:
-                self._title="gas ultar giant"
+                self.title="gas ultar giant"
             else:
-                self._title="beta Giant"
-                self._tmp = 12
+                self.title="beta Giant"
+                self._temperature = 12
 
                                          
