@@ -41,13 +41,14 @@ class IconLib:
         for each in self._pictures:
             name = os.path.split(each)[1].split(".")[0]
 
-            self._pixmaps[name] = QtGui.QPixmap(each).scaledToWidth(DRAWSIZE*1.5)
+            self._pixmaps[name] = QtGui.QPixmap(each)
 
         if self._module_folder!="":
             module_overwrite = glob(os.path.join(self._module_folder, "*"))
             for each in module_overwrite:
                 name = os.path.split(each)[1].split(".")[0]
-                self._pixmaps[name] = QtGui.QPixmap(each).scaledToWidth(DRAWSIZE*1.5)
+                print("added {}".format(name))
+                self._pixmaps[name] = QtGui.QPixmap(each)
 
     def all_names(self):
         return list(self._pixmaps.keys())
@@ -55,10 +56,15 @@ class IconLib:
     def __iter__(self):
         return self._pixmaps.__iter__()
 
-    def access(self, name:str)->QtGui.QPixmap:
+    def access(self, name:str, width=-1)->QtGui.QPixmap:
         if name not in self._pixmaps:
             raise ValueError("Requested {} pixmap, don't see it! Have {}".format(name, self._pixmaps.keys()))
-        return self._pixmaps[name]
+
+        if width==-1:
+            return self._pixmaps[name].scaledToWidth(DRAWSIZE*1.5)
+        else:
+            return self._pixmaps[name].scaledToWidth(width)
+
 
 
 class Entity:
@@ -109,8 +115,9 @@ class Entity:
 
 
 class GenericTab(QtWidgets.QWidget):
-    def __init__(self, parent=None, config_entity=None):
+    def __init__(self, parent, iconLib:IconLib, config_entity=None):
         QtWidgets.QWidget.__init__(self, parent=parent)
+        self.iconlib = iconLib
         if not isinstance(config_entity, Entity):
             raise TypeError("Expected {}, got {}".format(Entity, type(config_entity)))
 
@@ -128,9 +135,11 @@ class GenericTab(QtWidgets.QWidget):
 
 
 class EntityWidget(GenericTab):
-    def __init__(self, parent=None, config_entity=None):
-        GenericTab.__init__(self,parent, config_entity)
+    def __init__(self,  parent, iconLib:IconLib, config_entity=None):
+        GenericTab.__init__(self,parent,iconLib, config_entity)
         self.setObjectName("EntityWidget")
+
+        self.iconlib = iconLib
 
         if isinstance(self, MobileWidget):
             self.ARTDIR = os.path.join(ARTDIR, 'mobiles')
@@ -183,13 +192,16 @@ class EntityWidget(GenericTab):
         self.icon_combo.setObjectName("icon_combo")
 
         self.pictures = glob(os.path.join(self.ARTDIR, "*.svg"))
-        for each in self.pictures:
-            name = os.path.split(each)[1].split(".")[0]
-            self.icon_combo.addItem( QtGui.QIcon(QtGui.QPixmap(each)), name )
+
+
+        for name in self.iconlib.all_names():
+            self.icon_combo.addItem( QtGui.QIcon(self.iconlib.access(name)), name )
 
         self.picture_box = QtWidgets.QLabel(self)
         self.picture_box.setObjectName("picture_box")
-        self.picture_box.setPixmap(QtGui.QPixmap(os.path.join(self.ARTDIR,self.pictures[self.icon_combo.currentIndex()])).scaledToHeight(300))
+        # self.picture_box.setPixmap(QtGui.QPixmap(os.path.join(self.ARTDIR,self.pictures[self.icon_combo.currentIndex()])).scaledToHeight(300))
+        self.picture_box.setPixmap( self.iconlib.access( self.icon_combo.currentText(), 400 ))
+
         self.right_pane.addWidget(self.picture_box)
         self.right_pane.addWidget(self.icon_combo)
         # Picture spot
@@ -206,7 +218,10 @@ class EntityWidget(GenericTab):
         #self.left_pane.setWidget(line, QtWidgets.QFormLayout.LabelRole, self.speed_lbl) #FieldRole SpanningRole
 
     def combo_change(self):
-        self.picture_box.setPixmap(QtGui.QPixmap(os.path.join(self.ARTDIR,self.pictures[self.icon_combo.currentIndex()])).scaledToWidth(400))
+        self.picture_box.setPixmap( self.iconlib.access( self.icon_combo.currentText(), 400 ) )
+
+
+        #self.picture_box.setPixmap(self. .scaledToWidth(400) )
 
     def apply_to_entity(self, entity):
         """
@@ -240,8 +255,8 @@ class EntityWidget(GenericTab):
             self.icon_combo.setCurrentIndex(which)
 
 class GovernmentWidget(GenericTab):
-    def __init__(self, parent=None, config_entity=None):
-        GenericTab.__init__(self, parent, config_entity)
+    def __init__(self, parent, iconLib:IconLib, config_entity=None):
+        GenericTab.__init__(self, parent, iconLib, config_entity)
         self.setObjectName("GovernmentWidget")
 
         self.formlayout = QtWidgets.QFormLayout(self)
@@ -348,8 +363,9 @@ class Government():
 
 
 class SettlementWidget(GenericTab):
-    def __init__(self, parent=None, config_entity=None):
-        GenericTab.__init__(self, parent, config_entity)
+    def __init__(self, parent, iconLib:IconLib, config_entity):
+        GenericTab.__init__(self, parent, iconLib, config_entity)
+        self.iconlib = iconLib
         self.setObjectName("SettlementWidget")
 
         self.formlayout = QtWidgets.QFormLayout(self)
@@ -442,7 +458,7 @@ class SettlementWidget(GenericTab):
 
         if index!=self.wardCombo.count()-1:
             # prep ward widget?
-            self.ward_widget = SettlementWidget(self, self._entity.wards[index])
+            self.ward_widget = SettlementWidget(self, self.iconlib, self._entity.wards[index])
             self.formlayout.setWidget(5, QtWidgets.QFormLayout.FieldRole, self.ward_widget)
 
         self.totalWealthlbl.setText("Total Wealth:    {}".format(self._entity.wealth))
@@ -872,7 +888,7 @@ class Mobile( Entity ):
 
 
 class MobileWidget(EntityWidget):
-    def __init__(self,parent=None, config_entity=None):
-        EntityWidget.__init__(self,parent)
+    def __init__(self,parent, iconLib:IconLib, config_entity=None):
+        EntityWidget.__init__(self,parent, iconLib, config_entity)
     
         self.configure_with(config_entity)

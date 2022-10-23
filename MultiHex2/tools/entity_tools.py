@@ -11,7 +11,7 @@ from MultiHex2.core import HexID, screen_to_hex, Entity
 from MultiHex2.actions.baseactions import MetaAction, NullAction
 from MultiHex2.actions.mobileactions import MobileMoveAction, QueueMove
 from MultiHex2.actions.entityactions import *
-from MultiHex2.core.map_entities import Mobile, Settlement
+from MultiHex2.core.map_entities import IconLib, Mobile, Settlement
 from MultiHex2.clock import minutes_in_day
 
 import os
@@ -59,7 +59,7 @@ class EntityDialog(QtWidgets.QDialog):
     It adds tabs to itself according to what kind of entity is worked with. 
     When this is "accepted" it packages up and stores an action, which can be accepted later
     """
-    def __init__(self,parent, config_object:Entity):
+    def __init__(self,parent, config_object:Entity, library:IconLib):
         super(EntityDialog, self).__init__(parent)
         self.ui = EntityDialogGUI()
         self.ui.setupUi(self)
@@ -82,7 +82,7 @@ class EntityDialog(QtWidgets.QDialog):
             newtab = QtWidgets.QWidget(self)
             
             layout = QtWidgets.QVBoxLayout(newtab)
-            this_widg = entry(newtab, config_object)
+            this_widg = entry(newtab, library, config_object)
             newtab.setObjectName( this_widg.objectName() )
             layout.addWidget(this_widg)
             newtab.setLayout(layout)
@@ -123,7 +123,8 @@ class EntitySelector(Basic_Tool):
             coords = screen_to_hex(loc)
             new_entity = self._creation_type("New Entity")
 
-            self.dialog = EntityDialog(parent=None,config_object=new_entity)
+            library = self.parent.iconLibrary
+            self.dialog = EntityDialog(parent=None,config_object=new_entity, library=library)
             self.dialog.setAttribute(QtCore.Qt.WA_DeleteOnClose)
             self.dialog.exec_()
             
@@ -158,7 +159,8 @@ class EntitySelector(Basic_Tool):
                 this_ent = self.parent.accessEid(eids_here[0])
 
                 backup = copy(this_ent)
-                self.dialog = EntityDialog(parent=None, config_object=backup)
+                library = self.parent.iconLibrary
+                self.dialog = EntityDialog(parent=None, config_object=backup, library=library)
                 self.dialog.setAttribute(QtCore.Qt.WA_DeleteOnClose)
                 self.dialog.exec_()
 
