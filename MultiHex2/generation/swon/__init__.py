@@ -21,6 +21,7 @@ Should follow the same general procedure as the actual Sector Generation
 """
 
 from .fill_hexes import generate
+from .add_systems import add_systems
 
 def fullsim(map:Clicker, **kwargs):
     if "config" in kwargs:
@@ -43,3 +44,4 @@ def fullsim(map:Clicker, **kwargs):
     map.configure_with_clock(Clock(Time(hour=12, day=day, month=month, year=year)))
 
     generate(map, seed, **config)
+    add_systems(map, seed, **config)

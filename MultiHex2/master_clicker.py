@@ -473,7 +473,8 @@ class Clicker(QGraphicsScene, ActionManager):
     def removeEntity(self, eID:int):
         here = self._entityCatalog.gethID(eID)
         this_sid = self._entityCatalog.getSID(here)
-        self.removeItem(this_sid)
+        for sid in this_sid:
+            self.removeItem(sid)
         self._entityCatalog.remove(eID)
 
     def moveEntity(self, eID:int, new_hid:HexID):
@@ -484,7 +485,8 @@ class Clicker(QGraphicsScene, ActionManager):
         old_sid = self._entityCatalog.getSID(old_hid)
 
         self._entityCatalog.change_hID(eID, new_hid)
-        self.removeItem(old_sid)
+        for sid in old_sid:
+            self.removeItem(sid)
         self.draw_entities_at_hex(new_hid)
 
 
@@ -517,8 +519,10 @@ class Clicker(QGraphicsScene, ActionManager):
 
         # remove anything already here! 
         here = self._entityCatalog.getSID(coords)
-        if (here is not None) and here!=-1:
-            self.removeItem(here)
+        if (here is not None):
+            for sid in here:
+                if sid != -1:
+                    self.removeItem(sid)
 
         these_entities = self.eIDs_at_hex(coords)
         if len(these_entities)==0:

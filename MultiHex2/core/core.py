@@ -629,7 +629,7 @@ class EntityCatalog:
             eID+=1
         return eID
 
-    def register(self, hID:HexID, entity:Entity, screenID):
+    def register(self, hID:HexID, entity:Entity, *screenID):
         eID = self.next_free_eid()
         self._eidCatalog[eID] = entity
         self._eIDtoHex[eID] = hID
@@ -654,7 +654,7 @@ class EntityCatalog:
         del self._eIDtoHex[eID]
         del self._hIDtoScreen[hID]
 
-    def update_sid(self, hID:HexID, sID):
+    def update_sid(self, hID:HexID, *sID):
         self._hIDtoScreen[hID] = sID
 
     def update_entity(self, eID:int, entity:Entity):
