@@ -6,6 +6,7 @@ import numpy as np
 
 from .tables import bio, pop, tl, atmo, temp
 from MultiHex2.core import Settlement
+from .enums import WorldTag
 
 WORLD_TAGS = ["Abandoned Colony",
     "Alien Ruins",
@@ -130,7 +131,9 @@ class World(Settlement):
     def tech_level(self):
         return self._tech_level
 
-
+    @property
+    def tags(self):
+        return self._tags
 
     @property
     def atmosphere_str(self)->str:
@@ -164,6 +167,7 @@ class UnhabWorld(World):
 
         self._pop = 2
         self._tl = 2
+        self._tags = []
 
         size = d100(rng)
         extra = d100(rng)

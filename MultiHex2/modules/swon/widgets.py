@@ -34,10 +34,13 @@ class SystemWidget(GenericTab):
             self.tabs.addTab(new_page, ward.name)
             self._tabs_contents.append(new_page)
 
-    def apply_to_entity(self, entity:Entity)->Entity:
+    def apply_to_entity(self, entity:Settlement)->Settlement:
         """
         Gets the 
         """
+
+        entity._wards = [self._tabs_contents[i].apply_to_entity(entity.wards[i]) for i in range(len(entity.wards)) ]
+
         return(entity)
 
 class WorldWidget(GenericTab):
@@ -153,6 +156,16 @@ class WorldWidget(GenericTab):
         self.bio_spin.setValue(entity.biosphere)
         self.atm_spin.setValue(entity.atmosphere)
         self.notes_entry.setText(str(entity.title))
+
+        tag_str = ", ".join(entity.tags)
+
+        if str(entity.title)=="":
+            self.notes_entry.setText(tag_str)
+        else:
+            self.notes_entry.setText(str(entity.title) + ", "+ tag_str)
+
+
+
         self.name_entry.setText(entity.name)
 
         self.update_text()
@@ -163,3 +176,6 @@ class WorldWidget(GenericTab):
         self.temp_word.setText(temp.access(self.temp_spin.value()))
         self.bio_word.setText(bio.access(self.bio_spin.value()))
         self.tl_word.setText(tl.access(self.tl_spin.value()))
+    
+    def apply_to_entity(self, entity: Entity) -> Entity:
+        return entity
