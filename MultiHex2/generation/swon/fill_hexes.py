@@ -75,7 +75,7 @@ def generate(map:Clicker,seed=None, **kwargs):
             new_hex = Hex(hex_to_screen(hid))
             new_hex.set_fill(QColor(fill[0], fill[1], fill[2]))
             new_hex.set_params(superset["deepspace"]["params"])
-            new_hex.geography = "deep space"
+            new_hex.geography = "deepspace"
             map.addHex(new_hex, hid)
             
             

@@ -21,15 +21,23 @@ class System(Settlement):
         is_ward = False
         super().__init__(name, None, is_ward)
 
+        
+
         if len(worlds)==0:
             gen_planets = roll2(rng)-2
-            worlds = [World(name+" prime"),] 
+            self._primary_world = World(name+" prime")
+            worlds = [self._primary_world,] 
             worlds += [UnhabWorld(name="{}-{}".format(name, i), rng=rng) for i in range(gen_planets)]
+        else:
+            self._primary_world = worlds[0]
 
         self._wards = list(sorted(worlds, key=lambda world:100-world.temperature))
 
         for i in range(len(self._wards)):
             self._wards[i].name = "{}-{}".format(name, i)
+
+    def get_primary_world(self)->World:
+        return self._primary_world
 
 
     def add_ward(self, new_ward:World):

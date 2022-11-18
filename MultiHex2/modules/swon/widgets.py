@@ -1,11 +1,45 @@
 from MultiHex2.core.map_entities import GenericTab, IconLib, Entity
 from MultiHex2.core.map_entities import Settlement
 
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtGui
+
+from enum import Enum
 
 from .tables import atmo, temp, pop, tl, bio
+from MultiHex2.modules.swon.enums import WorldCategory, WorldTag
 
 #TODO add buttons for adding/removing worlds 
+
+class EnumEntry(QtWidgets.QWidget):
+    def __init__(self, entry:Enum, parent=None):
+        QtWidgets.QWidget.__init__(self, parent)
+
+        self.setObjectName("EnumEntry")
+
+        self.hlayout = QtWidgets.QHBoxLayout(self)
+        self.hlayout.setObjectName("hlayout")
+
+        self.label =QtWidgets.QLabel(self)
+        self.label.setObjectName("label")
+        self.label.setText(entry.name)
+        print(self.label.text())
+
+        undoicon = QtGui.QIcon(QtWidgets.QApplication.style().standardIcon(QtWidgets.QStyle.SP_DialogCancelButton))
+        #  QIcon(QApplication.style().standardIcon(QStyle.SP_DialogCancelButton)
+        #QtWidgets.QStyle.SP_DialogCancelButton
+        self.button = QtWidgets.QPushButton(self)
+        self.button.setIcon(undoicon)
+        self.button.setMaximumWidth(32)
+        self.hlayout.addWidget(self.button)
+        self.hlayout.addWidget(self.label)
+
+
+        self.button.clicked.connect(self.clicky)
+
+    def clicky(self):
+        print("clicky")
+
+
 
 class SystemWidget(GenericTab):
     def __init__(self, parent, iconLib:IconLib,config_entity=None):
@@ -120,7 +154,7 @@ class WorldWidget(GenericTab):
 
         self.tl_label = QtWidgets.QLabel(self)
         self.tl_label.setObjectName("tl_label")
-        self.tl_label.setText("Atmosphere: ")
+        self.tl_label.setText("Tech Level: ")
         self.formlayout.setWidget(9, QtWidgets.QFormLayout.LabelRole, self.tl_label)
         self.tl_spin = QtWidgets.QSpinBox(self)
         self.tl_spin.setObjectName("tl_spin")
@@ -139,15 +173,32 @@ class WorldWidget(GenericTab):
         self.notes_entry=QtWidgets.QLineEdit(self)
         self.notes_entry.setObjectName("notes_entry")
         self.formlayout.setWidget(11, QtWidgets.QFormLayout.FieldRole, self.notes_entry)
+
+        self.tagmenu = QtWidgets.QScrollArea(self)
+        self.tagmenu.setObjectName("tagmenu")
+
+        self.taggroup = QtWidgets.QGroupBox("World Tags")
+
+        self.tagemenulayout = QtWidgets.QVBoxLayout(self.tagmenu)
+        self.tagemenulayout.setObjectName("tagmenulayout")
         
+        self.tagcombo = QtWidgets.QComboBox(self)   
+        for each in WorldTag:
+            self.tagcombo.addItem(each.name)
+
+        self.tagemenulayout.addWidget(self.tagcombo)
+
 
         self.tl_spin.valueChanged.connect(self.update_text)
         self.pop_spin.valueChanged.connect(self.update_text)
         self.bio_spin.valueChanged.connect(self.update_text)
         self.atm_spin.valueChanged.connect(self.update_text)
         self.temp_spin.valueChanged.connect(self.update_text)
-
+        
+        self._widges = []
         self.configure_with(config_entity)
+
+        
 
     def configure_with(self, entity: Entity):
         self.tl_spin.setValue(entity.tech_level)
@@ -157,16 +208,31 @@ class WorldWidget(GenericTab):
         self.atm_spin.setValue(entity.atmosphere)
         self.notes_entry.setText(str(entity.title))
 
-        tag_str = ", ".join(entity.tags)
+        for tag in entity.tags:
+            new_widg = EnumEntry(tag)
 
-        if str(entity.title)=="":
-            self.notes_entry.setText(tag_str)
-        else:
-            self.notes_entry.setText(str(entity.title) + ", "+ tag_str)
+            self._widges.append(new_widg)
+            self.tagemenulayout.addWidget(new_widg)
+        
+        if False:
+            tag_str = ", ".join([tag.name for tag in entity.tags])
+            if tag_str!="":
+                tag_str+=", "
+            tag_str += ", ".join([tag.name for tag in entity.category])
+
+            if str(entity.title)=="":
+                self.notes_entry.setText(tag_str)
+            else:
+                self.notes_entry.setText(str(entity.title) + ", "+ tag_str)
 
 
 
         self.name_entry.setText(entity.name)
+
+        self.taggroup.setLayout(self.tagemenulayout)
+        self.tagmenu.setWidget(self.taggroup)
+
+        self.formlayout.setWidget(12, QtWidgets.QFormLayout.FieldRole, self.tagmenu)
 
         self.update_text()
 

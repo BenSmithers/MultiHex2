@@ -6,68 +6,11 @@ import numpy as np
 
 from .tables import bio, pop, tl, atmo, temp
 from MultiHex2.core import Settlement
-from .enums import WorldTag
+from MultiHex2.modules.swon.enums import WorldTag, WorldCategory, TradeGood
+from MultiHex2.modules.swon.trade_goods import ALL_GOODS
 
-WORLD_TAGS = ["Abandoned Colony",
-    "Alien Ruins",
-    "Altered Humanity",
-    "Area 51",
-    "Badlands World",
-    "Bubble Cities",
-    "Civil War",
-    "Cold War",
-    "Colonized Population",
-    "Desert World",
-    "Eugenic Cult",
-    "Exchange Consulate",
-    "Feral World",
-    "Flying Cities",
-    "Forbidden Tech",
-    "Freak Geology",
-    "Freak Weather",
-    "Friendly Foe",
-    "Gold Rush",
-    "Hatred",
-    "Heavy Industry",
-    "Heavy Mining",
-    "Hostile Biosphere",
-    "Hostile Space",
-    "Local Specialty",
-    "Local Tech",
-    "Major Spaceyard",
-    "Minimal Contact",
-    "Misandry/Misoginy",
-    "Oceanic World",
-    "Out of Contact",
-    "Outpost World",
-    "Perimeter Agency",
-    "Pilgrimage Site",
-    "Police State",
-    "Preceptor Archive",
-    "Pretech Cultists",
-    "Primitive Aliens",
-    "Psionics Fear",
-    "Psionics Worship",
-    "Psionics Academy",
-    "Quarantined World",
-    "Radioactive World",
-    "Regional Hegemon",
-    "Restrictive Laws",
-    "Rigid Culture",
-    "Seagoing Cities",
-    "Sealed Menace",
-    "Sectarians",
-    "Seismic Activity",
-    "Secret Masters",
-    "Theocracy",
-    "Tomb World",
-    "Trade Hub",
-    "Tyranny",
-    "Unbraked AI",
-    "Warlords",
-    "Xenophiles",
-    "Xenophobes",
-    "Zombies"]
+WorldTag._value2member_map_.keys()
+
 
 def roll(rng=None, mod=0):
     if rng is None:
@@ -100,20 +43,127 @@ class World(Settlement):
         self._tags = []
 
         for entry in world_tag:
-            if not isinstance(entry, int):
+            if not isinstance(entry, WorldTag):
                 raise TypeError("Cannot index with type {}, try an {}".format(type(entry, int)))
-            self._tags.append(WORLD_TAGS[entry])
+            self._tags.append(entry)
 
         if len(world_tag)==0:
-            self._tags=[ choice(WORLD_TAGS) for i in range(2) ]
+            self._tags=[ choice(list(WorldTag)) for i in range(2) ]
         
         self._atmosphere = roll(rng) if atmosphere==-1 else atmosphere
         self._temperature = roll(rng) if temperature==-1 else temperature
         self._biosphere = roll(rng) if biosphere==-1 else biosphere
         self._population_raw = roll(rng) if population==-1 else population
         self._tech_level = roll(rng) if tl==-1 else tl
+        self._hydro = roll(rng) 
+        if self._atmosphere==4:
+            self._hydro-=4
+        if self._temperature==12:
+            self._hydro-=4
+        elif self._temperature>9:
+            self._hydro-=2
+        
+        if self._hydro<2:
+            self._hydro = 2
 
         self._population = int(pop.access(self._population_raw))*np.random.randint(1,10)
+        self._category =[WorldCategory.Common,]
+
+        self.update_category()
+
+    def list_available_goods(self)->'set[TradeGood]':
+        """
+        Returns a set of available goods. We use a set here so that each entry is unique
+        """
+        avail = []
+
+        for category in self._category:
+            # take all the trade goods, and filter out only the ones that are available for this category 
+            avail += list(filter(lambda entry: ALL_GOODS[entry].is_available(category), TradeGood ))
+
+        avail = set(avail)
+
+        return avail
+
+    def get_purchase_price(self, tg:TradeGood):
+        """
+            Returns the purchase price of the given trade good on this world 
+            Returns -1 if the good is not available here 
+        """
+        entry = ALL_GOODS[tg]
+
+        if any(entry.is_available(wc) for wc in self._category ):
+            return min([entry.get_purchase_price(wc) for wc in self._category])
+        return -1 
+
+    def get_sale_price(self, tg:TradeGood):
+        entry = ALL_GOODS[tg]
+
+        return max([entry.get_sale_price(wc) for wc in self._category])
+
+    def update_category(self):
+        self._category = []
+        if self._atmosphere==4:
+            self._category.append(WorldCategory.Asteroid)
+        if self._atmosphere==6:
+            if self._temperature>3 and self._temperature<10:
+                if self._population_raw>4 and self._population_raw<8:
+                    self._category.append(WorldCategory.Agricultural)
+
+        if self._hydro==2 and self._atmosphere!=4:
+            self._category.append(WorldCategory.Desert)
+        
+        if self._atmosphere==9 and self._hydro>2:
+            self._category.append(WorldCategory.Fluid_Oceans)
+
+        if self._atmosphere>=6 and self._atmosphere<=8:
+            if self._hydro==7 or self._hydro==6:
+                if self._temperature>=6 and self._temperature<9:
+                    self._category.append(WorldCategory.Garden)
+        
+        if self._population_raw>9:
+            self._category.append(WorldCategory.High_Pop)
+
+        if self._tech_level==11 or self._tech_level==12:
+            self._category.append(WorldCategory.High_Tech)
+
+        if self._hydro<2 and self._temperature<4:
+            self._category.append(WorldCategory.Ice_Capped)
+
+        if self._population_raw==11:
+            if self._atmosphere<11 and self._atmosphere!=2:
+                self._category.append(WorldCategory.Industrial)
+        
+        if self._population_raw<4:
+            self._category.append(WorldCategory.Low_Pop)
+
+        if self._tech_level<6 or self._tech_level==9 or self._tech_level==10:
+            self._category.append(WorldCategory.Low_Tech)
+
+        if self._population_raw>=6 and self._population_raw<12:
+            if self._hydro<5:
+                if self._atmosphere<5 or self._atmosphere>10:
+                    self._category.append(WorldCategory.Non_Agricultural)
+
+            if self.temperature>=6 and self.temperature<9:
+                if self._atmosphere>5 and self._atmosphere<9:
+                    self._category.append(WorldCategory.Rich)
+        else:
+            self._category.append(WorldCategory.Non_Industrial)
+        
+        if self._hydro<5:
+            if self._atmosphere<6 or self._atmosphere>8:
+                self._category.append(WorldCategory.Poor)
+
+        if self._hydro==12:
+            self._category.append(WorldCategory.Water_World)
+        
+        if len(self._category)==0:
+            self._category=[WorldCategory.Common]
+    
+    @property
+    def category(self)->'list[WorldCategory]':
+        return self._category
 
     @property 
     def atmosphere(self):
@@ -246,4 +296,4 @@ class UnhabWorld(World):
                 self.title="beta Giant"
                 self._temperature = 12
 
-                                         
+        self.update_category()

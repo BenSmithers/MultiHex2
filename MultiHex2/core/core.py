@@ -291,7 +291,12 @@ class Path:
             else:
                 if abs(this_step -self._step)>1e-6:
                     raise ValueError("Inconsistent step sizes! {} vs {}".format(self._step, this_step)) 
+                    
+        self._quality = 1.0
     
+    @property
+    def quality(self):
+        return self._quality
     def get_diff(self, one, other):
         if self._dtype==HexID:
             return one-other

@@ -22,6 +22,7 @@ Should follow the same general procedure as the actual Sector Generation
 
 from .fill_hexes import generate
 from .add_systems import add_systems
+from .add_hyperlanes import add_hyperlanes
 
 def fullsim(map:Clicker, **kwargs):
     if "config" in kwargs:
@@ -45,3 +46,4 @@ def fullsim(map:Clicker, **kwargs):
 
     generate(map, seed, **config)
     add_systems(map, seed, **config)
+    add_hyperlanes(map, seed, **config)
