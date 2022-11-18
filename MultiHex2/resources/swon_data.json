@@ -1,4 +1,30 @@
 {
+    "hydrologoy":{
+        "desert":{
+            "min":2,
+            "text":"Utterly Dry"
+        },
+        "small seas":{
+            "min":3,
+            "text":"Very little water"
+        },
+        "Oceans":{
+            "min":5,
+            "text":"Land dominates the world, but with large oceans"
+        },
+        "large oceans":{
+            "min":6,
+            "text":"Large landmasses among a vast network of oceans"
+        },
+        "archipelagos":{
+            "min":8,
+            "text":"small islands dot an almost endless sea"
+        },
+        "water world":{
+            "min":12,
+            "text":"Covered entirely in seas"
+        }
+    },
     "atmosphere":{
         "corrosive":{
             "min":2,
