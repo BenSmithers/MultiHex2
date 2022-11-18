@@ -367,8 +367,7 @@ class Clicker(QGraphicsScene, ActionManager):
             return(inf)
 
         # We need to be able to have type-specific cost implementations. The Hexmap does not know what kind of map it is
-        # So the Hexes themselves will be responsible for calculating the cost.
-        # Subtypes of Hexes will implement unique cost functions 
+
         if (end_id-start_id)!=1:
             raise ValueError("Only can use neighboring hexes! diff: {}".format(end_id - start_id))
 
@@ -386,15 +385,17 @@ class Clicker(QGraphicsScene, ActionManager):
         if transition and (route_type==OverlandRouteType.land or route_type==OverlandRouteType.boat):
             scale_factor = 1000
 
-        return scale_factor*self._tileset_costs[self.hexCatalog.get(start_id).geography]/(1.0 + 0.20*best_quality)
+        value = scale_factor*self._tileset_costs[self.hexCatalog.get(start_id).geography]/(1.0 + 0.20*best_quality)
+        return value
 
     def _get_heuristic(self, start:HexID, end:HexID,route_type:OverlandRouteType)->float:
         scale_factor = 1.0
         transition = self.hexCatalog.get(start).is_land ^ self.hexCatalog.get(end).is_land
         if transition and (route_type==OverlandRouteType.land or route_type==OverlandRouteType.boat):
             scale_factor = 1000
-        return abs(end - start)*scale_factor
-    
+        val =  abs(end - start)*scale_factor
+        return val
+
     def get_route_a_star(self, start_id:HexID, end_id:HexID, route_type:OverlandRouteType)->'list[HexID]':
         """
         Finds quickest route between two given HexIDs. Both IDs must be on the Hexmap.
@@ -402,8 +403,7 @@ class Clicker(QGraphicsScene, ActionManager):
 
         Returns ordered list of HexIDs representing shortest found path between start and end (includes start and end)
         """
-
-        openSet = deque([start_id])
+        openSet = deque([start_id,])
         cameFrom = {}
 
         gScore = {}
@@ -411,6 +411,7 @@ class Clicker(QGraphicsScene, ActionManager):
 
         fScore = {}
         fScore[start_id] = self._get_heuristic(start_id,end_id, route_type)
+
 
         def reconstruct_path(cameFrom:HexID, current:HexID)->'list[HexID]':
             total_path = [current]
@@ -422,24 +423,22 @@ class Clicker(QGraphicsScene, ActionManager):
 
         while len(openSet)!=0:
             # find minimum fScore thing in openSet
-            min_id = None
-            min_cost = None
-            current = openSet[0]
+            current = openSet.popleft()
 
             if current==end_id:
                 return reconstruct_path(cameFrom, current)
 
-            openSet.popleft()
             for neighbor in current.neighbors:
-                try:
+                if current in gScore:
                     tentative_gScore = gScore[current] + self._get_cost_between(current, neighbor, route_type)
-                except KeyError:
+                else:
                     tentative_gScore = inf
 
                 if neighbor in gScore:
                     neigh = gScore[neighbor]
                 else:
                     neigh = inf
+
 
                 if tentative_gScore < neigh:
                     cameFrom[neighbor] = current
@@ -448,7 +447,7 @@ class Clicker(QGraphicsScene, ActionManager):
                     if neighbor not in openSet:
 
                         if len(openSet)==0:
-                            openSet.appendleft(neighbor)
+                            openSet.append(neighbor)
                         else:
                             iter = 0
                             while fScore[neighbor]>fScore[openSet[iter]]:
@@ -564,6 +563,7 @@ class Clicker(QGraphicsScene, ActionManager):
 
     def register_route(self, eid, rout_id):
         """
+        This is for ROUTES, not Paths! 
         Rather than registering these normally, we use the eID as the id. That way there's a baked-in correlation between route IDs and entity IDs 
         """
         self._routeCatalog.update_obj(eid, rout_id, True)
@@ -706,10 +706,9 @@ class Clicker(QGraphicsScene, ActionManager):
                 self._pen.setStyle(1)
                 self._pen.setWidth(3)
                 self._pen.setColor(QtGui.QColor(245,245,245))
-
                 self._brush.setStyle(0)
                 sid = self.addPath(path, self._pen, self._brush)
-
+                sid.setZValue(10)
                 using.update_sid(rid, sid)
             else:
                 sids = tuple(self.draw_river_object(this_path))
