@@ -27,7 +27,7 @@ import numpy as np
 from time import time
 from typing import Union
 
-DEBUG = True
+DEBUG = False
 
 class Clicker(QGraphicsScene, ActionManager):
     """

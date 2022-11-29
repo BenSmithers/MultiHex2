@@ -40,7 +40,7 @@ class MobileMoveAction(MapAction):
 
         geo = map.accessHex(current_hid).geography
         if geo in map._tileset_costs:
-            map._tileset_costs[geo]
+            scale = map._tileset_costs[geo]
         else:
             scale = 1.0
 
