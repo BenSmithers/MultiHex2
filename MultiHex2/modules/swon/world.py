@@ -34,6 +34,8 @@ class World(Settlement):
             raise TypeError("World Tags should be type {}, not {}".format(list, type(world_tag)))
         super().__init__(name, None, True)
 
+        self.name = name
+
         self._fuel=False
         self.title = ""
     

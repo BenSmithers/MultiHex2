@@ -33,9 +33,6 @@ class System(Settlement):
 
         self._wards = list(sorted(worlds, key=lambda world:100-world.temperature))
 
-        for i in range(len(self._wards)):
-            self._wards[i].name = "{}-{}".format(name, i)
-
     def get_primary_world(self)->World:
         return self._primary_world
 
@@ -48,4 +45,4 @@ class System(Settlement):
 
     @staticmethod
     def widget(self):
-        return Entity.widget(self)+Government.widget(self)+[SystemWidget]
+        return [SystemWidget]
